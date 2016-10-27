@@ -1,0 +1,261 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="utf-8" />
+
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="scripts/jquery-3.1.1.min.js"></script>
+    <script src="scripts/bootstrap.min.js"></script>
+
+
+    <style type="text/css">
+        html,
+        body {
+            height: 100%;
+        }
+
+        .navbar-fixed-top .nav {
+            padding: 15px 0;
+        }
+
+        .navbar-fixed-top .navbar-brand {
+            padding: 0 15px;
+        }
+
+        /*.navbar-brand {
+            width: 70px;
+            height: 50px;
+            background: url('http://www.sneaker-mission.com/uploads/3/1/2/7/31279819/5617441.png') no-repeat center center;
+            background-size: 50px;
+        }*/
+
+        .nav-tabs {
+            display: inline-block;
+            border-bottom: none;
+            padding-top: 15px;
+            font-weight: bold;
+        }
+
+            .nav-tabs > li > a,
+            .nav-tabs > li > a:hover,
+            .nav-tabs > li > a:focus,
+            .nav-tabs > li.active > a,
+            .nav-tabs > li.active > a:hover,
+            .nav-tabs > li.active > a:focus {
+                border: none;
+                border-radius: 0;
+            }
+
+        .nav-list {
+            border-bottom: 1px solid #eee;
+        }
+
+            .nav-list > li {
+                padding: 20px 15px 15px;
+                border-left: 1px solid #eee;
+
+            }
+
+                .nav-list > li:last-child {
+                    border-right: 1px solid #eee;
+                    
+                }
+
+                .nav-list > li > a:hover {
+                    text-decoration: none;
+                }
+
+                .nav-list > li > a > span {
+                    display: block;
+                    font-weight: bold;
+                    text-transform: uppercase;
+                }
+
+        .mega-dropdown {
+            position: static !important;
+        }
+
+        .mega-dropdown-menu {
+            padding: 20px 15px 15px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .carousel,
+        .item,
+        .active {
+            height: 100%;
+        }
+
+        .carousel-inner {
+            height: 100%;
+        }
+
+        /* Background images are set within the HTML using inline CSS, not here */
+
+        .fill {
+            width: 100%;
+            height: 100%;
+            background-position: center;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            background-size: cover;
+            -o-background-size: cover;
+        }
+
+        .carousel-caption {
+            font-family: Verdana;
+        }
+        .navbar {
+            background-color: #669999;
+            border-radius: 0px;
+            border-color: #669999;
+        }
+
+        #bs-megadropdown-tabs li a {
+            color: white;
+        }
+
+        #bs-megadropdown-tabs li a:hover {
+            color: black;
+        }
+    </style>
+
+
+</head>
+<body>
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-megadropdown-tabs">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#" style="margin-top: -10px;">
+                    <img src="http://placehold.it/150x40&text=LOGO" alt="">
+                </a>
+            </div>
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-megadropdown-tabs">
+                <ul class="nav navbar-nav" >
+                    <li><a href="#">Spor Bahisleri</a></li>
+                    <li><a href="#">Canlı Bahis</a></li>
+                    <li class="dropdown mega-dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Ligler <span class="caret"></span></a>
+                        <div class="dropdown-menu mega-dropdown-menu">
+                            <div class="container-fluid">
+                                <!-- Tab panes -->
+                                <div class="tab-content">
+                                    <div class="tab-pane active" id="men">
+                                        <ul class="nav-list list-inline">
+                                            <li><a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span>Spor Toto Süper Lig</span></a></li>
+                                            <li><a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span>Premier League</span></a></li>
+                                            <li><a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span>Bundesliga</span></a></li>
+                                            <li><a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span>Serie A</span></a></li>
+                                            <li><a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span>UEFA Champions League</span></a></li>
+                                            <li><a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span>UEFA Europa League</span></a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a style="padding: 5px;" href="#"><input class="btn btn-default" type="button" value="Giriş Yap" /></a></li>
+                    <li><a style="padding: 5px;" href="#"><input class="btn btn-default" type="button" value="Kayıt Ol" /></a></li>
+                    <!--<li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </li>-->
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
+
+    <header id="myCarousel" class="carousel slide" style="margin-top: -20px; height:400px;">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+            <li data-target="#myCarousel" data-slide-to="1"></li>
+            <li data-target="#myCarousel" data-slide-to="2"></li>
+        </ol>
+
+        <!-- Wrapper for Slides -->
+        <div class="carousel-inner">
+            <div class="item active">
+                <!-- Set the first background image using inline CSS below. -->
+                <div class="fill" style="background-image: url('Photo/fon.jpg');"></div>
+                <div class="carousel-caption">
+                    <h1>Canlı Spor Bahisleri</h1>
+                    <p>Günlük Haftalık Aylık</p>
+                </div>
+            </div>
+            <div class="item">
+                <!-- Set the second background image using inline CSS below. -->
+                <div class="fill" style="background-image: url('Photo/fon.jpg');"></div>
+                <div class="carousel-caption">
+                    <h1>Canlı Spor Bahisleri</h1>
+                    <p>Günlük Haftalık Aylık</p>
+                </div>
+            </div>
+            <div class="item">
+                <!-- Set the third background image using inline CSS below. -->
+                <div class="fill" style="background-image: url('Photo/fon.jpg');"></div>
+                <div class="carousel-caption">
+                    <h1>Canlı Spor Bahisleri</h1>
+                    <p>Günlük Haftalık Aylık</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+            <span class="icon-prev"></span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" data-slide="next">
+            <span class="icon-next"></span>
+        </a>
+
+    </header>
+
+    <div class="container">
+        <div class="row">
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    $(document).ready(function () {
+        $(".dropdown").hover(
+            function () {
+                $('.dropdown-menu', this).stop(true, true).slideDown("fast");
+                $(this).toggleClass('open');
+            },
+            function () {
+                $('.dropdown-menu', this).stop(true, true).slideUp("fast");
+                $(this).toggleClass('open');
+            }
+        );
+    });
+
+    $('#myCarousel').carousel({
+        interval: 3000,
+        cycle: true
+    });
+
+    $('.carousel').carousel({
+        interval: 3000
+    })
+</script>
