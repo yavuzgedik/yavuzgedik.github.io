@@ -108,7 +108,8 @@
 		}
 		
 		#bs-megadropdown-tabs li a:hover {
-			color: #669999;
+			font-weight: bold;
+			color: #00117E;
 		}
 
 		#list ul {
@@ -175,6 +176,18 @@
             border-radius: 4px;
             cursor: pointer;
             }
+
+            .custab{
+    border: 1px solid #ccc;
+    padding: 5px;
+    margin: 5% 0;
+    box-shadow: 3px 3px 2px #ccc;
+    transition: 0.5s;
+    }
+.custab:hover{
+    box-shadow: 3px 3px 0px transparent;
+    transition: 0.5s;
+    }
 	</style>
 </head>
 <body>
@@ -262,36 +275,26 @@
                         <h3 class="panel-title">Ligler</h3>
                         <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
                     </div>
-                    <!--<div class="" id="LigList">-->
-                        <!--<ul>
-                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
-                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
-                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
-                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
-                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
-                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
-                        </ul>-->
-                        <div class="panel-body list-group">
-                            <a href="#" class="list-group-item">
-                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
-                            </a>
-                            <a href="#" class="list-group-item">
-                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
-                            </a>
-                        </div> 
-                    <!--</div>-->
+                    <div class="panel-body list-group">
+                        <a href="#" class="list-group-item">
+                            <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                        </a>
+                        <a href="#" class="list-group-item">
+                            <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                        </a>
+                        <a href="#" class="list-group-item">
+                            <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                        </a>
+                        <a href="#" class="list-group-item">
+                            <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                        </a>
+                        <a href="#" class="list-group-item">
+                            <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                        </a>
+                        <a href="#" class="list-group-item">
+                            <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                        </a>
+                    </div>
                 </div>
             </div>
             <div class="col-md-6">
@@ -300,7 +303,60 @@
                         <h3 class="panel-title">Maçlar</h3>
                         <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
                     </div>
-                    <div class="panel-body">Panel content</div>
+                    <div class="panel-body">
+                        <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Tarih</th>
+                                <th class="text-center">Maç</th>
+                                <th class="text-center">1</th>
+                                <th class="text-center">x</th>
+                                <th class="text-center">2</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                                <tr>
+                                    <td class="text-center">01/11/2016<br>21:00</td>
+                                    <td class="text-center">Galatasaray - Fenerbahçe</td>
+                                    <td class="text-center">2.5</td>
+                                    <td class="text-center">3.1</td>
+                                    <td class="text-center">3.5</td>
+                                    <td class="text-center"><a class='btn btn-success btn-xs' href="#"><span class="glyphicon glyphicon-plus"></span> </a></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">01/11/2016<br>21:00</td>
+                                    <td class="text-center">Galatasaray - Fenerbahçe</td>
+                                    <td class="text-center">2.5</td>
+                                    <td class="text-center">3.1</td>
+                                    <td class="text-center">3.5</td>
+                                    <td class="text-center"><a class='btn btn-success btn-xs' href="#"><span class="glyphicon glyphicon-plus"></span> </a></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">01/11/2016<br>21:00</td>
+                                    <td class="text-center">Galatasaray - Fenerbahçe</td>
+                                    <td class="text-center">2.5</td>
+                                    <td class="text-center">3.1</td>
+                                    <td class="text-center">3.5</td>
+                                    <td class="text-center"><a class='btn btn-success btn-xs' href="#"><span class="glyphicon glyphicon-plus"></span> </a></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">01/11/2016<br>21:00</td>
+                                    <td class="text-center">Galatasaray - Fenerbahçe</td>
+                                    <td class="text-center">2.5</td>
+                                    <td class="text-center">3.1</td>
+                                    <td class="text-center">3.5</td>
+                                    <td class="text-center"><a class='btn btn-success btn-xs' href="#"><span class="glyphicon glyphicon-plus"></span> </a></td>
+                                </tr>
+                                <tr>
+                                    <td class="text-center">01/11/2016<br>21:00</td>
+                                    <td class="text-center">Galatasaray - Fenerbahçe</td>
+                                    <td class="text-center">2.5</td>
+                                    <td class="text-center">3.1</td>
+                                    <td class="text-center">3.5</td>
+                                    <td class="text-center"><a class='btn btn-success btn-xs' href="#"><span class="glyphicon glyphicon-plus"></span> </a></td>
+                                </tr>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="col-md-3">
@@ -309,7 +365,7 @@
                         <h3 class="panel-title">Kupon</h3>
                         <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
                     </div>
-                    <div class="panel-body">Panel content</div>
+                    <div class="panel-body">Kupon Kupon Kupon</div>
                 </div>
             </div>
 		</div>
@@ -328,7 +384,6 @@
     </div>
 </body>
 </html>
-
 <script>
     $(document).ready(function () {
         $(".dropdown").hover(
@@ -344,15 +399,15 @@
     });
 
     $(document).on('click', '.panel-heading span.clickable', function(e){
-    var $this = $(this);
-	if(!$this.hasClass('panel-collapsed')) {
-		$this.parents('.panel').find('.panel-body').slideUp();
-		$this.addClass('panel-collapsed');
-		$this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
-	} else {
-		$this.parents('.panel').find('.panel-body').slideDown();
-		$this.removeClass('panel-collapsed');
-		$this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
-	}
-})
+        var $this = $(this);
+        if(!$this.hasClass('panel-collapsed')) {
+            $this.parents('.panel').find('.panel-body').slideUp();
+            $this.addClass('panel-collapsed');
+            $this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+        } else {
+            $this.parents('.panel').find('.panel-body').slideDown();
+            $this.removeClass('panel-collapsed');
+            $this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+        }
+    })
 </script>
