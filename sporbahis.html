@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Yavuz Gedik</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="Content/bootstrap.min.css" rel="stylesheet" />
+	<link href="Content/footer.css" rel="stylesheet" />
+	<script src="scripts/jquery-3.1.1.min.js"></script>
+	<script src="scripts/bootstrap.min.js"></script>
+
+	<style type="text/css">
+		html,
+		body {
+			height: 100%;
+		}
+		
+		.navbar-fixed-top .nav {
+			padding: 15px 0;
+		}
+		
+		.navbar-fixed-top .navbar-brand {
+			padding: 0 15px;
+		}
+		
+		.nav-tabs {
+			display: inline-block;
+			border-bottom: none;
+			padding-top: 15px;
+			font-weight: bold;
+		}
+		
+		.nav-tabs > li > a,
+		.nav-tabs > li > a:hover,
+		.nav-tabs > li > a:focus,
+		.nav-tabs > li.active > a,
+		.nav-tabs > li.active > a:hover,
+		.nav-tabs > li.active > a:focus {
+			border: none;
+			border-radius: 0;
+		}
+		
+		.nav-list {
+			border-bottom: 1px solid #eee;
+		}
+		
+		.nav-list > li {
+			padding: 20px 15px 15px;
+			border-left: 1px solid #eee;
+		}
+		
+		.nav-list > li:last-child {
+			border-right: 1px solid #eee;
+		}
+		
+		.nav-list > li > a:hover {
+			text-decoration: none;
+		}
+		
+		.nav-list > li > a > span {
+			display: block;
+			font-weight: bold;
+			text-transform: uppercase;
+		}
+		
+		.mega-dropdown {
+			position: static !important;
+		}
+		
+		.mega-dropdown-menu {
+			padding: 20px 15px 15px;
+			text-align: center;
+			width: 100%;
+		}
+		
+		.carousel,
+		.item,
+		.active {
+			height: 100%;
+		}
+		
+		.carousel-inner {
+			height: 100%;
+		}
+		
+		.fill {
+			width: 100%;
+			height: 100%;
+			background-position: center;
+			-webkit-background-size: cover;
+			-moz-background-size: cover;
+			background-size: cover;
+			-o-background-size: cover;
+		}
+		
+		.carousel-caption {
+			font-family: Verdana;
+		}
+		
+		.navbar {
+			//background-color: #669999;
+			border-radius: 0px;
+			//border-color: #669999;
+		}
+		
+		#bs-megadropdown-tabs li a {
+			//color: white;
+		}
+		
+		#bs-megadropdown-tabs li a:hover {
+			color: #669999;
+		}
+
+		#list ul {
+			list-style-type: none;
+			text-align:center;
+		}
+
+		#list ul li {
+			display: inline-block;
+			padding-left: 30px;
+			padding-right: 30px;
+			line-height: 65px;
+		}
+
+		#list ul li a{
+			color : white;
+			text-decoration: none;
+		}
+
+		#list ul li a:hover {
+			color: #00117E;
+			font-weight: bold;
+		}
+
+        .clickable{
+            cursor: pointer;   
+        }
+
+        .panel-heading span {
+            margin-top: -20px;
+            font-size: 15px;
+        }
+
+        .mini-submenu{
+            display:none;  
+            background-color: rgba(0, 0, 0, 0);  
+            border: 1px solid rgba(0, 0, 0, 0.9);
+            border-radius: 4px;
+            padding: 9px;  
+            /*position: relative;*/
+            width: 42px;
+        }
+
+            .mini-submenu:hover{
+            cursor: pointer;
+            }
+
+            .mini-submenu .icon-bar {
+            border-radius: 1px;
+            display: block;
+            height: 2px;
+            width: 22px;
+            margin-top: 3px;
+            }
+
+            .mini-submenu .icon-bar {
+            background-color: #000;
+            }
+
+            #slide-submenu{
+            background: rgba(0, 0, 0, 0.45);
+            display: inline-block;
+            padding: 0 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            }
+	</style>
+</head>
+<body>
+	<nav class="navbar navbar-default" role="navigation">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-megadropdown-tabs">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+				<a class="navbar-brand" href="index.html" style="margin-top: -10px;">
+					<img src="http://placehold.it/150x40&text=LOGO" alt="">
+				</a>
+			</div>
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-megadropdown-tabs">
+				<ul class="nav navbar-nav">
+					<li><a href="#">Spor Bahisleri</a></li>
+					<li><a href="#">Canlı Bahis</a></li>
+					<li class="dropdown mega-dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Ligler <span class="caret"></span></a>
+						<div class="dropdown-menu mega-dropdown-menu">
+							<div class="container-fluid">
+								<!-- Tab panes -->
+								<div class="tab-content">
+									<div class="tab-pane active" id="men">
+										<ul class="nav-list list-inline">
+											<li>
+												<a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span></span></a>
+											</li>
+											<li>
+												<a href="#"><img style="width:70px; height:70px;" src="Photo/PL.png"><span></span></a>
+											</li>
+											<li>
+												<a href="#"><img style="width:70px; height:70px;" src="Photo/BA.png"><span></span></a>
+											</li>
+											<li>
+												<a href="#"><img style="width:70px; height:70px;" src="Photo/SA.png"><span></span></a>
+											</li>
+											<li>
+												<a href="#"><img style="width:70px; height:70px;" src="Photo/USL.png"><span></span></a>
+											</li>
+											<li>
+												<a href="#"><img style="width:70px; height:70px;" src="Photo/UEL.png"><span></span></a>
+											</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</li>
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li>
+						<a style="padding: 5px;" href="#"><input class="btn btn-default" type="button" value="Giriş Yap" /></a>
+					</li>
+					<li>
+						<a style="padding: 5px;" href="#"><input class="btn btn-default" type="button" value="Kayıt Ol" /></a>
+					</li>
+					<!--<li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#">Action</a></li>
+                            <li><a href="#">Another action</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                        </ul>
+                    </li>-->
+				</ul>
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container-fluid -->
+	</nav>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Ligler</h3>
+                        <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                    </div>
+                    <!--<div class="" id="LigList">-->
+                        <!--<ul>
+                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
+                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
+                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
+                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
+                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
+                            <li><a><img style="width:32px; height:32px;" src="Photo/STSL.png">SPOR TOTO SÜPER LİG</a></li>
+                        </ul>-->
+                        <div class="panel-body list-group">
+                            <a href="#" class="list-group-item">
+                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                            </a>
+                            <a href="#" class="list-group-item">
+                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                            </a>
+                            <a href="#" class="list-group-item">
+                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                            </a>
+                            <a href="#" class="list-group-item">
+                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                            </a>
+                            <a href="#" class="list-group-item">
+                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                            </a>
+                            <a href="#" class="list-group-item">
+                                <img style="width:30px; height:30px;" src="Photo/STSL.png">&nbsp&nbspSpor Toto Süper Lig
+                            </a>
+                        </div> 
+                    <!--</div>-->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Maçlar</h3>
+                        <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                    </div>
+                    <div class="panel-body">Panel content</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Kupon</h3>
+                        <span class="pull-right clickable"><i class="glyphicon glyphicon-chevron-up"></i></span>
+                    </div>
+                    <div class="panel-body">Panel content</div>
+                </div>
+            </div>
+		</div>
+	</div>
+
+    <div class="footer-bottom" style="bottom: 0px; position: fixed;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="copyright design">
+                        © 2016 <a style="text-decoration:none;" target="_blank" href="http://www.yavuzgedik.com"> - Yavuz Gedik </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    $(document).ready(function () {
+        $(".dropdown").hover(
+            function () {
+                $('.dropdown-menu', this).stop(true, true).slideDown("fast");
+                $(this).toggleClass('open');
+            },
+            function () {
+                $('.dropdown-menu', this).stop(true, true).slideUp("fast");
+                $(this).toggleClass('open');
+            }
+        );
+    });
+
+    $(document).on('click', '.panel-heading span.clickable', function(e){
+    var $this = $(this);
+	if(!$this.hasClass('panel-collapsed')) {
+		$this.parents('.panel').find('.panel-body').slideUp();
+		$this.addClass('panel-collapsed');
+		$this.find('i').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+	} else {
+		$this.parents('.panel').find('.panel-body').slideDown();
+		$this.removeClass('panel-collapsed');
+		$this.find('i').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+	}
+})
+</script>
