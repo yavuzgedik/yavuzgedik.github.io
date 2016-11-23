@@ -1,403 +1,63 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-	<title>Yavuz Gedik</title>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="Content/bootstrap.min.css" rel="stylesheet" />
-	<link href="Content/footer.css" rel="stylesheet" />
-	<script src="scripts/jquery-3.1.1.min.js"></script>
-	<script src="scripts/bootstrap.min.js"></script>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<style type="text/css">
-		html,
-		body {
-			height: 100%;
-		}
-		
-		.navbar-fixed-top .nav {
-			padding: 15px 0;
-		}
-		
-		.navbar-fixed-top .navbar-brand {
-			padding: 0 15px;
-		}
-		
-		.nav-tabs {
-			display: inline-block;
-			border-bottom: none;
-			padding-top: 15px;
-			font-weight: bold;
-		}
-		
-		.nav-tabs > li > a,
-		.nav-tabs > li > a:hover,
-		.nav-tabs > li > a:focus,
-		.nav-tabs > li.active > a,
-		.nav-tabs > li.active > a:hover,
-		.nav-tabs > li.active > a:focus {
-			border: none;
-			border-radius: 0;
-		}
-		
-		.nav-list {
-			border-bottom: 1px solid #eee;
-		}
-		
-		.nav-list > li {
-			padding: 20px 15px 15px;
-			border-left: 1px solid #eee;
-		}
-		
-		.nav-list > li:last-child {
-			border-right: 1px solid #eee;
-		}
-		
-		.nav-list > li > a:hover {
-			text-decoration: none;
-		}
-		
-		.nav-list > li > a > span {
-			display: block;
-			font-weight: bold;
-			text-transform: uppercase;
-		}
-		
-		.mega-dropdown {
-			position: static !important;
-		}
-		
-		.mega-dropdown-menu {
-			padding: 20px 15px 15px;
-			text-align: center;
-			width: 100%;
-		}
-		
-		.carousel,
-		.item,
-		.active {
-			height: 100%;
-		}
-		
-		.carousel-inner {
-			height: 100%;
-		}
-		/* Background images are set within the HTML using inline CSS, not here */
-		
-		.fill {
-			width: 100%;
-			height: 100%;
-			background-position: center;
-			-webkit-background-size: cover;
-			-moz-background-size: cover;
-			background-size: cover;
-			-o-background-size: cover;
-		}
-		
-		.carousel-caption {
-			font-family: Verdana;
-		}
-		
-		.navbar {
-			//background-color: #669999;
-			border-radius: 0px;
-			//border-color: #669999;
-		}
-		
-		#bs-megadropdown-tabs li a {
-			//color: white;
-		}
-		
-		#bs-megadropdown-tabs li a:hover {
-			font-weight: bold;
-			color: #00117E;
-		}
+        <title>Yavuz Gedik</title>
 
-		#list ul {
-			list-style-type: none;
-			text-align:center;
-		}
+        <link href="paper/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background-color : #f5f5f5;
+            }
+        </style>
+        <script src="js/jquery.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+    </head>
 
-		#list ul li {
-			display: inline-block;
-			padding-left: 30px;
-			padding-right: 30px;
-			padding-top: 10px;
-		}
-
-		#list ul li a{
-			color : white;
-			text-decoration: none;
-		}
-
-		#list ul li a:hover {
-			color: #00117E;
-			font-weight: bold;
-		}
-	</style>
-</head>
-<body>
-	<nav class="navbar navbar-default" role="navigation">
-		<div class="container-fluid">
-			<!-- Brand and toggle get grouped for better mobile display -->
-			<div class="navbar-header">
-				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-megadropdown-tabs">
+    <body>
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
                     <span class="sr-only">Toggle navigation</span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-				<a class="navbar-brand" href="index.html" style="margin-top: -10px;">
-					<img src="http://placehold.it/150x40&text=LOGO" alt="">
-				</a>
-			</div>
-			<!-- Collect the nav links, forms, and other content for toggling -->
-			<div class="collapse navbar-collapse" id="bs-megadropdown-tabs">
-				<ul class="nav navbar-nav">
-					<li><a href="sporbahis.html">Spor Bahisleri</a></li>
-					<li><a href="#">Canlı Bahis</a></li>
-					<li class="dropdown mega-dropdown">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown">Ligler <span class="caret"></span></a>
-						<div class="dropdown-menu mega-dropdown-menu">
-							<div class="container-fluid">
-								<!-- Tab panes -->
-								<div class="tab-content">
-									<div class="tab-pane active" id="men">
-										<ul class="nav-list list-inline">
-											<li>
-												<a href="#"><img style="width:70px; height:70px;" src="Photo/STSL.png"><span></span></a>
-											</li>
-											<li>
-												<a href="#"><img style="width:70px; height:70px;" src="Photo/PL.png"><span></span></a>
-											</li>
-											<li>
-												<a href="#"><img style="width:70px; height:70px;" src="Photo/BA.png"><span></span></a>
-											</li>
-											<li>
-												<a href="#"><img style="width:70px; height:70px;" src="Photo/SA.png"><span></span></a>
-											</li>
-											<li>
-												<a href="#"><img style="width:70px; height:70px;" src="Photo/UCL.png"><span></span></a>
-											</li>
-											<li>
-												<a href="#"><img style="width:70px; height:70px;" src="Photo/UEL.png"><span></span></a>
-											</li>
-										</ul>
-									</div>
-								</div>
-							</div>
-						</div>
-					</li>
-				</ul>
-				<ul class="nav navbar-nav navbar-right">
-					<li>
-						<a style="padding: 5px;" href="#"><input class="btn btn-success" type="button" value="Giriş Yap" /></a>
-					</li>
-					<li>
-						<a style="padding: 5px;" href="#"><input class="btn btn-primary" type="button" value="Kayıt Ol" /></a>
-					</li>
-					<!--<li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="#">Action</a></li>
-                            <li><a href="#">Another action</a></li>
-                            <li><a href="#">Something else here</a></li>
-                            <li class="divider"></li>
-                            <li><a href="#">Separated link</a></li>
-                        </ul>
-                    </li>-->
-				</ul>
-			</div>
-			<!-- /.navbar-collapse -->
-		</div>
-		<!-- /.container-fluid -->
-	</nav>
+                <a class="navbar-brand" href="index.html">#</a>
+                </div>
 
-	<header id="myCarousel" class="carousel slide" style="margin-top: -20px; height:400px;">
-		<!-- Indicators -->
-		<ol class="carousel-indicators">
-			<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-			<li data-target="#myCarousel" data-slide-to="1"></li>
-			<li data-target="#myCarousel" data-slide-to="2"></li>
-		</ol>
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
+                <!--<ul class="nav navbar-nav">
+                    <li><a href="#">Link <span class="sr-only">(current)</span></a></li>
+                    <li><a href="#">Link</a></li>
+                </ul>-->
 
-		<!-- Wrapper for Slides -->
-		<div class="carousel-inner">
-			<div class="item active">
-				<!-- Set the first background image using inline CSS below. -->
-				<div class="fill" style="background-image: url('Photo/fon.jpg');"></div>
-				<div class="carousel-caption">
-					<h1>Canlı Spor Bahisleri</h1>
-					<p>Günlük Haftalık Aylık</p>
-				</div>
-			</div>
-			<div class="item">
-				<!-- Set the second background image using inline CSS below. -->
-				<div class="fill" style="background-image: url('Photo/fon.jpg');"></div>
-				<div class="carousel-caption">
-					<h1>Canlı Spor Bahisleri</h1>
-					<p>Günlük Haftalık Aylık</p>
-				</div>
-			</div>
-			<div class="item">
-				<!-- Set the third background image using inline CSS below. -->
-				<div class="fill" style="background-image: url('Photo/fon.jpg');"></div>
-				<div class="carousel-caption">
-					<h1>Canlı Spor Bahisleri</h1>
-					<p>Günlük Haftalık Aylık</p>
-				</div>
-			</div>
-		</div>
+                <ul class="nav navbar-nav navbar-right" id="social">
+                    <li><a target="_blank" href="https://github.com/yavuzgedik"><span><img src="images/g.png" width="30" height="30"></span></a></li>
+                    <li><a target="_blank" href="https://blog.yavuzgedik.com"><span><img src="images/m.png" width="30" height="30"></span></a></li>
+                    <li><a target="_blank" href="https://twitter.com/yvzgdk"><span><img src="images/t.png" width="30" height="30"></span></a></li>
+                    <li><a target="_blank" href="https://facebook.com/yvzgdk"><span><img src="images/f.png" width="30" height="30"></span></a></li>
+                    <!--<li><a href="#"><span><img src="images/i.png" width="30" height="30"></span></a></li>
+                    <li><a href="#"><span><img src="images/y.png" width="30" height="30"></span></a></li>-->
+                    <li><a target="_blank" href="https://tr.linkedin.com/in/yavuzgedik"><span><img src="images/in.png" width="30" height="30"></span></a></li>
+                </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container-fluid">
+            <center>
+                <img style="border-radius: 3px;" class="img-responsive" width="238" alt="" src="images/yavuz.jpg">
+                <h2>Yavuz Gedik</h2>
+                <h5>Software Developer</h5>
+                <a href="#" class="btn btn-primary btn-lg">CV</a>
+                <p><p/>
+                <p class="text-success">mail@yavuzgedik.com</p>
 
-		<!-- Controls -->
-		<a class="left carousel-control" href="#myCarousel" data-slide="prev">
-			<span class="icon-prev"></span>
-		</a>
-		<a class="right carousel-control" href="#myCarousel" data-slide="next">
-			<span class="icon-next"></span>
-		</a>
-
-	</header>
-
-	<div class="container">
-		<div class="row">
-			
-		</div>
-	</div>
-	<div id="list" class="col-lg-12" style="background-color:#ea5644; width: 100%; margin-top: 0px; margin-bottom: 20px;">
-		<ul>
-			<li><a href="sporbahis.html">SPOR BAHİSLERİ</a></li>
-			<li><a href="sporbahis.html">SPOR BAHİSLERİ</a></li>
-			<li><a href="sporbahis.html">SPOR BAHİSLERİ</a></li>
-			<li><a href="sporbahis.html">SPOR BAHİSLERİ</a></li>
-		</ul>
-	</div>
-	<footer class="footer1">
-		<div class="container">
-		<div class="row"><!-- row -->
-			<div class="col-lg-3 col-md-3">
-			<!-- widgets column left -->
-				<ul class="list-unstyled clear-margins">
-				<!-- widgets -->
-					<li class="widget-container widget_nav_menu">
-						<!-- widgets list -->
-						<h1 class="title-widget">Spor Bahİslerİ</h1>
-						<ul>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Spor Bahİslerİ</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Canlı Bahİsler</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Lİgler</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Spor Bahİslerİ</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Canlı Bahİsler</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Lİgler</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div>
-			<!-- widgets column left end -->
-						
-			<div class="col-lg-3 col-md-3">
-			<!-- widgets column left -->
-				<ul class="list-unstyled clear-margins">
-				<!-- widgets -->
-					<li class="widget-container widget_nav_menu">
-						<!-- widgets list -->
-						<h1 class="title-widget">Spor Bahİslerİ</h1>
-						<ul>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Spor Bahİslerİ</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Canlı Bahİsler</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Lİgler</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Spor Bahİslerİ</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Canlı Bahİsler</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Lİgler</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div>                
-						
-			<div class="col-lg-3 col-md-3">
-			<!-- widgets column left -->
-				<ul class="list-unstyled clear-margins">
-				<!-- widgets -->
-					<li class="widget-container widget_nav_menu">
-						<!-- widgets list -->
-						<h1 class="title-widget">Hakkında</h1>
-						<ul>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> Hakkımızda</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> S.S.S</a></li>
-							<li><a href="#"><i class="fa fa-angle-double-right"></i> İletİşİm</a></li>
-						</ul>
-					</li>
-				</ul>
-			</div>
-			
-			<div class="col-lg-3 col-md-3"><!-- widgets column center -->
-				<ul class="list-unstyled clear-margins"><!-- widgets -->
-					<li class="widget-container widget_recent_news"><!-- widgets list -->
-						<h1 class="title-widget">BİLGİLER </h1>
-						<div class="footerp">
-							<h2 class="title-median">OynaKazan LTD.</h2>
-							<p><b>Email id:</b> <a href="mailto:mail@gmail.com">info@gmail.com</a></p>
-							<p><b>Helpline Numbers </b>
-							<br> +90-1234567899, +90-1234567899 </p>
-							<img style="width: 100%;" src="Photo/payment-logos.png">
-						</div>
-						<!--<div class="social-icons">
-							<ul class="nomargin">
-								<a href="https://www.facebook.com/"><i class="fa fa-facebook-square fa-3x social-fb" id="social"></i></a>
-								<a href="https://twitter.com/"><i class="fa fa-twitter-square fa-3x social-tw" id="social"></i></a>
-								<a href="https://plus.google.com/"><i class="fa fa-google-plus-square fa-3x social-gp" id="social"></i></a>
-								<a href="mailto:mail@gmail.com"><i class="fa fa-envelope-square fa-3x social-em" id="social"></i></a>
-							</ul>
-						</div> -->
-					</li>
-				</ul>
-			</div>
-		</div>
-		</div>
-	</footer>
-
-
-<div class="footer-bottom">
-
-	<div class="container">
-
-		<div class="row">
-
-			<div class="col-lg-12">
-
-				<div class="copyright design">
-
-					© 2016 <a style="text-decoration:none;" target="_blank" href="http://www.yavuzgedik.com"> - Yavuz Gedik </a>
-
-				</div>
-			</div>
-		</div>
-	</div>
-
-</div>
-</body>
+            </center>
+        </div>
+    </body>
 </html>
-
-<script>
-    $(document).ready(function () {
-        $(".dropdown").hover(
-            function () {
-                $('.dropdown-menu', this).stop(true, true).slideDown("fast");
-                $(this).toggleClass('open');
-            },
-            function () {
-                $('.dropdown-menu', this).stop(true, true).slideUp("fast");
-                $(this).toggleClass('open');
-            }
-        );
-    });
-
-    $('#myCarousel').carousel({
-        interval: 5000,
-        cycle: true
-    });
-
-    $('.carousel').carousel({
-        interval: 5000
-    })
-</script>
