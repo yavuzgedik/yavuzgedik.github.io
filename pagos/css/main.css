@@ -188,3 +188,7 @@ body {
       transform: translateY(-50%);
       font-family: Montserrat, sans-serif
   }
+
+  span {
+      color: #0c84e4;
+  }

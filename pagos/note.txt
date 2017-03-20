@@ -1,5 +1,5 @@
-Old Color: #f4511e
+#f4511e
 
-New Color : #0c84e4
+#0c84e4
 
 #0c84e4s
