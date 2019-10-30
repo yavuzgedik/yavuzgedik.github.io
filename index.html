@@ -1,72 +1,92 @@
-<!doctype html>
-<html>
-    <!-- Merhaba -->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Yavuz Gedik</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="js/jquery.min.js"></script>
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+      body {
+        font-family: 'Montserrat', sans-serif;
+      }
+      .header {
+          margin-top: 10%;
+      }
 
-        <title>Yavuz Gedik</title>
+      h3 {
+          margin-top: 5px;
+      }
 
-        <link href="paper/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background-color : #f5f5f5;
-            }
+      .fa {
+        color: gray;
+        padding: 5px;
+        font-size: 20px;
+        width: 20px;
+        text-align: center;
+        text-decoration: none;
+      }
+      
+      .fa-instagram:hover {
+          color: #8a3ab9;
+      }
 
-            #social, #menu {
-                text-align:center;
-            }
+      .fa-facebook:hover {
+          color: #3b5998;
+      }
 
-            #social>li>a:hover {
-                background-color: #f5f5f5;
-            }
-        </style>
-        <script src="js/jquery.js"></script>
-        <script src="js/bootstrap.min.js"></script>
-    </head>
+      .fa-twitter:hover {
+          color: #38A1F3;
+      }
 
-    <body>
-        <nav class="navbar navbar-inverse">
-            <div class="container-fluid">
-                <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-2">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <!--<a class="navbar-brand" href="#">#</a>-->
+      .fa-linkedin:hover {
+          color: #0077B5;
+      }
+
+      .fa-github:hover {
+          color: #333;
+      }
+
+      a:hover {
+          text-decoration: none;
+      }
+
+      .pialab {
+        font-weight: bold; 
+        color: #333;
+      }
+
+      .pialab:hover {
+          color: #888;
+      }
+  </style>
+</head>
+<body> 
+ 
+<div class="container">
+    <div class="col-lg-12">
+        <div class="header col-md-6 offset-md-3">
+                <div class="card">
+                  <div class="card-body">
+                        <img src="img/yavuz.jpg" class="img-thumbnail mx-auto d-block" alt="Yavuz Gedik" width="300">  
+                        <h3 class="text-center">Yavuz Gedik</h2>
+                        <p class="text-center">Yazılım Geliştirici <a target="_blank" href="https://pialab.com.tr" class="pialab">@PiaLab</a></p>
+                        <ul class="list-inline text-center">
+                            <li class="list-inline-item"><a target="_blank" href="https://www.instagram.com/yavuzgedik/"><i class="fa fa-instagram"></i></a></li>
+                            <li class="list-inline-item"><a target="_blank" href="https://www.facebook.com/yvzgdk"><i class="fa fa-facebook"></i></a></li>
+                            <li class="list-inline-item"><a target="_blank" href="https://twitter.com/yvzgdk"><i class="fa fa-twitter"></i></a></li>
+                            <li class="list-inline-item"><a target="_blank" href="https://github.com/yavuzgedik"><i class="fa fa-github"></i></a></li>
+                            <li class="list-inline-item"><a target="_blank" href="https://linkedin.com/in/yavuzgedik"><i class="fa fa-linkedin"></i></a></li>
+                        </ul>
+                  </div>
                 </div>
-
-                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-2">
-                <ul class="nav navbar-nav" id="menu">
-                    <!--<li><a href="#">Link <span class="sr-only">(current)</span></a></li>-->
-                    
-                </ul>
-
-                <ul class="nav navbar-nav navbar-right" id="social">
-                    <li><a target="_blank" href="https://github.com/yavuzgedik"><span><img style="opacity: 0.6;" src="images/g.png" width="30" height="30"></span></a></li>
-                    <li><a target="_blank" href="https://blog.yavuzgedik.com"><span><img src="images/m.png" width="30" height="30"></span></a></li>
-                    <li><a target="_blank" href="https://twitter.com/yvzgdk"><span><img src="images/t.png" width="30" height="30"></span></a></li>
-                    <li><a target="_blank" href="https://facebook.com/yvzgdk"><span><img src="images/f.png" width="30" height="30"></span></a></li>
-                    <!--<li><a href="#"><span><img src="images/i.png" width="30" height="30"></span></a></li>
-                    <li><a href="#"><span><img src="images/y.png" width="30" height="30"></span></a></li>-->
-                    <li><a target="_blank" href="https://tr.linkedin.com/in/yavuzgedik"><span><img src="images/in.png" width="30" height="30"></span></a></li>
-                </ul>
-                </div>
-            </div>
-        </nav>
-        <div class="container-fluid">
-            <center>
-                <img style="border-radius: 3px;" class="img-responsive" width="238" alt="" src="images/yavuz.jpg">
-                <h2>Yavuz Gedik</h2>
-                <h5>Software Developer</h5>
-                <!-- <a target="_blank" href="http://cv.yavuzgedik.com/" class="btn btn-primary btn-lg">CV</a> -->
-                <p><p/>
-                <p class="text-success">mail@yavuzgedik.com</p>
-
-            </center>
         </div>
-    </body>
+    </div>
+</div>
+
+</body>
 </html>
