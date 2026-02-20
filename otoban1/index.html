@@ -211,7 +211,6 @@
             color: #fff;
         }
 
-        /* Dokunmatik olmayan (Fareli) cihazlarda konsol panelini gizle, canvas'ı tam ekran yap */
         @media (hover: hover) and (pointer: fine) {
             #console-area { display: none; }
         }
@@ -220,7 +219,7 @@
         #scores-list-container {
             width: 100%;
             max-width: 350px;
-            max-height: 400px;
+            max-height: 350px;
             overflow-y: auto;
             margin-bottom: 20px;
             padding: 10px;
@@ -275,12 +274,27 @@
             <button id="show-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
         </div>
 
-        <!-- Skor Ekranı -->
+        <!-- PWA Kurulum Uyarı Ekranı -->
+        <div id="pwa-install-screen" class="screen hidden" style="z-index: 20; background: rgba(0, 0, 0, 0.95);">
+            <h1 style="font-size: 2.2rem; color: #3498db; margin-bottom: 15px;"><i class="fa-solid fa-mobile-screen-button"></i></h1>
+            <h2 style="color: #f1c40f; margin-top: 0;">Uygulama Olarak Ekle</h2>
+            <p>OTOBAN 1'i ana ekranına ekleyerek tam ekran ve daha akıcı bir deneyim yaşayabilirsin!</p>
+            <button id="pwa-install-btn" style="background: #2ecc71;">Evet, Ekle</button>
+            <button id="pwa-cancel-btn" class="btn-secondary" style="background: #7f8c8d;">Hayır, Teşekkürler</button>
+        </div>
+
+        <!-- Skor Ekranı (Ayarlar) -->
         <div id="scores-screen" class="screen hidden">
-            <h1 style="font-size: 2.2rem; color: #3498db;">Kayıtlı Skorlar</h1>
+            <h1 style="font-size: 2.2rem; color: #3498db;">Ayarlar & Skorlar</h1>
+            
+            <button id="settings-install-btn" class="hidden" style="background: #2ecc71; margin-bottom: 15px;">
+                <i class="fa-solid fa-download"></i> Uygulama Olarak Ekle
+            </button>
+
             <div id="scores-list-container">
                 <!-- JavaScript ile doldurulacak -->
             </div>
+            
             <button id="close-scores-btn">Geri Dön</button>
             <button id="clear-scores-btn" style="background: #e67e22;">Tümünü Temizle</button>
         </div>
@@ -315,10 +329,105 @@
 </div>
 
 <script>
+    // --- PWA KURULUMU (TEK DOSYA İÇİN DİNAMİK MANIFEST VE SW) ---
+    // 1. Dinamik Manifest Oluştur
+    const manifest = {
+        name: "OTOBAN 1",
+        short_name: "OTOBAN 1",
+        start_url: location.href,
+        display: "standalone",
+        background_color: "#111111",
+        theme_color: "#3498db",
+        icons: [{
+            src: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='%23f1c40f' font-family='sans-serif' font-weight='bold' font-style='italic'%3EO1%3C/text%3E%3C/svg%3E",
+            sizes: "192x192",
+            type: "image/svg+xml"
+        }]
+    };
+    const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+    const manifestUrl = URL.createObjectURL(manifestBlob);
+    const manifestLink = document.createElement('link');
+    manifestLink.rel = 'manifest';
+    manifestLink.href = manifestUrl;
+    document.head.appendChild(manifestLink);
+
+    // 2. Dinamik Service Worker Oluştur (Uygulamanın yüklenebilmesi için gerekli)
+    const swCode = `
+        self.addEventListener('install', (e) => { self.skipWaiting(); });
+        self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+        self.addEventListener('fetch', (e) => { }); // Minimal fetch
+    `;
+    const swBlob = new Blob([swCode], {type: 'application/javascript'});
+    const swUrl = URL.createObjectURL(swBlob);
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Hatası:', err));
+    }
+
+    // 3. PWA Install Ekranı Mantığı
+    let deferredPrompt;
+    const pwaScreen = document.getElementById('pwa-install-screen');
+    const btnPwaInstall = document.getElementById('pwa-install-btn');
+    const btnPwaCancel = document.getElementById('pwa-cancel-btn');
+    const btnSettingsInstall = document.getElementById('settings-install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Otomatik promptu engelle
+        e.preventDefault();
+        // Eventi kaydet
+        deferredPrompt = e;
+        
+        // Ayarlar ekranındaki gizli "Uygulama Olarak Ekle" butonunu görünür yap
+        btnSettingsInstall.classList.remove('hidden');
+
+        // Kullanıcı önceden "Hayır" demediyse PWA ekranını göster
+        if (!localStorage.getItem('pwa_dismissed')) {
+            pwaScreen.classList.remove('hidden');
+        }
+    });
+
+    // PWA Ekranı "Evet" butonu
+    btnPwaInstall.addEventListener('click', async () => {
+        pwaScreen.classList.add('hidden');
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                deferredPrompt = null;
+                btnSettingsInstall.classList.add('hidden');
+            }
+        }
+    });
+
+    // PWA Ekranı "Hayır" butonu
+    btnPwaCancel.addEventListener('click', () => {
+        pwaScreen.classList.add('hidden');
+        localStorage.setItem('pwa_dismissed', 'true'); // Bir daha rahatsız etme
+    });
+
+    // Ayarlar / Skor Ekranındaki "Uygulama Olarak Ekle" butonu
+    btnSettingsInstall.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                deferredPrompt = null;
+                btnSettingsInstall.classList.add('hidden');
+            }
+        }
+    });
+
+    // Uygulama başarıyla kurulduğunda her şeyi temizle
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        btnSettingsInstall.classList.add('hidden');
+        pwaScreen.classList.add('hidden');
+    });
+
+    // --- MEVCUT OYUN KODLARI ---
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Pencere boyutuna göre Canvas'ı ayarla (Keskinlik için)
     function resizeCanvas() {
         const container = document.getElementById('game-container');
         canvas.width = container.clientWidth;
@@ -359,7 +468,6 @@
     let currentRoadWidth = targetLanes * laneWidth; 
     let nextLaneChangeScore = 500;
 
-    // Temalar (Leveller / Biyomlar)
     const themes = [
         { name: "Yeşil Vadi", skyTop: "#87CEEB", skyBottom: "rgba(39, 174, 96, 0)", grass: "#27ae60", road: "#34495e", treeShadow: "rgba(0,0,0,0.3)", treeBase: "#5D4037", treeLeaves1: "#1e8449", treeLeaves2: "#27ae60", isNight: false },
         { name: "Kızgın Çöl", skyTop: "#e67e22", skyBottom: "rgba(243, 156, 18, 0)", grass: "#f1c40f", road: "#2c3e50", treeShadow: "rgba(0,0,0,0.2)", treeBase: "#d35400", treeLeaves1: "#e67e22", treeLeaves2: "#f39c12", isNight: false },
@@ -372,7 +480,6 @@
     // Kontroller
     let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, a: false, d: false, w: false, s: false };
 
-    // İkon Butonları Kontrol Bağlantıları
     const btnLeft = document.getElementById('btn-left');
     const btnRight = document.getElementById('btn-right');
     const btnUp = document.getElementById('btn-up');
@@ -401,7 +508,6 @@
         if(['a', 'A', 'd', 'D', 'w', 'W', 's', 'S'].includes(e.key)) keys[e.key.toLowerCase()] = false;
     });
 
-    // Nesneler
     let player = { x: 0, y: 0, width: 44, height: 80, speed: 8, color: '#3498db' };
     let enemies = [];
     let sceneries = []; 
@@ -590,13 +696,13 @@
     function startGame() {
         startScreen.classList.add('hidden'); gameOverScreen.classList.add('hidden'); scoresScreen.classList.add('hidden');
         warningOverlay.classList.add('hidden'); warningText.classList.add('hidden');
+        pwaScreen.classList.add('hidden'); // Yeni eklenti - PWA ekranı açıksa kapat
         
         score = 0; gameSpeed = 8; frameCount = 0; offset = 0;
         currentLevel = 1; currentTheme = themes[0]; levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
         targetLanes = 3; currentRoadWidth = targetLanes * laneWidth; nextLaneChangeScore = 500;
         enemies = []; sceneries = []; coins = []; floatingTexts = [];
         
-        // Oyuncuyu ekranın altında sabit tut (dinamik height ile)
         player.x = (canvas.width / 2) - (player.width / 2); 
         player.y = canvas.height - 150; 
         
@@ -650,7 +756,6 @@
     function update() {
         frameCount++; 
         
-        // Hız Çarpanı
         let speedMultiplier = 1;
         if (keys.ArrowUp || keys.w) speedMultiplier = 1.6; 
         if (keys.ArrowDown || keys.s) speedMultiplier = 0.5; 
@@ -663,7 +768,6 @@
         
         gameSpeed = 8 + (score / 350); if (gameSpeed > 24) gameSpeed = 24; 
 
-        // Seviye Sistemi
         let newLevel = Math.floor(score / 1000) + 1;
         if (newLevel > currentLevel && newLevel <= themes.length) {
             currentLevel = newLevel;
@@ -672,7 +776,6 @@
             spawnFloatingText(`SEVİYE ${currentLevel} !`, canvas.width/2, canvas.height/2, '#2ecc71', true);
         }
 
-        // --- 3 Saniye Öncesi Uyarı Sistemi ---
         let scoreUntilChange = nextLaneChangeScore - score;
         let warningThreshold = actualGameSpeed * 0.02 * 180; 
         if (scoreUntilChange > 0 && scoreUntilChange < warningThreshold) {
@@ -681,7 +784,6 @@
             warningOverlay.classList.add('hidden'); warningText.classList.add('hidden');
         }
 
-        // Şerit Değişimi
         if (score > nextLaneChangeScore) {
             let options = [2, 3, 4].filter(l => l !== targetLanes);
             targetLanes = options[Math.floor(Math.random() * options.length)];
@@ -691,7 +793,6 @@
         currentRoadWidth += (targetLanes * laneWidth - currentRoadWidth) * 0.03;
         let leftEdge = (canvas.width - currentRoadWidth) / 2;
 
-        // Oyuncu Hareketi (Sağ/Sol) ve Sınırları
         if (keys.ArrowLeft || keys.a) player.x -= player.speed;
         if (keys.ArrowRight || keys.d) player.x += player.speed;
 
@@ -700,7 +801,6 @@
         if (player.x < leftBoundary) player.x = leftBoundary;
         if (player.x + player.width > rightBoundary) player.x = rightBoundary - player.width;
         
-        // Oyuncuyu y ekseninde de her ihtimale karşı sabitle
         player.y = canvas.height - 150; 
 
         if (Math.random() < 0.15) spawnScenery();
@@ -729,7 +829,6 @@
         let spawnRate = Math.max(20, 50 - Math.floor(score / 200));
         if (frameCount % spawnRate === 0) spawnEnemy();
 
-        // Gelişmiş Düşman Yapay Zekası (Sollama ve Frenleme)
         for (let i = 0; i < enemies.length; i++) {
             let e1 = enemies[i];
             
@@ -741,7 +840,6 @@
                 let e2 = enemies[j];
                 
                 let isSameLane = Math.abs(e1.targetLane - e2.targetLane) < 0.5;
-                // Öndeki araca ne kadar yakınsa bloke olduğunu anlasın (Mesafe uzatıldı)
                 let isBehind = e1.y < e2.y && e1.y > e2.y - 220; 
                 
                 if (isSameLane && isBehind) {
@@ -750,18 +848,12 @@
                     let canGoLeft = e1.targetLane > 0;
                     let canGoRight = e1.targetLane < targetLanes - 1;
                     
-                    // Oyuncunun bulunduğu şeridi hesapla
                     let pTargetLane = Math.max(0, Math.min(targetLanes - 1, Math.round((player.x + player.width/2 - leftEdge - laneWidth/2) / laneWidth)));
 
-                    // Hedeflenen şeridin GÜVENLİ olup olmadığını denetleyen yardımcı fonksiyon
                     const isLaneSafe = (testLane) => {
-                        // 1. O şeritte başka bir düşman aracı var mı?
                         let enemyBlocks = enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - testLane) < 0.5 && Math.abs(e3.y - e1.y) < 220);
                         if (enemyBlocks) return false;
-                        
-                        // 2. O şeritte OYUNCU (SEN) var mısın ve çarpışma riski var mı?
-                        if (testLane === pTargetLane && e1.y > player.y - 350) return false; // Eğer sana yaklaşıyorsa asla üstüne kırmaz!
-                        
+                        if (testLane === pTargetLane && e1.y > player.y - 350) return false; 
                         return true;
                     };
                     
@@ -772,17 +864,15 @@
                         e1.targetLane++; isBlocked = false; 
                     }
                     
-                    // Sola veya sağa kaçamadıysa -> uslu uslu fren yapıp arkasında bekleyecek!
                     if (isBlocked) {
-                        e1.speedMod = e2.speedMod - 0.5; // Öndekinden biraz daha yavaşla (fren)
-                        // Araçların birbirinin içine girmesini keskin sınırla engelle
+                        e1.speedMod = e2.speedMod - 0.5; 
                         if (e1.y > e2.y - 130) e1.y = e2.y - 130; 
                     }
                 }
             }
             
             if (!isBlocked && e1.speedMod < e1.baseSpeedMod) {
-                e1.speedMod += 0.05; // Tehlike geçtiğinde eski hızına ivmelen
+                e1.speedMod += 0.05; 
             }
 
             e1.lane += (e1.targetLane - e1.lane) * 0.08;
