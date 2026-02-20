@@ -1,92 +1,221 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
-  <title>Yavuz Gedik</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="css/bootstrap.min.css">
-  <script src="js/jquery.min.js"></script>
-  <script src="js/popper.min.js"></script>
-  <script src="js/bootstrap.min.js"></script>
-  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <style>
-      body {
-        font-family: 'Montserrat', sans-serif;
-      }
-      .header {
-          margin-top: 10%;
-      }
+    <title>Yavuz Gedik - Yazılım Geliştirici</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
 
-      h3 {
-          margin-top: 5px;
-      }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
 
-      .fa {
-        color: gray;
-        padding: 5px;
-        font-size: 20px;
-        width: 20px;
-        text-align: center;
-        text-decoration: none;
-      }
-      
-      .fa-instagram:hover {
-          color: #8a3ab9;
-      }
+        /* Profil Kartı */
+        .profile-card {
+            border: none;
+            border-radius: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            background: #ffffff;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: 100%;
+            max-width: 420px;
+        }
 
-      .fa-facebook:hover {
-          color: #3b5998;
-      }
+        .profile-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.15);
+        }
 
-      .fa-twitter:hover {
-          color: #38A1F3;
-      }
+        /* Üst Header Görseli */
+        .card-header-bg {
+            height: 150px;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            position: relative;
+        }
 
-      .fa-linkedin:hover {
-          color: #0077B5;
-      }
+        /* Profil Resmi */
+        .profile-img {
+            width: 140px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 6px solid #ffffff;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: -70px;
+            position: relative;
+            z-index: 2;
+            background-color: #fff;
+        }
 
-      .fa-github:hover {
-          color: #333;
-      }
+        h3 {
+            font-weight: 700;
+            color: #2d3436;
+            margin-top: 15px;
+            letter-spacing: -0.5px;
+        }
 
-      a:hover {
-          text-decoration: none;
-      }
+        .job-title {
+            color: #636e72;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
 
-      .pialab {
-        font-weight: bold; 
-        color: #333;
-      }
+        /* Şirket Linki */
+        .pialab-link {
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
 
-      .pialab:hover {
-          color: #888;
-      }
-  </style>
+        .pialab-link:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: var(--secondary-color);
+        }
+
+        /* Sosyal Medya */
+        .social-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .social-nav a {
+            color: #b2bec3;
+            font-size: 1.6rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-nav a:hover {
+            transform: translateY(-3px);
+        }
+
+        .social-nav a.insta:hover { color: #E1306C; }
+        .social-nav a.fb:hover { color: #1877F2; }
+        .social-nav a.x:hover { color: #000000; }
+        .social-nav a.gh:hover { color: #333333; }
+        .social-nav a.in:hover { color: #0A66C2; }
+
+        /* PiaSelect Proje Kartı */
+        .project-box {
+            background: #f8f9fc;
+            border: 1px solid #edf2f7;
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            margin: 0 25px 35px 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .project-box:hover {
+            background: #ffffff;
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.15);
+            transform: scale(1.02);
+        }
+
+        .project-info strong {
+            display: block;
+            font-size: 1.15rem;
+            color: #2d3436;
+            margin-top: 5px;
+        }
+
+        .project-info span.tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+
+        .project-box i.chevron {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .project-box:hover i.chevron {
+            transform: translateX(5px);
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .profile-card {
+                border-radius: 1.5rem;
+            }
+            .project-box {
+                margin: 0 15px 25px 15px;
+                padding: 1rem;
+            }
+        }
+    </style>
 </head>
-<body> 
- 
-<div class="container">
-    <div class="col-lg-12">
-        <div class="header col-md-6 offset-md-3">
-                <div class="card">
-                  <div class="card-body">
-                        <img src="img/yavuz.jpg" class="img-thumbnail mx-auto d-block" alt="Yavuz Gedik" width="300">  
-                        <h3 class="text-center">Yavuz Gedik</h2>
-                        <p class="text-center">Yazılım Geliştirici <a target="_blank" href="https://pialab.com.tr" class="pialab">@PiaLab</a></p>
-                        <ul class="list-inline text-center">
-                            <li class="list-inline-item"><a target="_blank" href="https://www.instagram.com/yavuzgedik/"><i class="fa fa-instagram"></i></a></li>
-                            <li class="list-inline-item"><a target="_blank" href="https://www.facebook.com/yvzgdk"><i class="fa fa-facebook"></i></a></li>
-                            <li class="list-inline-item"><a target="_blank" href="https://twitter.com/yvzgdk"><i class="fa fa-twitter"></i></a></li>
-                            <li class="list-inline-item"><a target="_blank" href="https://github.com/yavuzgedik"><i class="fa fa-github"></i></a></li>
-                            <li class="list-inline-item"><a target="_blank" href="https://linkedin.com/in/yavuzgedik"><i class="fa fa-linkedin"></i></a></li>
-                        </ul>
-                  </div>
-                </div>
-        </div>
-    </div>
-</div>
+<body>
 
+    <div class="profile-card text-center">
+        <div class="card-header-bg"></div>
+
+        <img src="img/yavuz.jpg" class="profile-img" alt="Yavuz Gedik" 
+             onerror="this.src='https://ui-avatars.com/api/?name=Yavuz+Gedik&background=3498db&color=fff&size=150'">
+
+        <div class="card-body px-4">
+            <h3>Yavuz Gedik</h3>
+            <p class="job-title">
+                Yazılım Geliştirici 
+                <a href="https://pialab.com.tr" target="_blank" class="pialab-link">@PiaLab</a>
+            </p>
+
+            <div class="social-nav">
+                <a href="https://github.com/yavuzgedik" target="_blank" class="gh" title="GitHub"><i class="fa-brands fa-github"></i></a>
+                <a href="https://linkedin.com/in/yavuzgedik" target="_blank" class="in" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                <a href="https://twitter.com/yvzgdk" target="_blank" class="x" title="Twitter/X"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://www.instagram.com/yavuzgedik/" class="insta" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.facebook.com/yvzgdk" class="fb" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            </div>
+        </div>
+
+        <a href="https://yavuzgedik.github.io/PiaSelect/" target="_blank" class="project-box">
+            <div class="project-info">
+                <span class="tag"><i class="fa-solid fa-star me-1"></i> Yeni Proje</span>
+                <strong>PiaSelect.js</strong>
+                <small class="text-muted">Modern Bootstrap 5 Select Eklentisi</small>
+            </div>
+            <i class="fa-solid fa-circle-chevron-right chevron"></i>
+        </a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
