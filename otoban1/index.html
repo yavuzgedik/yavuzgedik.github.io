@@ -121,6 +121,34 @@
             font-weight: normal;
         }
 
+        /* --- Şerit Değişimi Uyarı Efektleri --- */
+        #warning-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 4; /* Canvas'ın üstünde, HUD'ın altında */
+            box-shadow: inset 0 0 60px 20px rgba(231, 76, 60, 0.8);
+            animation: pulseWarning 0.5s infinite alternate;
+        }
+        #warning-text {
+            position: absolute;
+            top: 100px;
+            width: 100%;
+            text-align: center;
+            color: #e74c3c;
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px #000, 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 5;
+            animation: pulseWarning 0.5s infinite alternate;
+            pointer-events: none;
+            letter-spacing: 1px;
+        }
+        @keyframes pulseWarning {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
         /* --- Mobil Kontroller --- */
         .controls-container {
             position: absolute;
@@ -134,7 +162,7 @@
         }
         #controls-right {
             right: 15px;
-            flex-direction: column; /* Yukarı aşağı için alt alta */
+            flex-direction: column; 
         }
         .ctrl-btn {
             width: 60px;
@@ -202,6 +230,10 @@
 <body>
 
 <div id="game-container">
+    <!-- Uyarı Efektleri -->
+    <div id="warning-overlay" class="hidden"></div>
+    <div id="warning-text" class="hidden">⚠️ ŞERİT DEĞİŞİMİ YAKLAŞIYOR ⚠️</div>
+
     <canvas id="gameCanvas" width="450" height="800"></canvas>
     
     <div id="hud">
@@ -241,7 +273,7 @@
     <div id="game-over-screen" class="screen hidden">
         <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
         <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
-        <p class="share-link">https://yavuzgedik.github.io/otoban1/</p>
+        <p class="share-link">yavuzgedik.github.io/otoban1</p>
         <button id="restart-btn">Tekrar Oyna</button>
         <button id="game-over-scores-btn" class="btn-secondary">⚙️ Skor Tablosu</button>
         <button id="share-btn" class="whatsapp-btn">
@@ -262,6 +294,8 @@
     const scoreDisplay = document.getElementById('score-display');
     const levelDisplay = document.getElementById('level-display');
     const finalScoreDisplay = document.getElementById('final-score');
+    const warningOverlay = document.getElementById('warning-overlay');
+    const warningText = document.getElementById('warning-text');
     
     // Butonlar
     const startBtn = document.getElementById('start-btn');
@@ -279,7 +313,7 @@
     let frameCount = 0;
     let offset = 0;
 
-    // Şerit Ayarları (Şerit yapısı ve adaptasyon)
+    // Şerit Ayarları
     const laneWidth = 85; 
     let targetLanes = 3;  
     let currentRoadWidth = targetLanes * laneWidth; 
@@ -387,7 +421,6 @@
     });
     closeScoresBtn.addEventListener('click', () => {
         scoresScreen.classList.add('hidden');
-        // Eğer oyun bittiyse game over'a dön, değilse starta dön
         if (score > 0 && !isPlaying) gameOverScreen.classList.remove('hidden');
         else startScreen.classList.remove('hidden');
     });
@@ -518,6 +551,8 @@
     // --- OYUN MEKANİKLERİ ---
     function startGame() {
         startScreen.classList.add('hidden'); gameOverScreen.classList.add('hidden'); scoresScreen.classList.add('hidden');
+        warningOverlay.classList.add('hidden'); warningText.classList.add('hidden');
+        
         score = 0; gameSpeed = 8; frameCount = 0; offset = 0;
         currentLevel = 1; currentTheme = themes[0]; levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
         targetLanes = 3; currentRoadWidth = targetLanes * laneWidth; nextLaneChangeScore = 500;
@@ -566,6 +601,9 @@
         isPlaying = false; 
         finalScoreDisplay.innerText = Math.floor(score);
         saveScore(score); // Local storage kaydı
+        
+        warningOverlay.classList.add('hidden'); 
+        warningText.classList.add('hidden');
         gameOverScreen.classList.remove('hidden');
     }
 
@@ -592,6 +630,18 @@
             currentTheme = themes[currentLevel - 1];
             levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
             spawnFloatingText(`SEVİYE ${currentLevel} !`, canvas.width/2, canvas.height/2, '#2ecc71', true);
+        }
+
+        // --- 3 Saniye Öncesi Uyarı Sistemi ---
+        let scoreUntilChange = nextLaneChangeScore - score;
+        let warningThreshold = actualGameSpeed * 0.02 * 180; // Oyuncunun mevcut hızına göre tahmini 3 saniyelik (180 frame) skor mesafesi
+        
+        if (scoreUntilChange > 0 && scoreUntilChange < warningThreshold) {
+            warningOverlay.classList.remove('hidden');
+            warningText.classList.remove('hidden');
+        } else {
+            warningOverlay.classList.add('hidden');
+            warningText.classList.add('hidden');
         }
 
         // Şerit Değişimi
