@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OTOBAN 1</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 800px;
+            background: #87CEEB; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        .screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            z-index: 10;
+        }
+        .hidden {
+            display: none !important;
+        }
+        h1 {
+            color: #f1c40f;
+            margin-bottom: 10px;
+            font-size: 3rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+        p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 25px;
+            color: #ecf0f1;
+        }
+        button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s, background 0.2s;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 280px;
+        }
+        button:hover { background: #c0392b; }
+        button:active { transform: scale(0.95); }
+        
+        .btn-secondary { background: #3498db; }
+        .btn-secondary:hover { background: #2980b9; }
+
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .whatsapp-btn:hover { background: #1ebe57; }
+        .share-link {
+            font-size: 1.1rem;
+            color: #3498db;
+            margin-bottom: 20px;
+            text-decoration: underline;
+        }
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #hud span { color: #f1c40f; }
+        #level-display {
+            font-size: 1rem;
+            color: #ecf0f1;
+            font-weight: normal;
+        }
+
+        /* --- Mobil Kontroller --- */
+        .controls-container {
+            position: absolute;
+            bottom: 30px;
+            display: flex;
+            gap: 10px;
+            z-index: 5;
+        }
+        #controls-left {
+            left: 15px;
+        }
+        #controls-right {
+            right: 15px;
+            flex-direction: column; /* Yukarı aşağı için alt alta */
+        }
+        .ctrl-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            -webkit-tap-highlight-color: transparent;
+            padding: 0; margin: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .ctrl-btn.active {
+            background: rgba(255, 255, 255, 0.7);
+            color: #111;
+            transform: scale(0.9);
+        }
+        /* Dokunmatik olmayan cihazlarda okları gizle */
+        @media (hover: hover) and (pointer: fine) {
+            .controls-container { display: none; }
+        }
+
+        /* --- Skor Tablosu --- */
+        #scores-list-container {
+            width: 100%;
+            max-width: 350px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            text-align: left;
+        }
+        .score-item {
+            background: rgba(0,0,0,0.6);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #f1c40f;
+        }
+        .score-item span { font-size: 1.1rem; }
+        .score-item small { color: #bdc3c7; font-size: 0.85rem; display: block; margin-top: 3px; }
+        .delete-btn {
+            background: #c0392b;
+            color: white;
+            border: none;
+            width: 35px; height: 35px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+            padding: 0; margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas" width="450" height="800"></canvas>
+    
+    <div id="hud">
+        <div>Skor: <span id="score-display">0</span></div>
+        <div id="level-display">Seviye 1: Yeşil Vadi</div>
+    </div>
+
+    <!-- Mobil Kontroller -->
+    <div id="controls-left" class="controls-container">
+        <div class="ctrl-btn" id="btn-left">◀</div>
+        <div class="ctrl-btn" id="btn-right">▶</div>
+    </div>
+    <div id="controls-right" class="controls-container">
+        <div class="ctrl-btn" id="btn-up">▲</div>
+        <div class="ctrl-btn" id="btn-down">▼</div>
+    </div>
+
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen" class="screen">
+        <h1>OTOBAN 1</h1>
+        <p><b>Yönlendirme:</b> A/D tuşları veya ekrandaki Ok ikonları.<br><br><b>Hız Kontrolü:</b> W/S tuşları veya Yukarı/Aşağı ikonları.</p>
+        <button id="start-btn">Oyuna Başla</button>
+        <button id="show-scores-btn" class="btn-secondary">⚙️ Skor Tablosu</button>
+    </div>
+
+    <!-- Skor Ekranı -->
+    <div id="scores-screen" class="screen hidden">
+        <h1 style="font-size: 2.2rem; color: #3498db;">Kayıtlı Skorlar</h1>
+        <div id="scores-list-container">
+            <!-- JavaScript ile doldurulacak -->
+        </div>
+        <button id="close-scores-btn">Geri Dön</button>
+        <button id="clear-scores-btn" style="background: #e67e22;">Tümünü Temizle</button>
+    </div>
+
+    <!-- Oyun Sonu Ekranı -->
+    <div id="game-over-screen" class="screen hidden">
+        <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
+        <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
+        <p class="share-link">demo.pialab.com.tr/Car</p>
+        <button id="restart-btn">Tekrar Oyna</button>
+        <button id="game-over-scores-btn" class="btn-secondary">⚙️ Skor Tablosu</button>
+        <button id="share-btn" class="whatsapp-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 1.856.001 3.598.723 4.907 2.034 1.31 1.311 2.031 3.054 2.03 4.908-.001 3.825-3.113 6.938-6.937 6.938z"/></svg>
+            WhatsApp ile Paylaş
+        </button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // UI Elementleri
+    const startScreen = document.getElementById('start-screen');
+    const gameOverScreen = document.getElementById('game-over-screen');
+    const scoresScreen = document.getElementById('scores-screen');
+    const scoreDisplay = document.getElementById('score-display');
+    const levelDisplay = document.getElementById('level-display');
+    const finalScoreDisplay = document.getElementById('final-score');
+    
+    // Butonlar
+    const startBtn = document.getElementById('start-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const shareBtn = document.getElementById('share-btn');
+    const showScoresBtn = document.getElementById('show-scores-btn');
+    const gameOverScoresBtn = document.getElementById('game-over-scores-btn');
+    const closeScoresBtn = document.getElementById('close-scores-btn');
+    const clearScoresBtn = document.getElementById('clear-scores-btn');
+
+    // Oyun Değişkenleri
+    let isPlaying = false;
+    let score = 0;
+    let gameSpeed = 8;
+    let frameCount = 0;
+    let offset = 0;
+
+    // Şerit Ayarları (Şerit yapısı ve adaptasyon)
+    const laneWidth = 85; 
+    let targetLanes = 3;  
+    let currentRoadWidth = targetLanes * laneWidth; 
+    let nextLaneChangeScore = 500;
+
+    // Temalar (Leveller / Biyomlar)
+    const themes = [
+        { name: "Yeşil Vadi", skyTop: "#87CEEB", skyBottom: "rgba(39, 174, 96, 0)", grass: "#27ae60", road: "#34495e", treeShadow: "rgba(0,0,0,0.3)", treeBase: "#5D4037", treeLeaves1: "#1e8449", treeLeaves2: "#27ae60", isNight: false },
+        { name: "Kızgın Çöl", skyTop: "#e67e22", skyBottom: "rgba(243, 156, 18, 0)", grass: "#f1c40f", road: "#2c3e50", treeShadow: "rgba(0,0,0,0.2)", treeBase: "#d35400", treeLeaves1: "#e67e22", treeLeaves2: "#f39c12", isNight: false },
+        { name: "Neon Gece", skyTop: "#111111", skyBottom: "rgba(26, 37, 47, 0)", grass: "#1a252f", road: "#151515", treeShadow: "rgba(0,0,0,0.8)", treeBase: "#000", treeLeaves1: "#2c3e50", treeLeaves2: "#34495e", isNight: true },
+        { name: "Kutup Noktası", skyTop: "#bdc3c7", skyBottom: "rgba(236, 240, 241, 0)", grass: "#ecf0f1", road: "#7f8c8d", treeShadow: "rgba(0,0,0,0.1)", treeBase: "#7f8c8d", treeLeaves1: "#bdc3c7", treeLeaves2: "#ffffff", isNight: false }
+    ];
+    let currentLevel = 1;
+    let currentTheme = themes[0];
+
+    // Kontroller
+    let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, a: false, d: false, w: false, s: false };
+
+    // İkon Butonları Kontrol Bağlantıları
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+    const btnUp = document.getElementById('btn-up');
+    const btnDown = document.getElementById('btn-down');
+
+    function bindBtn(btn, keyName) {
+        const press = (e) => { e.preventDefault(); keys[keyName] = true; btn.classList.add('active'); };
+        const release = (e) => { e.preventDefault(); keys[keyName] = false; btn.classList.remove('active'); };
+        btn.addEventListener('touchstart', press, {passive: false});
+        btn.addEventListener('touchend', release, {passive: false});
+        btn.addEventListener('mousedown', press);
+        btn.addEventListener('mouseup', release);
+        btn.addEventListener('mouseleave', release);
+    }
+    bindBtn(btnLeft, 'ArrowLeft');
+    bindBtn(btnRight, 'ArrowRight');
+    bindBtn(btnUp, 'ArrowUp');
+    bindBtn(btnDown, 'ArrowDown');
+
+    window.addEventListener('keydown', (e) => {
+        if(keys.hasOwnProperty(e.key)) keys[e.key] = true;
+        if(['a', 'A', 'd', 'D', 'w', 'W', 's', 'S'].includes(e.key)) keys[e.key.toLowerCase()] = true;
+    });
+    window.addEventListener('keyup', (e) => {
+        if(keys.hasOwnProperty(e.key)) keys[e.key] = false;
+        if(['a', 'A', 'd', 'D', 'w', 'W', 's', 'S'].includes(e.key)) keys[e.key.toLowerCase()] = false;
+    });
+
+    // Nesneler
+    let player = { x: 0, y: 0, width: 44, height: 80, speed: 8, color: '#3498db' };
+    let enemies = [];
+    let sceneries = []; 
+    let coins = [];
+    let floatingTexts = [];
+
+    // Skor Menüsü İşlevleri
+    function saveScore(finalScore) {
+        let scores = JSON.parse(localStorage.getItem('otoban_scores')) || [];
+        let date = new Date();
+        let dateStr = date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+        scores.push({ score: Math.floor(finalScore), date: dateStr });
+        scores.sort((a,b) => b.score - a.score);
+        localStorage.setItem('otoban_scores', JSON.stringify(scores));
+    }
+
+    function loadScores() {
+        let scores = JSON.parse(localStorage.getItem('otoban_scores')) || [];
+        let html = '';
+        if (scores.length === 0) {
+            html = '<p style="color:#bdc3c7; text-align:center;">Henüz kayıtlı skor yok.</p>';
+        } else {
+            scores.forEach((s, index) => {
+                html += `
+                <div class="score-item">
+                    <span><b>${index+1}.</b> ${s.score} Puan <br><small>${s.date}</small></span>
+                    <button class="delete-btn" onclick="deleteScore(${index})">🗑️</button>
+                </div>`;
+            });
+        }
+        document.getElementById('scores-list-container').innerHTML = html;
+    }
+
+    window.deleteScore = function(index) {
+        let scores = JSON.parse(localStorage.getItem('otoban_scores')) || [];
+        scores.splice(index, 1);
+        localStorage.setItem('otoban_scores', JSON.stringify(scores));
+        loadScores();
+    };
+
+    clearScoresBtn.addEventListener('click', () => {
+        if(confirm("Tüm skor kayıtlarını silmek istediğine emin misin?")) {
+            localStorage.removeItem('otoban_scores');
+            loadScores();
+        }
+    });
+
+    showScoresBtn.addEventListener('click', () => {
+        startScreen.classList.add('hidden');
+        scoresScreen.classList.remove('hidden');
+        loadScores();
+    });
+    gameOverScoresBtn.addEventListener('click', () => {
+        gameOverScreen.classList.add('hidden');
+        scoresScreen.classList.remove('hidden');
+        loadScores();
+    });
+    closeScoresBtn.addEventListener('click', () => {
+        scoresScreen.classList.add('hidden');
+        // Eğer oyun bittiyse game over'a dön, değilse starta dön
+        if (score > 0 && !isPlaying) gameOverScreen.classList.remove('hidden');
+        else startScreen.classList.remove('hidden');
+    });
+
+    shareBtn.addEventListener('click', () => {
+        let finalScore = Math.floor(score);
+        let text = `OTOBAN 1 oyununda ${finalScore} puan yaptım! Sen beni geçebilir misin? Gel oyna: http://demo.pialab.com.tr/Car`;
+        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    });
+
+    startBtn.addEventListener('click', startGame);
+    restartBtn.addEventListener('click', startGame);
+
+    // --- YARDIMCI ÇİZİM FONKSİYONLARI ---
+    function shadeColor(color, percent) {
+        let R = parseInt(color.substring(1,3),16);
+        let G = parseInt(color.substring(3,5),16);
+        let B = parseInt(color.substring(5,7),16);
+        R = parseInt(R * (100 + percent) / 100); G = parseInt(G * (100 + percent) / 100); B = parseInt(B * (100 + percent) / 100);
+        R = (R<255)?R:255; R = (R>0)?R:0; G = (G<255)?G:255; G = (G>0)?G:0; B = (B<255)?B:255; B = (B>0)?B:0;
+        let RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+        let GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+        let BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+        return "#"+RR+GG+BB;
+    }
+
+    function drawRoundRect(ctx, x, y, width, height, radius) {
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y); ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius); ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height); ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius); ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath(); ctx.fill();
+    }
+
+    function spawnFloatingText(text, x, y, color = '#f1c40f', isBig = false) {
+        floatingTexts.push({ text: text, x: x, y: y, color: color, alpha: 1, isBig: isBig });
+    }
+
+    function drawFloatingTexts() {
+        for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            let ft = floatingTexts[i];
+            ctx.save();
+            ctx.globalAlpha = ft.alpha;
+            ctx.fillStyle = ft.color;
+            ctx.font = ft.isBig ? '900 32px "Segoe UI", Arial' : 'bold 22px "Segoe UI", Arial';
+            ctx.textAlign = 'center';
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 4;
+            ctx.strokeText(ft.text, ft.x, ft.y);
+            ctx.fillText(ft.text, ft.x, ft.y);
+            ctx.restore();
+
+            ft.y -= 1.5;
+            ft.alpha -= 0.015;
+            if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+        }
+    }
+
+    function drawCar3D(car, type) {
+        let w = car.width, h = car.height, x = car.x, y = car.y;
+        ctx.save(); ctx.translate(x, y);
+
+        let zOffset = -15; 
+        if (currentTheme.isNight) {
+            ctx.save();
+            let lightLen = type === 'player' ? 350 : 180;
+            let lightAlpha = type === 'player' ? '0.4' : '0.2';
+            
+            let gradLeft = ctx.createLinearGradient(w*0.2, zOffset + h*0.2, w*0.2 - 30, zOffset - lightLen);
+            gradLeft.addColorStop(0, `rgba(255, 255, 200, ${lightAlpha})`);
+            gradLeft.addColorStop(1, 'rgba(255, 255, 200, 0)');
+            ctx.fillStyle = gradLeft;
+            ctx.beginPath(); ctx.moveTo(w*0.2, zOffset + h*0.2); ctx.lineTo(w*0.2 - 40, zOffset - lightLen); ctx.lineTo(w*0.2 + 20, zOffset - lightLen); ctx.fill();
+
+            let gradRight = ctx.createLinearGradient(w*0.8, zOffset + h*0.2, w*0.8 + 30, zOffset - lightLen);
+            gradRight.addColorStop(0, `rgba(255, 255, 200, ${lightAlpha})`);
+            gradRight.addColorStop(1, 'rgba(255, 255, 200, 0)');
+            ctx.fillStyle = gradRight;
+            ctx.beginPath(); ctx.moveTo(w*0.8, zOffset + h*0.2); ctx.lineTo(w*0.8 - 20, zOffset - lightLen); ctx.lineTo(w*0.8 + 40, zOffset - lightLen); ctx.fill();
+            ctx.restore();
+        }
+
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        drawRoundRect(ctx, -5, h - 10, w + 10, 15, 5);
+
+        let tireW = 8, tireH = 16;
+        ctx.fillStyle = '#111';
+        ctx.fillRect(-2, h*0.2, tireW, tireH); ctx.fillRect(w - tireW + 2, h*0.2, tireW, tireH);
+        ctx.fillRect(-2, h*0.75, tireW, tireH); ctx.fillRect(w - tireW + 2, h*0.75, tireW, tireH);
+
+        if (type === 'truck') {
+            ctx.fillStyle = '#ecf0f1'; drawRoundRect(ctx, 0, zOffset, w, h * 0.8, 4);
+            ctx.fillStyle = '#bdc3c7'; ctx.fillRect(w*0.1, zOffset + h*0.1, w*0.35, h*0.6); ctx.fillRect(w*0.55, zOffset + h*0.1, w*0.35, h*0.6);
+            ctx.fillStyle = '#7f8c8d'; ctx.fillRect(0, h * 0.8 + zOffset, w, 10);
+            ctx.fillStyle = '#e74c3c'; ctx.fillRect(w*0.1, h*0.8 + zOffset + 2, w*0.2, 4); ctx.fillRect(w*0.7, h*0.8 + zOffset + 2, w*0.2, 4);
+        } else {
+            let roofOffset = zOffset - 15;
+            let darkColor = shadeColor(car.color, -20);
+            ctx.fillStyle = car.color; drawRoundRect(ctx, 0, h*0.15 + zOffset, w, h*0.85, 6);
+            
+            ctx.fillStyle = '#2c3e50'; ctx.beginPath();
+            ctx.moveTo(w*0.1, h*0.85 + zOffset); ctx.lineTo(w*0.9, h*0.85 + zOffset);
+            ctx.lineTo(w*0.8, h*0.5 + roofOffset); ctx.lineTo(w*0.2, h*0.5 + roofOffset); ctx.fill();
+            
+            ctx.fillStyle = darkColor; drawRoundRect(ctx, w*0.2, h*0.2 + roofOffset, w*0.6, h*0.3, 4);
+            ctx.fillStyle = shadeColor(car.color, -40); ctx.fillRect(0, h - 8 + zOffset, w, 8);
+            ctx.fillStyle = '#c0392b'; ctx.fillRect(w*0.1, h - 6 + zOffset, w*0.25, 4); ctx.fillRect(w*0.65, h - 6 + zOffset, w*0.25, 4);
+            
+            if (type === 'sports') {
+                ctx.fillStyle = '#222'; ctx.fillRect(w*0.05, h - 18 + zOffset, w*0.9, 5);
+                ctx.fillRect(w*0.2, h - 14 + zOffset, 4, 6); ctx.fillRect(w*0.8 - 4, h - 14 + zOffset, 4, 6);
+            }
+        }
+        ctx.restore();
+    }
+
+    function drawTree3D(tree) {
+        let w = tree.size * 1.5, h = tree.size * 3;
+        ctx.save(); ctx.translate(tree.x, tree.y);
+        ctx.fillStyle = currentTheme.treeShadow; ctx.beginPath(); ctx.arc(0, 0, w*0.6, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = currentTheme.treeBase; ctx.fillRect(-w*0.1, -h*0.2, w*0.2, h*0.2);
+        ctx.fillStyle = currentTheme.treeLeaves1; ctx.beginPath(); ctx.moveTo(0, -h); ctx.lineTo(w/2, -h*0.2); ctx.lineTo(-w/2, -h*0.2); ctx.fill();
+        ctx.fillStyle = currentTheme.treeLeaves2; ctx.beginPath(); ctx.moveTo(0, -h); ctx.lineTo(w*0.4, -h*0.4); ctx.lineTo(-w*0.4, -h*0.4); ctx.fill();
+        ctx.restore();
+    }
+
+    // --- OYUN MEKANİKLERİ ---
+    function startGame() {
+        startScreen.classList.add('hidden'); gameOverScreen.classList.add('hidden'); scoresScreen.classList.add('hidden');
+        score = 0; gameSpeed = 8; frameCount = 0; offset = 0;
+        currentLevel = 1; currentTheme = themes[0]; levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
+        targetLanes = 3; currentRoadWidth = targetLanes * laneWidth; nextLaneChangeScore = 500;
+        enemies = []; sceneries = []; coins = []; floatingTexts = [];
+        player.x = (canvas.width / 2) - (player.width / 2); player.y = canvas.height - 150;
+        isPlaying = true; requestAnimationFrame(gameLoop);
+    }
+
+    function spawnCoin() {
+        let laneIndex = Math.floor(Math.random() * targetLanes);
+        coins.push({ lane: laneIndex, y: -200, radius: 14 });
+    }
+
+    function spawnEnemy() {
+        let rand = Math.random();
+        let type = 'sedan', width = 44, height = 80, speedMod = 0;
+        let colors = ['#e74c3c', '#9b59b6', '#e67e22', '#16a085', '#8e44ad'];
+        let color = colors[Math.floor(Math.random() * colors.length)];
+
+        if (rand < 0.25) { type = 'truck'; width = 54; height = 140; speedMod = -3; color = '#ecf0f1'; } 
+        else if (rand > 0.8) { type = 'sports'; width = 40; height = 75; speedMod = 3; color = '#f1c40f'; }
+
+        let laneIndex = Math.floor(Math.random() * targetLanes);
+
+        // O şeritte yakınlarda (ufukta) araç var mı kontrolü
+        let isOverlapping = enemies.some(e => Math.abs(e.targetLane - laneIndex) < 0.5 && e.y < height + 50);
+        if (!isOverlapping) {
+            enemies.push({ 
+                lane: laneIndex, targetLane: laneIndex, 
+                y: -200, width: width, height: height, 
+                type: type, color: color, 
+                speedMod: speedMod, baseSpeedMod: speedMod 
+            });
+        }
+    }
+
+    function spawnScenery() {
+        let isLeft = Math.random() < 0.5;
+        let grassWidth = (canvas.width - currentRoadWidth) / 2;
+        if (grassWidth < 20) return; 
+        let x = isLeft ? (Math.random() * (grassWidth - 60)) : canvas.width - (Math.random() * (grassWidth - 60));
+        sceneries.push({ x: x, y: -200, size: 15 + Math.random() * 20 });
+    }
+
+    function gameOver() {
+        isPlaying = false; 
+        finalScoreDisplay.innerText = Math.floor(score);
+        saveScore(score); // Local storage kaydı
+        gameOverScreen.classList.remove('hidden');
+    }
+
+    function update() {
+        frameCount++; 
+        
+        // Hız Çarpanı
+        let speedMultiplier = 1;
+        if (keys.ArrowUp || keys.w) speedMultiplier = 1.6; 
+        if (keys.ArrowDown || keys.s) speedMultiplier = 0.5; 
+
+        let actualGameSpeed = gameSpeed * speedMultiplier;
+
+        offset += actualGameSpeed;
+        score += actualGameSpeed * 0.02; 
+        scoreDisplay.innerText = Math.floor(score);
+        
+        gameSpeed = 8 + (score / 350); if (gameSpeed > 24) gameSpeed = 24; 
+
+        // Seviye Sistemi
+        let newLevel = Math.floor(score / 1000) + 1;
+        if (newLevel > currentLevel && newLevel <= themes.length) {
+            currentLevel = newLevel;
+            currentTheme = themes[currentLevel - 1];
+            levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
+            spawnFloatingText(`SEVİYE ${currentLevel} !`, canvas.width/2, canvas.height/2, '#2ecc71', true);
+        }
+
+        // Şerit Değişimi
+        if (score > nextLaneChangeScore) {
+            let options = [2, 3, 4].filter(l => l !== targetLanes);
+            targetLanes = options[Math.floor(Math.random() * options.length)];
+            nextLaneChangeScore += 600 + Math.random() * 400; 
+        }
+
+        currentRoadWidth += (targetLanes * laneWidth - currentRoadWidth) * 0.03;
+        let leftEdge = (canvas.width - currentRoadWidth) / 2;
+
+        // Oyuncu Hareketi (Sağ/Sol)
+        if (keys.ArrowLeft || keys.a) player.x -= player.speed;
+        if (keys.ArrowRight || keys.d) player.x += player.speed;
+
+        let leftBoundary = leftEdge;
+        let rightBoundary = leftEdge + currentRoadWidth;
+        if (player.x < leftBoundary) player.x = leftBoundary;
+        if (player.x + player.width > rightBoundary) player.x = rightBoundary - player.width;
+
+        if (Math.random() < 0.15) spawnScenery();
+        for (let i = sceneries.length - 1; i >= 0; i--) {
+            sceneries[i].y += actualGameSpeed;
+            if (sceneries[i].y > canvas.height + 100) sceneries.splice(i, 1);
+        }
+
+        // Altın Oluşturma ve Kontrol
+        if (frameCount % 120 === 0 && Math.random() > 0.3) spawnCoin();
+        for (let i = coins.length - 1; i >= 0; i--) {
+            let c = coins[i];
+            
+            // Altınları daralan/genişleyen şerite sabitle
+            if (c.lane >= targetLanes) c.lane = targetLanes - 1;
+            c.x = leftEdge + (c.lane * laneWidth) + (laneWidth / 2);
+
+            c.y += actualGameSpeed;
+            if (c.y > canvas.height + 50) { coins.splice(i, 1); continue; }
+            
+            let pCenterX = player.x + player.width/2;
+            let pCenterY = player.y + player.height/2;
+            if (Math.hypot(pCenterX - c.x, pCenterY - c.y) < player.width/2 + c.radius) {
+                score += 100;
+                spawnFloatingText("+100 Altın", c.x, c.y - 20);
+                coins.splice(i, 1);
+            }
+        }
+
+        let spawnRate = Math.max(20, 50 - Math.floor(score / 200));
+        if (frameCount % spawnRate === 0) spawnEnemy();
+
+        for (let i = 0; i < enemies.length; i++) {
+            let e1 = enemies[i];
+            
+            // Şerit daraldığında dışarıdaki aracı güvenli şerite al
+            if (e1.targetLane >= targetLanes) {
+                e1.targetLane = targetLanes - 1;
+            }
+
+            // Yapay Zeka (Takip Etme ve Sollama)
+            let isBlocked = false;
+            for (let j = 0; j < enemies.length; j++) {
+                if (i === j) continue;
+                let e2 = enemies[j];
+                
+                let isSameLane = Math.abs(e1.targetLane - e2.targetLane) < 0.5;
+                let isBehind = e1.y < e2.y && e1.y > e2.y - 180; // Önünde araç var mı
+                
+                if (isSameLane && isBehind) {
+                    isBlocked = true;
+                    
+                    let canGoLeft = e1.targetLane > 0;
+                    let canGoRight = e1.targetLane < targetLanes - 1;
+                    
+                    // Sola Sollama Kontrolü
+                    if (canGoLeft) {
+                        let leftClear = !enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - (e1.targetLane - 1)) < 0.5 && Math.abs(e3.y - e1.y) < 200);
+                        if (leftClear) { e1.targetLane--; isBlocked = false; }
+                    }
+                    // Sağa Sollama Kontrolü
+                    if (isBlocked && canGoRight) {
+                        let rightClear = !enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - (e1.targetLane + 1)) < 0.5 && Math.abs(e3.y - e1.y) < 200);
+                        if (rightClear) { e1.targetLane++; isBlocked = false; }
+                    }
+                    
+                    // Sollanamıyorsa Fren Yap ve Öndekine Uyum Sağla
+                    if (isBlocked) {
+                        e1.speedMod = e2.speedMod - 0.2; // Öndekinin hızına in (hatta hafif frenle)
+                    }
+                }
+            }
+            
+            // Önü açıldıysa orijinal hızına geri dön
+            if (!isBlocked && e1.speedMod < e1.baseSpeedMod) {
+                e1.speedMod += 0.05; 
+            }
+
+            // Araçların şerit geçişi yumuşak animasyonu ve yola kenetlenmeleri
+            e1.lane += (e1.targetLane - e1.lane) * 0.08;
+            e1.x = leftEdge + (e1.lane * laneWidth) + (laneWidth / 2) - (e1.width / 2);
+
+            e1.y += (actualGameSpeed * 0.6) - e1.speedMod; 
+        }
+
+        // Çarpışma Kontrolü
+        let hitMargin = 6;
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            let e = enemies[i];
+            if (e.y > canvas.height + 100) { enemies.splice(i, 1); continue; }
+
+            let isCollision = (
+                player.x + hitMargin < e.x + e.width - hitMargin &&
+                player.x + player.width - hitMargin > e.x + hitMargin &&
+                player.y + hitMargin < e.y + e.height - hitMargin &&
+                player.y + player.height - hitMargin > e.y + hitMargin
+            );
+
+            if (isCollision) {
+                gameOver();
+            }
+        }
+    }
+
+    function draw() {
+        ctx.fillStyle = currentTheme.grass;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        let grd = ctx.createLinearGradient(0, 0, 0, 250);
+        grd.addColorStop(0, currentTheme.skyTop); grd.addColorStop(1, currentTheme.skyBottom);
+        ctx.fillStyle = grd; ctx.fillRect(0, 0, canvas.width, 300);
+
+        let leftEdge = (canvas.width - currentRoadWidth) / 2;
+        ctx.fillStyle = currentTheme.road; ctx.fillRect(leftEdge, 0, currentRoadWidth, canvas.height);
+
+        let stripLen = 50, stripCycle = 100, stripOffset = offset % stripCycle;
+        for (let y = -stripCycle; y < canvas.height; y += stripCycle) {
+            let actY = y + stripOffset;
+            ctx.fillStyle = '#e74c3c'; ctx.fillRect(leftEdge - 15, actY, 15, stripLen); ctx.fillRect(leftEdge + currentRoadWidth, actY, 15, stripLen);
+            ctx.fillStyle = '#ecf0f1'; ctx.fillRect(leftEdge - 15, actY + stripLen, 15, stripLen); ctx.fillRect(leftEdge + currentRoadWidth, actY + stripLen, 15, stripLen);
+        }
+
+        let dashLen = 60, gapLen = 60, dashCycle = dashLen + gapLen, dashOffset = offset % dashCycle;
+        let currentLanesCount = Math.round(currentRoadWidth / laneWidth);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        for (let i = 1; i < currentLanesCount; i++) {
+            let lineX = leftEdge + (currentRoadWidth / currentLanesCount) * i;
+            for (let y = -dashCycle; y < canvas.height; y += dashCycle) {
+                ctx.fillRect(lineX - 3, y + dashOffset, 6, dashLen);
+            }
+        }
+
+        coins.forEach(c => {
+            ctx.save(); ctx.translate(c.x, c.y);
+            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.ellipse(0, 0, c.radius, c.radius * 0.4, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#f39c12'; ctx.beginPath(); ctx.ellipse(0, 3, c.radius, c.radius * 0.4, 0, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.ellipse(0, 0, c.radius * 0.7, c.radius * 0.25, 0, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        });
+
+        let renderQueue = [];
+        sceneries.forEach(s => renderQueue.push({ type: 'tree', obj: s, z: s.y }));
+        enemies.forEach(e => renderQueue.push({ type: 'enemy', obj: e, z: e.y + e.height }));
+        renderQueue.push({ type: 'player', obj: player, z: player.y + player.height });
+        renderQueue.sort((a, b) => a.z - b.z);
+
+        renderQueue.forEach(item => {
+            if (item.type === 'tree') drawTree3D(item.obj);
+            else if (item.type === 'enemy') drawCar3D(item.obj, item.obj.type);
+            else drawCar3D(item.obj, 'sports'); 
+        });
+
+        drawFloatingTexts();
+    }
+
+    function gameLoop() {
+        if (!isPlaying) return;
+        update(); draw(); requestAnimationFrame(gameLoop);
+    }
+
+    draw();
+</script>
+
+</body>
+</html>
