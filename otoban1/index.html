@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>OTOBAN 1</title>
+    <!-- FontAwesome Entegrasyonu -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             box-sizing: border-box;
@@ -12,7 +14,7 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: #111;
+            background-color: #050505;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,14 +22,22 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
         }
-        #game-container {
-            position: relative;
+        /* Konsol Ekranı Kapsayıcısı */
+        #main-wrapper {
+            display: flex;
+            flex-direction: column;
             width: 100%;
             max-width: 450px;
             height: 100vh;
             max-height: 800px;
+            background: #111;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            overflow: hidden;
+        }
+        #game-container {
+            flex: 1; /* Kalan alanı kaplar */
+            position: relative;
             background: #87CEEB; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             overflow: hidden;
         }
         canvas {
@@ -126,7 +136,7 @@
             position: absolute;
             inset: 0;
             pointer-events: none;
-            z-index: 4; /* Canvas'ın üstünde, HUD'ın altında */
+            z-index: 4; 
             box-shadow: inset 0 0 60px 20px rgba(231, 76, 60, 0.8);
             animation: pulseWarning 0.5s infinite alternate;
         }
@@ -149,46 +159,61 @@
             to { opacity: 1; }
         }
 
-        /* --- Mobil Kontroller --- */
-        .controls-container {
-            position: absolute;
-            bottom: 30px;
+        /* --- Mobil Konsol Paneli --- */
+        #console-area {
+            height: 140px;
+            background: #1a1a1a;
+            border-top: 3px solid #333;
             display: flex;
-            gap: 10px;
-            z-index: 5;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            box-shadow: inset 0 15px 15px -15px rgba(0,0,0,0.8);
+            position: relative;
+            z-index: 15;
         }
-        #controls-left {
-            left: 15px;
+        
+        .controls-group {
+            display: flex;
         }
-        #controls-right {
-            right: 15px;
-            flex-direction: column; 
+        .controls-group.col {
+            flex-direction: column;
+            gap: 12px;
         }
+        .controls-group.row {
+            flex-direction: row;
+            gap: 12px;
+        }
+
+        /* 3D Modern Buton Tasarımı */
         .ctrl-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.4);
-            color: rgba(255, 255, 255, 0.8);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            font-size: 24px;
+            width: 58px;
+            height: 58px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, #333, #222);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #444;
+            font-size: 26px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            backdrop-filter: blur(4px);
+            user-select: none;
+            box-shadow: 0 6px 0 #0d0d0d, 0 8px 10px rgba(0,0,0,0.6);
+            transition: all 0.1s ease;
             -webkit-tap-highlight-color: transparent;
-            padding: 0; margin: 0;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .ctrl-btn.active {
-            background: rgba(255, 255, 255, 0.7);
-            color: #111;
-            transform: scale(0.9);
+        .ctrl-btn:active, .ctrl-btn.active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 #0d0d0d, 0 2px 3px rgba(0,0,0,0.6);
+            background: linear-gradient(145deg, #2ecc71, #27ae60);
+            border-color: #2ecc71;
+            color: #fff;
         }
-        /* Dokunmatik olmayan cihazlarda okları gizle */
+
+        /* Dokunmatik olmayan (Fareli) cihazlarda konsol panelini gizle, canvas'ı tam ekran yap */
         @media (hover: hover) and (pointer: fine) {
-            .controls-container { display: none; }
+            #console-area { display: none; }
         }
 
         /* --- Skor Tablosu --- */
@@ -229,63 +254,78 @@
 </head>
 <body>
 
-<div id="game-container">
-    <!-- Uyarı Efektleri -->
-    <div id="warning-overlay" class="hidden"></div>
-    <div id="warning-text" class="hidden">⚠️ ŞERİT DEĞİŞİMİ YAKLAŞIYOR ⚠️</div>
+<div id="main-wrapper">
+    <div id="game-container">
+        <!-- Uyarı Efektleri -->
+        <div id="warning-overlay" class="hidden"></div>
+        <div id="warning-text" class="hidden">⚠️ ŞERİT DEĞİŞİMİ YAKLAŞIYOR ⚠️</div>
 
-    <canvas id="gameCanvas" width="450" height="800"></canvas>
-    
-    <div id="hud">
-        <div>Skor: <span id="score-display">0</span></div>
-        <div id="level-display">Seviye 1: Yeşil Vadi</div>
-    </div>
-
-    <!-- Mobil Kontroller -->
-    <div id="controls-left" class="controls-container">
-        <div class="ctrl-btn" id="btn-left">◀</div>
-        <div class="ctrl-btn" id="btn-right">▶</div>
-    </div>
-    <div id="controls-right" class="controls-container">
-        <div class="ctrl-btn" id="btn-up">▲</div>
-        <div class="ctrl-btn" id="btn-down">▼</div>
-    </div>
-
-    <!-- Başlangıç Ekranı -->
-    <div id="start-screen" class="screen">
-        <h1>OTOBAN 1</h1>
-        <p><b>Yönlendirme:</b> A/D tuşları veya ekrandaki Ok ikonları.<br><br><b>Hız Kontrolü:</b> W/S tuşları veya Yukarı/Aşağı ikonları.</p>
-        <button id="start-btn">Oyuna Başla</button>
-        <button id="show-scores-btn" class="btn-secondary">⚙️ Skor Tablosu</button>
-    </div>
-
-    <!-- Skor Ekranı -->
-    <div id="scores-screen" class="screen hidden">
-        <h1 style="font-size: 2.2rem; color: #3498db;">Kayıtlı Skorlar</h1>
-        <div id="scores-list-container">
-            <!-- JavaScript ile doldurulacak -->
+        <canvas id="gameCanvas" width="450" height="800"></canvas>
+        
+        <div id="hud">
+            <div>Skor: <span id="score-display">0</span></div>
+            <div id="level-display">Seviye 1: Yeşil Vadi</div>
         </div>
-        <button id="close-scores-btn">Geri Dön</button>
-        <button id="clear-scores-btn" style="background: #e67e22;">Tümünü Temizle</button>
-    </div>
 
-    <!-- Oyun Sonu Ekranı -->
-    <div id="game-over-screen" class="screen hidden">
-        <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
-        <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
-        <p class="share-link">yavuzgedik.github.io/otoban1</p>
-        <button id="restart-btn">Tekrar Oyna</button>
-        <button id="game-over-scores-btn" class="btn-secondary">⚙️ Skor Tablosu</button>
-        <button id="share-btn" class="whatsapp-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.099.824zm-3.423-14.416c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm.029 18.88c-1.161 0-2.305-.292-3.318-.844l-3.677.964.984-3.595c-.607-1.052-.927-2.246-.926-3.468.001-3.825 3.113-6.937 6.937-6.937 1.856.001 3.598.723 4.907 2.034 1.31 1.311 2.031 3.054 2.03 4.908-.001 3.825-3.113 6.938-6.937 6.938z"/></svg>
-            WhatsApp ile Paylaş
-        </button>
+        <!-- Başlangıç Ekranı -->
+        <div id="start-screen" class="screen">
+            <h1>OTOBAN 1</h1>
+            <p><b>Yönlendirme:</b> A/D tuşları veya ekrandaki Ok ikonları.<br><br><b>Hız Kontrolü:</b> W/S tuşları veya Yukarı/Aşağı ikonları.</p>
+            <button id="start-btn">Oyuna Başla</button>
+            <button id="show-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
+        </div>
+
+        <!-- Skor Ekranı -->
+        <div id="scores-screen" class="screen hidden">
+            <h1 style="font-size: 2.2rem; color: #3498db;">Kayıtlı Skorlar</h1>
+            <div id="scores-list-container">
+                <!-- JavaScript ile doldurulacak -->
+            </div>
+            <button id="close-scores-btn">Geri Dön</button>
+            <button id="clear-scores-btn" style="background: #e67e22;">Tümünü Temizle</button>
+        </div>
+
+        <!-- Oyun Sonu Ekranı -->
+        <div id="game-over-screen" class="screen hidden">
+            <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
+            <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
+            <p class="share-link">yavuzgedik.github.io/otoban1</p>
+            <button id="restart-btn">Tekrar Oyna</button>
+            <button id="game-over-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
+            <button id="share-btn" class="whatsapp-btn">
+                <i class="fa-brands fa-whatsapp" style="font-size: 1.5rem;"></i>
+                WhatsApp ile Paylaş
+            </button>
+        </div>
+    </div>
+    
+    <!-- Mobil Konsol Alanı -->
+    <div id="console-area">
+        <!-- SOL TARAF: HIZ KONTROLLERİ (Yukarı/Aşağı) -->
+        <div class="controls-group col">
+            <div class="ctrl-btn" id="btn-up"><i class="fa-solid fa-chevron-up"></i></div>
+            <div class="ctrl-btn" id="btn-down"><i class="fa-solid fa-chevron-down"></i></div>
+        </div>
+        <!-- SAĞ TARAF: YÖN KONTROLLERİ (Sol/Sağ) -->
+        <div class="controls-group row">
+            <div class="ctrl-btn" id="btn-left"><i class="fa-solid fa-chevron-left"></i></div>
+            <div class="ctrl-btn" id="btn-right"><i class="fa-solid fa-chevron-right"></i></div>
+        </div>
     </div>
 </div>
 
 <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+
+    // Pencere boyutuna göre Canvas'ı ayarla (Keskinlik için)
+    function resizeCanvas() {
+        const container = document.getElementById('game-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
 
     // UI Elementleri
     const startScreen = document.getElementById('start-screen');
@@ -388,7 +428,7 @@
                 html += `
                 <div class="score-item">
                     <span><b>${index+1}.</b> ${s.score} Puan <br><small>${s.date}</small></span>
-                    <button class="delete-btn" onclick="deleteScore(${index})">🗑️</button>
+                    <button class="delete-btn" onclick="deleteScore(${index})"><i class="fa-solid fa-trash"></i></button>
                 </div>`;
             });
         }
@@ -437,9 +477,7 @@
 
     // --- YARDIMCI ÇİZİM FONKSİYONLARI ---
     function shadeColor(color, percent) {
-        let R = parseInt(color.substring(1,3),16);
-        let G = parseInt(color.substring(3,5),16);
-        let B = parseInt(color.substring(5,7),16);
+        let R = parseInt(color.substring(1,3),16); let G = parseInt(color.substring(3,5),16); let B = parseInt(color.substring(5,7),16);
         R = parseInt(R * (100 + percent) / 100); G = parseInt(G * (100 + percent) / 100); B = parseInt(B * (100 + percent) / 100);
         R = (R<255)?R:255; R = (R>0)?R:0; G = (G<255)?G:255; G = (G>0)?G:0; B = (B<255)?B:255; B = (B>0)?B:0;
         let RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
@@ -557,7 +595,11 @@
         currentLevel = 1; currentTheme = themes[0]; levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
         targetLanes = 3; currentRoadWidth = targetLanes * laneWidth; nextLaneChangeScore = 500;
         enemies = []; sceneries = []; coins = []; floatingTexts = [];
-        player.x = (canvas.width / 2) - (player.width / 2); player.y = canvas.height - 150;
+        
+        // Oyuncuyu ekranın altında sabit tut (dinamik height ile)
+        player.x = (canvas.width / 2) - (player.width / 2); 
+        player.y = canvas.height - 150; 
+        
         isPlaying = true; requestAnimationFrame(gameLoop);
     }
 
@@ -577,7 +619,6 @@
 
         let laneIndex = Math.floor(Math.random() * targetLanes);
 
-        // O şeritte yakınlarda (ufukta) araç var mı kontrolü
         let isOverlapping = enemies.some(e => Math.abs(e.targetLane - laneIndex) < 0.5 && e.y < height + 50);
         if (!isOverlapping) {
             enemies.push({ 
@@ -600,8 +641,7 @@
     function gameOver() {
         isPlaying = false; 
         finalScoreDisplay.innerText = Math.floor(score);
-        saveScore(score); // Local storage kaydı
-        
+        saveScore(score); 
         warningOverlay.classList.add('hidden'); 
         warningText.classList.add('hidden');
         gameOverScreen.classList.remove('hidden');
@@ -634,14 +674,11 @@
 
         // --- 3 Saniye Öncesi Uyarı Sistemi ---
         let scoreUntilChange = nextLaneChangeScore - score;
-        let warningThreshold = actualGameSpeed * 0.02 * 180; // Oyuncunun mevcut hızına göre tahmini 3 saniyelik (180 frame) skor mesafesi
-        
+        let warningThreshold = actualGameSpeed * 0.02 * 180; 
         if (scoreUntilChange > 0 && scoreUntilChange < warningThreshold) {
-            warningOverlay.classList.remove('hidden');
-            warningText.classList.remove('hidden');
+            warningOverlay.classList.remove('hidden'); warningText.classList.remove('hidden');
         } else {
-            warningOverlay.classList.add('hidden');
-            warningText.classList.add('hidden');
+            warningOverlay.classList.add('hidden'); warningText.classList.add('hidden');
         }
 
         // Şerit Değişimi
@@ -654,7 +691,7 @@
         currentRoadWidth += (targetLanes * laneWidth - currentRoadWidth) * 0.03;
         let leftEdge = (canvas.width - currentRoadWidth) / 2;
 
-        // Oyuncu Hareketi (Sağ/Sol)
+        // Oyuncu Hareketi (Sağ/Sol) ve Sınırları
         if (keys.ArrowLeft || keys.a) player.x -= player.speed;
         if (keys.ArrowRight || keys.d) player.x += player.speed;
 
@@ -662,6 +699,9 @@
         let rightBoundary = leftEdge + currentRoadWidth;
         if (player.x < leftBoundary) player.x = leftBoundary;
         if (player.x + player.width > rightBoundary) player.x = rightBoundary - player.width;
+        
+        // Oyuncuyu y ekseninde de her ihtimale karşı sabitle
+        player.y = canvas.height - 150; 
 
         if (Math.random() < 0.15) spawnScenery();
         for (let i = sceneries.length - 1; i >= 0; i--) {
@@ -669,15 +709,11 @@
             if (sceneries[i].y > canvas.height + 100) sceneries.splice(i, 1);
         }
 
-        // Altın Oluşturma ve Kontrol
         if (frameCount % 120 === 0 && Math.random() > 0.3) spawnCoin();
         for (let i = coins.length - 1; i >= 0; i--) {
             let c = coins[i];
-            
-            // Altınları daralan/genişleyen şerite sabitle
             if (c.lane >= targetLanes) c.lane = targetLanes - 1;
             c.x = leftEdge + (c.lane * laneWidth) + (laneWidth / 2);
-
             c.y += actualGameSpeed;
             if (c.y > canvas.height + 50) { coins.splice(i, 1); continue; }
             
@@ -693,22 +729,20 @@
         let spawnRate = Math.max(20, 50 - Math.floor(score / 200));
         if (frameCount % spawnRate === 0) spawnEnemy();
 
+        // Gelişmiş Düşman Yapay Zekası (Sollama ve Frenleme)
         for (let i = 0; i < enemies.length; i++) {
             let e1 = enemies[i];
             
-            // Şerit daraldığında dışarıdaki aracı güvenli şerite al
-            if (e1.targetLane >= targetLanes) {
-                e1.targetLane = targetLanes - 1;
-            }
+            if (e1.targetLane >= targetLanes) e1.targetLane = targetLanes - 1;
 
-            // Yapay Zeka (Takip Etme ve Sollama)
             let isBlocked = false;
             for (let j = 0; j < enemies.length; j++) {
                 if (i === j) continue;
                 let e2 = enemies[j];
                 
                 let isSameLane = Math.abs(e1.targetLane - e2.targetLane) < 0.5;
-                let isBehind = e1.y < e2.y && e1.y > e2.y - 180; // Önünde araç var mı
+                // Öndeki araca ne kadar yakınsa bloke olduğunu anlasın (Mesafe uzatıldı)
+                let isBehind = e1.y < e2.y && e1.y > e2.y - 220; 
                 
                 if (isSameLane && isBehind) {
                     isBlocked = true;
@@ -716,37 +750,47 @@
                     let canGoLeft = e1.targetLane > 0;
                     let canGoRight = e1.targetLane < targetLanes - 1;
                     
-                    // Sola Sollama Kontrolü
-                    if (canGoLeft) {
-                        let leftClear = !enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - (e1.targetLane - 1)) < 0.5 && Math.abs(e3.y - e1.y) < 200);
-                        if (leftClear) { e1.targetLane--; isBlocked = false; }
+                    // Oyuncunun bulunduğu şeridi hesapla
+                    let pTargetLane = Math.max(0, Math.min(targetLanes - 1, Math.round((player.x + player.width/2 - leftEdge - laneWidth/2) / laneWidth)));
+
+                    // Hedeflenen şeridin GÜVENLİ olup olmadığını denetleyen yardımcı fonksiyon
+                    const isLaneSafe = (testLane) => {
+                        // 1. O şeritte başka bir düşman aracı var mı?
+                        let enemyBlocks = enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - testLane) < 0.5 && Math.abs(e3.y - e1.y) < 220);
+                        if (enemyBlocks) return false;
+                        
+                        // 2. O şeritte OYUNCU (SEN) var mısın ve çarpışma riski var mı?
+                        if (testLane === pTargetLane && e1.y > player.y - 350) return false; // Eğer sana yaklaşıyorsa asla üstüne kırmaz!
+                        
+                        return true;
+                    };
+                    
+                    if (canGoLeft && isLaneSafe(e1.targetLane - 1)) {
+                        e1.targetLane--; isBlocked = false; 
                     }
-                    // Sağa Sollama Kontrolü
-                    if (isBlocked && canGoRight) {
-                        let rightClear = !enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - (e1.targetLane + 1)) < 0.5 && Math.abs(e3.y - e1.y) < 200);
-                        if (rightClear) { e1.targetLane++; isBlocked = false; }
+                    else if (isBlocked && canGoRight && isLaneSafe(e1.targetLane + 1)) {
+                        e1.targetLane++; isBlocked = false; 
                     }
                     
-                    // Sollanamıyorsa Fren Yap ve Öndekine Uyum Sağla
+                    // Sola veya sağa kaçamadıysa -> uslu uslu fren yapıp arkasında bekleyecek!
                     if (isBlocked) {
-                        e1.speedMod = e2.speedMod - 0.2; // Öndekinin hızına in (hatta hafif frenle)
+                        e1.speedMod = e2.speedMod - 0.5; // Öndekinden biraz daha yavaşla (fren)
+                        // Araçların birbirinin içine girmesini keskin sınırla engelle
+                        if (e1.y > e2.y - 130) e1.y = e2.y - 130; 
                     }
                 }
             }
             
-            // Önü açıldıysa orijinal hızına geri dön
             if (!isBlocked && e1.speedMod < e1.baseSpeedMod) {
-                e1.speedMod += 0.05; 
+                e1.speedMod += 0.05; // Tehlike geçtiğinde eski hızına ivmelen
             }
 
-            // Araçların şerit geçişi yumuşak animasyonu ve yola kenetlenmeleri
             e1.lane += (e1.targetLane - e1.lane) * 0.08;
             e1.x = leftEdge + (e1.lane * laneWidth) + (laneWidth / 2) - (e1.width / 2);
 
             e1.y += (actualGameSpeed * 0.6) - e1.speedMod; 
         }
 
-        // Çarpışma Kontrolü
         let hitMargin = 6;
         for (let i = enemies.length - 1; i >= 0; i--) {
             let e = enemies[i];
@@ -759,9 +803,7 @@
                 player.y + player.height - hitMargin > e.y + hitMargin
             );
 
-            if (isCollision) {
-                gameOver();
-            }
+            if (isCollision) gameOver();
         }
     }
 
