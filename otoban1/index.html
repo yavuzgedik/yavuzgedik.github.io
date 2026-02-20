@@ -241,7 +241,7 @@
     <div id="game-over-screen" class="screen hidden">
         <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
         <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
-        <p class="share-link">demo.pialab.com.tr/Car</p>
+        <p class="share-link">https://yavuzgedik.github.io/otoban1/</p>
         <button id="restart-btn">Tekrar Oyna</button>
         <button id="game-over-scores-btn" class="btn-secondary">⚙️ Skor Tablosu</button>
         <button id="share-btn" class="whatsapp-btn">
@@ -394,7 +394,7 @@
 
     shareBtn.addEventListener('click', () => {
         let finalScore = Math.floor(score);
-        let text = `OTOBAN 1 oyununda ${finalScore} puan yaptım! Sen beni geçebilir misin? Gel oyna: http://demo.pialab.com.tr/Car`;
+        let text = `OTOBAN 1 oyununda ${finalScore} puan yaptım! Sen beni geçebilir misin? Gel oyna: https://yavuzgedik.github.io/otoban1/`;
         let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
         window.open(url, '_blank');
     });
