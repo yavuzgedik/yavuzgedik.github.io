@@ -142,24 +142,39 @@
                 style.textContent = `
                     .pia-calendar { display: flex; flex-direction: column; font-family: inherit; }
                     .pia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+                    
+                    /* Desktop Grid (Standart) */
                     .pia-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: var(--bs-border-color-translucent); border: 1px solid var(--bs-border-color-translucent); border-radius: var(--bs-border-radius); overflow: hidden; }
+                    
+                    /* Hücre ve Başlık Ayarları */
                     .pia-day-header { background-color: var(--bs-gray-100); padding: 0.75rem 0.5rem; text-align: center; font-weight: 600; font-size: 0.9rem; color: var(--bs-gray-700); }
-                    .pia-day-cell { background-color: #fff; min-height: 120px; padding: 0.5rem; cursor: pointer; transition: background-color 0.2s; display: flex; flex-direction: column; }
+                    .pia-day-cell { background-color: #fff; min-height: 120px; padding: 0.5rem; cursor: pointer; transition: background-color 0.2s; display: flex; flex-direction: column; min-width: 0; }
                     .pia-day-cell:hover { background-color: var(--bs-gray-50); }
                     .pia-day-cell.pia-other-month { background-color: var(--bs-gray-100); color: var(--bs-gray-500); cursor: default; }
                     .pia-day-cell.pia-today { background-color: rgba(var(--bs-primary-rgb), 0.05); }
+                    
                     .pia-day-number { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; text-align: right; display: block; }
                     .pia-day-cell.pia-today .pia-day-number { color: var(--bs-primary); font-size: 1rem; }
-                    .pia-events-container { flex-grow: 1; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; scrollbar-width: none; }
+                    
+                    /* İçerik ve Taşma (Truncate) Ayarları */
+                    .pia-events-container { flex-grow: 1; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; scrollbar-width: none; min-width: 0; }
                     .pia-events-container::-webkit-scrollbar { display: none; }
-                    .pia-event { background-color: var(--bs-primary); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+                    .pia-event { background-color: var(--bs-primary); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; transition: opacity 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
                     .pia-event:hover { opacity: 0.8; }
+                    
                     .pia-loader { display: none; margin-left: 10px; font-size: 0.9rem; color: var(--bs-secondary); }
                     .pia-calendar.loading .pia-loader { display: inline-block; }
                     .pia-calendar.loading .pia-grid { opacity: 0.6; pointer-events: none; }
                     
                     /* Mobil ve Tablet Uyum (Responsive) Stilleri */
                     @media (max-width: 768px) {
+                        .pia-grid { 
+                            /* JS tarafından ayarlanan dinamik değişken kullanılır, yoksa fallback */
+                            grid-template-columns: var(--pia-grid-cols-mobile, repeat(7, minmax(80px, 1fr))); 
+                            overflow-x: auto; 
+                            overflow-y: hidden;
+                            -webkit-overflow-scrolling: touch; /* Mobil akıcı scroll */
+                        }
                         .pia-day-header { padding: 0.4rem 0.2rem; font-size: 0.8rem; }
                         .pia-day-cell { min-height: 80px; padding: 0.25rem; }
                         .pia-day-number { font-size: 0.85rem; margin-bottom: 0.25rem; }
@@ -216,6 +231,28 @@
                 // Izgara (Grid)
                 const grid = document.createElement('div');
                 grid.className = 'pia-grid';
+
+                // --- MOBİL İÇİN AKTİF GÜN SÜTUN GENİŞLİĞİ HESAPLAMASI ---
+                const today = new Date();
+                const isCurrentMonth = today.getFullYear() === this.currentDate.getFullYear() && today.getMonth() === this.currentDate.getMonth();
+                
+                if (isCurrentMonth) {
+                    let todayIndex = today.getDay() - this.options.startDayOfWeek;
+                    if (todayIndex < 0) todayIndex += 7; // Pazar vb. düzeltmesi
+                    
+                    let colsMobile = [];
+                    for (let i = 0; i < 7; i++) {
+                        // Aktif günü içeren sütunu daha geniş (min 150px) yap, diğerleri kaydırılabilir dar (min 70px) olsun
+                        if (i === todayIndex) colsMobile.push('minmax(150px, 2fr)');
+                        else colsMobile.push('minmax(70px, 1fr)');
+                    }
+                    grid.style.setProperty('--pia-grid-cols-mobile', colsMobile.join(' '));
+                } else {
+                    // Eğer gösterilen ay aktif ay değilse hepsi eşit minimum genişlikte olsun
+                    grid.style.setProperty('--pia-grid-cols-mobile', 'repeat(7, minmax(85px, 1fr))');
+                }
+                // --------------------------------------------------------
+
                 this._renderDaysOfWeek(grid);
                 this._renderMonthDays(grid);
 
@@ -540,7 +577,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Demo için sahte bir veritabanı (Memory)
             let mockDatabase = [
-                { id: '1', title: 'Ekip Toplantısı', date: new Date().toISOString().split('T')[0], description: 'Aylık değerlendirme', color: 'primary' },
+                { id: '1', title: 'Ekip Toplantısı (Uzun Başlık Testi Taşma Olmasın)', date: new Date().toISOString().split('T')[0], description: 'Aylık değerlendirme', color: 'primary' },
                 { id: '2', title: 'Müşteri Görüşmesi', date: new Date().toISOString().split('T')[0], description: 'Zoom üzerinden', color: 'warning' },
                 { id: '3', title: 'Proje Teslimi', date: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0], description: 'Son tarih', color: 'danger' },
                 { id: '4', title: 'Eğitim', date: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString().split('T')[0], description: 'Şirket içi eğitim', color: 'success' }
@@ -553,49 +590,6 @@
                     // Eğer önceden init edilmişse atla (PiaCalendar constructor içinde de kontrol var ama güvence)
                     if (el.dataset.piaInitialized) return;
                     
-                    /* // ==========================================
-                    // GERÇEK BİR VERİTABANI (API) BAĞLANTISI ÖRNEĞİ (AJAX/FETCH)
-                    // ==========================================
-                    new PiaCalendar(el, {
-                        // 1. Aylar değiştikçe DB'den o ayın verilerini AJAX ile getir
-                        onFetchEvents: async (year, month) => {
-                            // Backend API'nize GET isteği atıyorsunuz
-                            const response = await fetch(`/api/takvim.php?yil=${year}&ay=${month}`);
-                            return await response.json(); // Beklenen: [{id: 1, title: "Toplantı", date: "2023-10-15", color: "primary"}, ...]
-                        },
-                        // 2. Tıklanan etkinliğin detaylarını (açıklama vb.) AJAX ile getir (Modal açılırken çalışır)
-                        onFetchEventDetail: async (id) => {
-                            const response = await fetch(`/api/takvim-detay.php?id=${id}`);
-                            return await response.json(); // Beklenen: {id: 1, title: "Toplantı", description: "Uzun detaylar...", color: "primary"}
-                        },
-                        // 3. Yeni etkinlik eklendiğinde DB'ye yaz
-                        onAddEvent: async (data) => {
-                            const response = await fetch('/api/takvim-ekle.php', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(data) // Gönderilen: {title, date, description, color}
-                            });
-                            // Backend'in kaydedilen veriyi 'id' si ile dönmesi gerekir
-                            return await response.json(); 
-                        },
-                        // 4. Etkinlik Güncellendiğinde DB'de Güncelle
-                        onUpdateEvent: async (id, data) => {
-                            await fetch(`/api/takvim-guncelle.php?id=${id}`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(data)
-                            });
-                            return true;
-                        },
-                        // 5. Etkinlik Silindiğinde DB'den Sil
-                        onDeleteEvent: async (id) => {
-                            await fetch(`/api/takvim-sil.php?id=${id}`, { method: 'DELETE' });
-                            return true;
-                        }
-                    });
-                    // ==========================================
-                    */
-
                     // Demo Backend Entegrasyonu Yapılandırması (Simülasyon)
                     new PiaCalendar(el, {
                         // 1. Backend'den Liste Çekme (Simüle edilmiş AJAX)
@@ -678,14 +672,6 @@
             });
 
             observer.observe(document.body, { childList: true, subtree: true });
-            
-            /* // ÖRNEK: Ajax ile DOM'a sonradan takvim ekleseydiniz otomatik çalışacaktı:
-             setTimeout(() => {
-                 const container = document.createElement('div');
-                 container.innerHTML = '<h5 class="mt-5">Sonradan Eklenen Takvim (Observer Yakalar)</h5><div data-pia-calendar="true"></div>';
-                 document.querySelector('.container').appendChild(container);
-             }, 5000); 
-            */
         });
     </script>
 </body>
