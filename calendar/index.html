@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiaCalendar.js - Lite & Modern Takvim</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (İkonlar için) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-bottom: 50px;
+        }
+        
+        /* Demo Sayfası Özel Stilleri */
+        .demo-header {
+            background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="demo-header text-center">
+        <div class="container">
+            <h1 class="display-5 fw-bold"><i class="far fa-calendar-alt me-2"></i>PiaCalendar.js</h1>
+            <p class="lead mb-0">Hafif, Bootstrap 5 Uyumlu, CRUD Destekli Vanilla JS Takvim Kütüphanesi</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <!-- PiaCalendar buraya yüklenecek (Otomatik Başlatma) -->
+                        <div data-pia-calendar="true"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="alert alert-info border-0 shadow-sm">
+                    <h5><i class="fas fa-info-circle me-2"></i>Nasıl Çalışır?</h5>
+                    <ul class="mb-0">
+                        <li><strong>Otomatik Başlatma:</strong> DOM'a eklenen <code>data-pia-calendar</code> nitelikli elementler <code>MutationObserver</code> ile otomatik yakalanır ve takvime dönüşür.</li>
+                        <li><strong>Backend Entegrasyonu:</strong> <code>onFetchEvents</code>, <code>onAddEvent</code>, <code>onUpdateEvent</code> ve <code>onDeleteEvent</code> fonksiyonları ile kendi API'nize kolayca bağlayabilirsiniz.</li>
+                        <li><strong>Doğrudan Veri Basma:</strong> İsterseniz sayfa yüklenirken <code>data-pia-events='[{"title":"Toplantı","date":"2023-10-15"}]'</code> niteliği ile backend'den doğrudan JSON basarak takvimin dolu açılmasını sağlayabilirsiniz.</li>
+                        <li><strong>CRUD:</strong> Günlere tıklayarak yeni etkinlik ekleyebilir, mevcut etkinliklere tıklayarak düzenleyebilir veya silebilirsiniz. Modal pencereler kütüphane tarafından otomatik oluşturulur.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle (Modal vb. için gerekli) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- PiaCalendar.js Kütüphanesi -->
+    <script>
+        /**
+         * PiaCalendar.js
+         * @version 1.0.0
+         * @description Lite, Vanilla JS, Bootstrap 5 Calendar with CRUD & Backend Hooks
+         */
+        class PiaCalendar {
+            static _isCssInjected = false;
+            static _instances = new WeakMap();
+
+            constructor(element, options = {}) {
+                if (PiaCalendar._instances.has(element)) {
+                    return PiaCalendar._instances.get(element);
+                }
+
+                this.element = element;
+                this.options = Object.assign({}, PiaCalendar.getDefaultOptions(), options);
+                
+                // HTML üzerinden (data-pia-events) doğrudan veri basma desteği
+                let inlineEvents = [];
+                try {
+                    const dataEvents = this.element.getAttribute('data-pia-events');
+                    if (dataEvents) inlineEvents = JSON.parse(dataEvents);
+                } catch(e) { console.error("PiaCalendar: Geçersiz JSON verisi (data-pia-events)", e); }
+
+                // Tarih Durumu (State)
+                this.currentDate = this.options.initialDate ? new Date(this.options.initialDate) : new Date();
+                this.events = inlineEvents; // Başlangıç verisi [{ id, title, date, description, color }]
+                
+                // Modal Referansı
+                this.modalInstance = null;
+                this.activeEventId = null; // Düzenlenmekte olan etkinlik
+
+                this._init();
+                PiaCalendar._instances.set(element, this);
+            }
+
+            static getDefaultOptions() {
+                return {
+                    locale: 'tr-TR',
+                    startDayOfWeek: 1, // 1: Pazartesi, 0: Pazar
+                    theme: 'primary',
+                    // API Hooks (Varsayılan null döndürür, böylece inline veriyi ezmez)
+                    onFetchEvents: async (year, month) => null,
+                    onFetchEventDetail: async (id) => null, // Tıklayınca AJAX ile detay çekmek için
+                    onAddEvent: async (eventData) => ({ ...eventData, id: Date.now().toString() }),
+                    onUpdateEvent: async (id, eventData) => true,
+                    onDeleteEvent: async (id) => true,
+                    // Metinler
+                    texts: {
+                        today: 'Bugün',
+                        addEvent: 'Etkinlik Ekle',
+                        editEvent: 'Etkinliği Düzenle',
+                        save: 'Kaydet',
+                        delete: 'Sil',
+                        cancel: 'İptal',
+                        title: 'Başlık',
+                        description: 'Açıklama',
+                        loading: 'Yükleniyor...'
+                    }
+                };
+            }
+
+            async _init() {
+                PiaCalendar.injectCSS();
+                this._createModalDOM();
+                this.render();
+                await this.loadEvents();
+            }
+
+            static injectCSS() {
+                if (this._isCssInjected) return;
+                const style = document.createElement('style');
+                style.textContent = `
+                    .pia-calendar { display: flex; flex-direction: column; font-family: inherit; }
+                    .pia-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+                    .pia-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: var(--bs-border-color-translucent); border: 1px solid var(--bs-border-color-translucent); border-radius: var(--bs-border-radius); overflow: hidden; }
+                    .pia-day-header { background-color: var(--bs-gray-100); padding: 0.75rem 0.5rem; text-align: center; font-weight: 600; font-size: 0.9rem; color: var(--bs-gray-700); }
+                    .pia-day-cell { background-color: #fff; min-height: 120px; padding: 0.5rem; cursor: pointer; transition: background-color 0.2s; display: flex; flex-direction: column; }
+                    .pia-day-cell:hover { background-color: var(--bs-gray-50); }
+                    .pia-day-cell.pia-other-month { background-color: var(--bs-gray-100); color: var(--bs-gray-500); cursor: default; }
+                    .pia-day-cell.pia-today { background-color: rgba(var(--bs-primary-rgb), 0.05); }
+                    .pia-day-number { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; text-align: right; display: block; }
+                    .pia-day-cell.pia-today .pia-day-number { color: var(--bs-primary); font-size: 1rem; }
+                    .pia-events-container { flex-grow: 1; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; scrollbar-width: none; }
+                    .pia-events-container::-webkit-scrollbar { display: none; }
+                    .pia-event { background-color: var(--bs-primary); color: white; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+                    .pia-event:hover { opacity: 0.8; }
+                    .pia-loader { display: none; margin-left: 10px; font-size: 0.9rem; color: var(--bs-secondary); }
+                    .pia-calendar.loading .pia-loader { display: inline-block; }
+                    .pia-calendar.loading .pia-grid { opacity: 0.6; pointer-events: none; }
+                    
+                    /* Mobil ve Tablet Uyum (Responsive) Stilleri */
+                    @media (max-width: 768px) {
+                        .pia-day-header { padding: 0.4rem 0.2rem; font-size: 0.8rem; }
+                        .pia-day-cell { min-height: 80px; padding: 0.25rem; }
+                        .pia-day-number { font-size: 0.85rem; margin-bottom: 0.25rem; }
+                        .pia-event { font-size: 0.65rem; padding: 0.1rem 0.25rem; margin-bottom: 2px; }
+                        .pia-header h4 { font-size: 1.1rem; }
+                        .pia-header .btn { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+                    }
+                    @media (max-width: 576px) {
+                        .pia-day-cell { min-height: 65px; }
+                        .pia-day-number { font-size: 0.75rem; }
+                        .pia-event { font-size: 0.6rem; border-radius: 2px; }
+                    }
+                `;
+                document.head.appendChild(style);
+                this._isCssInjected = true;
+            }
+
+            // --- RENDER İŞLEMLERİ ---
+
+            render() {
+                this.element.innerHTML = '';
+                this.element.className = 'pia-calendar';
+
+                // Üst Kısım (Header)
+                const header = document.createElement('div');
+                header.className = 'pia-header';
+                
+                const monthYearFormatter = new Intl.DateTimeFormat(this.options.locale, { month: 'long', year: 'numeric' });
+                const monthName = monthYearFormatter.format(this.currentDate);
+
+                header.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <h4 class="mb-0 fw-bold text-capitalize">${monthName}</h4>
+                        <span class="pia-loader"><i class="fas fa-spinner fa-spin"></i> ${this.options.texts.loading}</span>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-secondary me-1" data-action="prev"><i class="fas fa-chevron-left"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" data-action="today">${this.options.texts.today}</button>
+                        <button class="btn btn-sm btn-outline-secondary" data-action="next"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                `;
+
+                // Olay Dinleyicileri
+                header.querySelector('[data-action="prev"]').addEventListener('click', () => this.changeMonth(-1));
+                header.querySelector('[data-action="next"]').addEventListener('click', () => this.changeMonth(1));
+                header.querySelector('[data-action="today"]').addEventListener('click', () => {
+                    this.currentDate = new Date();
+                    this.render();
+                    this.loadEvents();
+                });
+
+                this.element.appendChild(header);
+
+                // Izgara (Grid)
+                const grid = document.createElement('div');
+                grid.className = 'pia-grid';
+                this._renderDaysOfWeek(grid);
+                this._renderMonthDays(grid);
+
+                this.element.appendChild(grid);
+                this._renderEvents();
+            }
+
+            _renderDaysOfWeek(grid) {
+                const formatter = new Intl.DateTimeFormat(this.options.locale, { weekday: 'short' });
+                const days = [];
+                // Pazartesi'den başlayacak şekilde ayarla
+                const baseDate = new Date(2021, 0, 4); // 4 Ocak 2021 Pazartesi
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(baseDate);
+                    d.setDate(baseDate.getDate() + i + (this.options.startDayOfWeek === 0 ? -1 : 0));
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'pia-day-header text-capitalize';
+                    cell.textContent = formatter.format(d);
+                    grid.appendChild(cell);
+                }
+            }
+
+            _renderMonthDays(grid) {
+                const year = this.currentDate.getFullYear();
+                const month = this.currentDate.getMonth();
+                
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+                
+                let firstDayIndex = firstDayOfMonth.getDay() - this.options.startDayOfWeek;
+                if (firstDayIndex < 0) firstDayIndex += 7; // Pazar düzeltmesi
+
+                const totalDays = lastDayOfMonth.getDate();
+                const today = new Date();
+                const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+                // Önceki ayın boşlukları
+                const prevMonthLastDay = new Date(year, month, 0).getDate();
+                for (let i = firstDayIndex - 1; i >= 0; i--) {
+                    const cell = document.createElement('div');
+                    cell.className = 'pia-day-cell pia-other-month';
+                    cell.innerHTML = `<span class="pia-day-number">${prevMonthLastDay - i}</span>`;
+                    grid.appendChild(cell);
+                }
+
+                // Mevcut ayın günleri
+                for (let day = 1; day <= totalDays; day++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'pia-day-cell';
+                    if (isCurrentMonth && day === today.getDate()) {
+                        cell.classList.add('pia-today');
+                    }
+                    
+                    // Tarih bilgisini tutalım "YYYY-MM-DD"
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    cell.dataset.date = dateStr;
+                    
+                    cell.innerHTML = `
+                        <span class="pia-day-number">${day}</span>
+                        <div class="pia-events-container" data-container-date="${dateStr}"></div>
+                    `;
+
+                    // Gün tıklama olayı -> Yeni etkinlik ekle
+                    cell.addEventListener('click', (e) => {
+                        // Eğer tıklanan yer bir event ise modalı açma, onu event listener'ı halledecek
+                        if(e.target.closest('.pia-event')) return;
+                        this.openModal(dateStr);
+                    });
+
+                    grid.appendChild(cell);
+                }
+
+                // Sonraki ayın boşluklarını doldur (Tabloyu 35 veya 42 hücreye tamamla)
+                const totalCells = firstDayIndex + totalDays;
+                const remainingCells = totalCells > 35 ? 42 - totalCells : 35 - totalCells;
+                
+                for (let i = 1; i <= remainingCells; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'pia-day-cell pia-other-month';
+                    cell.innerHTML = `<span class="pia-day-number">${i}</span>`;
+                    grid.appendChild(cell);
+                }
+            }
+
+            _renderEvents() {
+                // Önce mevcut etkinlikleri temizle
+                this.element.querySelectorAll('.pia-events-container').forEach(el => el.innerHTML = '');
+
+                this.events.forEach(event => {
+                    const container = this.element.querySelector(`[data-container-date="${event.date}"]`);
+                    if (container) {
+                        const eventEl = document.createElement('div');
+                        eventEl.className = `pia-event ${event.color ? 'bg-' + event.color : 'bg-' + this.options.theme}`;
+                        eventEl.textContent = event.title;
+                        eventEl.title = event.description || event.title;
+                        
+                        // Etkinliğe tıklama -> Düzenle/Sil
+                        eventEl.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.openModal(event.date, event);
+                        });
+
+                        container.appendChild(eventEl);
+                    }
+                });
+            }
+
+            // --- VERİ VE KONTROL İŞLEMLERİ ---
+
+            changeMonth(offset) {
+                this.currentDate.setMonth(this.currentDate.getMonth() + offset);
+                this.render();
+                this.loadEvents();
+            }
+
+            async loadEvents() {
+                this.element.classList.add('loading');
+                try {
+                    const year = this.currentDate.getFullYear();
+                    const month = this.currentDate.getMonth() + 1; // 1-12
+                    
+                    // Backend'den veri çekme kurgusu
+                    const fetchedEvents = await this.options.onFetchEvents(year, month);
+                    
+                    // Eğer API bir veri döndürdüyse (null değilse), olayları güncelle
+                    if (fetchedEvents) {
+                        this.events = fetchedEvents;
+                    }
+                    
+                    this._renderEvents();
+                } catch (error) {
+                    console.error("PiaCalendar: Etkinlikler yüklenemedi.", error);
+                } finally {
+                    this.element.classList.remove('loading');
+                }
+            }
+
+            // --- MODAL VE CRUD İŞLEMLERİ ---
+
+            _createModalDOM() {
+                if (document.getElementById('piaCalendarModal')) return;
+
+                const t = this.options.texts;
+                const modalHTML = `
+                <div class="modal fade" id="piaCalendarModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <div class="modal-header bg-light">
+                                <h5 class="modal-title fw-bold" id="piaModalTitle">${t.addEvent}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="piaEventForm">
+                                    <input type="hidden" id="piaEventDate">
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small fw-bold">${t.title}</label>
+                                        <input type="text" class="form-control" id="piaEventTitle" required placeholder="Örn: Toplantı">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small fw-bold">${t.description}</label>
+                                        <textarea class="form-control" id="piaEventDesc" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label text-muted small fw-bold">Renk (Opsiyonel)</label>
+                                        <select class="form-select" id="piaEventColor">
+                                            <option value="primary">Mavi (Varsayılan)</option>
+                                            <option value="success">Yeşil</option>
+                                            <option value="danger">Kırmızı</option>
+                                            <option value="warning">Sarı</option>
+                                            <option value="info">Açık Mavi</option>
+                                            <option value="dark">Siyah</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-danger me-auto d-none" id="piaBtnDelete">${t.delete}</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${t.cancel}</button>
+                                <button type="button" class="btn btn-primary" id="piaBtnSave">${t.save}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+                
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                
+                // Modal Kaydet ve Sil Butonu Olayları
+                document.getElementById('piaBtnSave').addEventListener('click', () => this._handleSave());
+                document.getElementById('piaBtnDelete').addEventListener('click', () => this._handleDelete());
+            }
+
+            async openModal(date, event = null) {
+                const modalEl = document.getElementById('piaCalendarModal');
+                if (!this.modalInstance) {
+                    this.modalInstance = new bootstrap.Modal(modalEl);
+                }
+
+                const t = this.options.texts;
+                const form = document.getElementById('piaEventForm');
+                const titleEl = document.getElementById('piaModalTitle');
+                const btnDelete = document.getElementById('piaBtnDelete');
+                const btnSave = document.getElementById('piaBtnSave');
+
+                form.reset();
+                document.getElementById('piaEventDate').value = date;
+                
+                // Form tarih gösterimini formatla
+                const displayDate = new Intl.DateTimeFormat(this.options.locale, { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(date));
+
+                if (event) {
+                    // Düzenleme Modu
+                    this.activeEventId = event.id;
+                    titleEl.textContent = `${t.editEvent} (${displayDate})`;
+                    btnDelete.classList.remove('d-none');
+                    
+                    // Veri Çekilirken Yükleniyor Efekti
+                    btnSave.disabled = true;
+                    form.classList.add('opacity-50'); 
+                    
+                    try {
+                        let eventDetails = event;
+                        
+                        // Eğer detay çekme fonksiyonu tanımlıysa (AJAX) çalıştır
+                        const fetchedDetails = await this.options.onFetchEventDetail(event.id);
+                        if(fetchedDetails) eventDetails = fetchedDetails;
+
+                        document.getElementById('piaEventTitle').value = eventDetails.title || '';
+                        document.getElementById('piaEventDesc').value = eventDetails.description || '';
+                        document.getElementById('piaEventColor').value = eventDetails.color || 'primary';
+                    } catch (error) {
+                        console.error("PiaCalendar: Etkinlik detayı çekilemedi", error);
+                        alert("Veri yüklenirken hata oluştu!");
+                        this.modalInstance.hide();
+                        return;
+                    } finally {
+                        btnSave.disabled = false;
+                        form.classList.remove('opacity-50');
+                    }
+                } else {
+                    // Ekleme Modu
+                    this.activeEventId = null;
+                    titleEl.textContent = `${t.addEvent} (${displayDate})`;
+                    document.getElementById('piaEventColor').value = 'primary';
+                    btnDelete.classList.add('d-none');
+                }
+
+                this.modalInstance.show();
+            }
+
+            async _handleSave() {
+                const titleInput = document.getElementById('piaEventTitle');
+                if (!titleInput.value.trim()) {
+                    titleInput.classList.add('is-invalid');
+                    return;
+                }
+                titleInput.classList.remove('is-invalid');
+
+                const btnSave = document.getElementById('piaBtnSave');
+                btnSave.disabled = true;
+                btnSave.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                const eventData = {
+                    date: document.getElementById('piaEventDate').value,
+                    title: titleInput.value.trim(),
+                    description: document.getElementById('piaEventDesc').value.trim(),
+                    color: document.getElementById('piaEventColor').value
+                };
+
+                try {
+                    if (this.activeEventId) {
+                        // Güncelle
+                        await this.options.onUpdateEvent(this.activeEventId, eventData);
+                        // Yerel state'i güncelle
+                        const index = this.events.findIndex(e => e.id === this.activeEventId);
+                        if (index !== -1) this.events[index] = { ...this.events[index], ...eventData };
+                    } else {
+                        // Yeni Ekle
+                        const newEvent = await this.options.onAddEvent(eventData);
+                        this.events.push(newEvent);
+                    }
+                    this._renderEvents();
+                    this.modalInstance.hide();
+                } catch (error) {
+                    console.error("PiaCalendar: Kaydetme hatası", error);
+                    alert("Bir hata oluştu!");
+                } finally {
+                    btnSave.disabled = false;
+                    btnSave.textContent = this.options.texts.save;
+                }
+            }
+
+            async _handleDelete() {
+                if (!this.activeEventId) return;
+                if (!confirm('Bu etkinliği silmek istediğinize emin misiniz?')) return;
+
+                const btnDelete = document.getElementById('piaBtnDelete');
+                const originalText = btnDelete.textContent;
+                btnDelete.disabled = true;
+                btnDelete.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                try {
+                    await this.options.onDeleteEvent(this.activeEventId);
+                    this.events = this.events.filter(e => e.id !== this.activeEventId);
+                    this._renderEvents();
+                    this.modalInstance.hide();
+                } catch (error) {
+                    console.error("PiaCalendar: Silme hatası", error);
+                    alert("Silme işlemi başarısız!");
+                } finally {
+                    btnDelete.disabled = false;
+                    btnDelete.textContent = originalText;
+                }
+            }
+        }
+
+        /**
+         * GLOBAL MUTATION OBSERVER Kurgusu
+         * Sayfa yüklendiğinde ve DOM'a sonradan element eklendiğinde [data-pia-calendar] arar
+         * ve otomatik olarak PiaCalendar nesnesine çevirir. (PiaSelect felsefesi)
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Demo için sahte bir veritabanı (Memory)
+            let mockDatabase = [
+                { id: '1', title: 'Ekip Toplantısı', date: new Date().toISOString().split('T')[0], description: 'Aylık değerlendirme', color: 'primary' },
+                { id: '2', title: 'Müşteri Görüşmesi', date: new Date().toISOString().split('T')[0], description: 'Zoom üzerinden', color: 'warning' },
+                { id: '3', title: 'Proje Teslimi', date: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0], description: 'Son tarih', color: 'danger' },
+                { id: '4', title: 'Eğitim', date: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString().split('T')[0], description: 'Şirket içi eğitim', color: 'success' }
+            ];
+
+            // Otomatik başlatma fonksiyonu
+            const initCalendars = (rootNode) => {
+                const elements = rootNode.querySelectorAll ? rootNode.querySelectorAll('[data-pia-calendar]') : [];
+                elements.forEach(el => {
+                    // Eğer önceden init edilmişse atla (PiaCalendar constructor içinde de kontrol var ama güvence)
+                    if (el.dataset.piaInitialized) return;
+                    
+                    /* // ==========================================
+                    // GERÇEK BİR VERİTABANI (API) BAĞLANTISI ÖRNEĞİ (AJAX/FETCH)
+                    // ==========================================
+                    new PiaCalendar(el, {
+                        // 1. Aylar değiştikçe DB'den o ayın verilerini AJAX ile getir
+                        onFetchEvents: async (year, month) => {
+                            // Backend API'nize GET isteği atıyorsunuz
+                            const response = await fetch(`/api/takvim.php?yil=${year}&ay=${month}`);
+                            return await response.json(); // Beklenen: [{id: 1, title: "Toplantı", date: "2023-10-15", color: "primary"}, ...]
+                        },
+                        // 2. Tıklanan etkinliğin detaylarını (açıklama vb.) AJAX ile getir (Modal açılırken çalışır)
+                        onFetchEventDetail: async (id) => {
+                            const response = await fetch(`/api/takvim-detay.php?id=${id}`);
+                            return await response.json(); // Beklenen: {id: 1, title: "Toplantı", description: "Uzun detaylar...", color: "primary"}
+                        },
+                        // 3. Yeni etkinlik eklendiğinde DB'ye yaz
+                        onAddEvent: async (data) => {
+                            const response = await fetch('/api/takvim-ekle.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data) // Gönderilen: {title, date, description, color}
+                            });
+                            // Backend'in kaydedilen veriyi 'id' si ile dönmesi gerekir
+                            return await response.json(); 
+                        },
+                        // 4. Etkinlik Güncellendiğinde DB'de Güncelle
+                        onUpdateEvent: async (id, data) => {
+                            await fetch(`/api/takvim-guncelle.php?id=${id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(data)
+                            });
+                            return true;
+                        },
+                        // 5. Etkinlik Silindiğinde DB'den Sil
+                        onDeleteEvent: async (id) => {
+                            await fetch(`/api/takvim-sil.php?id=${id}`, { method: 'DELETE' });
+                            return true;
+                        }
+                    });
+                    // ==========================================
+                    */
+
+                    // Demo Backend Entegrasyonu Yapılandırması (Simülasyon)
+                    new PiaCalendar(el, {
+                        // 1. Backend'den Liste Çekme (Simüle edilmiş AJAX)
+                        onFetchEvents: async (year, month) => {
+                            return new Promise(resolve => {
+                                setTimeout(() => {
+                                    const filtered = mockDatabase.filter(e => {
+                                        const eventDate = new Date(e.date);
+                                        return eventDate.getFullYear() === year && (eventDate.getMonth() + 1) === month;
+                                    });
+                                    // Listede "description" göndermiyoruz (optimizasyon), sadece grid'de görünecek alanlar.
+                                    const lightData = filtered.map(({description, ...rest}) => rest);
+                                    resolve(lightData);
+                                }, 600); // 0.6sn Ağ gecikmesi simülasyonu
+                            });
+                        },
+                        // 1.5. Etkinliğe Tıklanınca Detay Çekme (Simüle edilmiş AJAX)
+                        onFetchEventDetail: async (id) => {
+                            return new Promise(resolve => {
+                                setTimeout(() => {
+                                    // Veritabanından o ID'ye ait tüm detayları (description dahil) getir
+                                    const detail = mockDatabase.find(e => e.id === id);
+                                    resolve(detail);
+                                }, 400); // Modal açılırken 0.4 sn yükleme efekti verir
+                            });
+                        },
+                        // 2. Yeni Etkinlik Ekleme
+                        onAddEvent: async (data) => {
+                            return new Promise(resolve => {
+                                setTimeout(() => {
+                                    const newEvent = { ...data, id: Math.random().toString(36).substr(2, 9) };
+                                    mockDatabase.push(newEvent);
+                                    resolve(newEvent);
+                                }, 500);
+                            });
+                        },
+                        // 3. Etkinlik Güncelleme
+                        onUpdateEvent: async (id, data) => {
+                            return new Promise(resolve => {
+                                setTimeout(() => {
+                                    const index = mockDatabase.findIndex(e => e.id === id);
+                                    if(index !== -1) mockDatabase[index] = { ...mockDatabase[index], ...data };
+                                    resolve(true);
+                                }, 500);
+                            });
+                        },
+                        // 4. Etkinlik Silme
+                        onDeleteEvent: async (id) => {
+                            return new Promise(resolve => {
+                                setTimeout(() => {
+                                    mockDatabase = mockDatabase.filter(e => e.id !== id);
+                                    resolve(true);
+                                }, 500);
+                            });
+                        }
+                    });
+
+                    el.dataset.piaInitialized = "true";
+                });
+            };
+
+            // Sayfa yüklendiğinde mevcutları bul
+            initCalendars(document);
+
+            // MutationObserver ile DOM'a sonradan eklenenleri dinle
+            const observer = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(node => {
+                            if (node.nodeType === 1) { // Element node
+                                if (node.matches && node.matches('[data-pia-calendar]')) {
+                                    initCalendars(node.parentNode); // Kendisini de kapsayacak şekilde gönder
+                                } else {
+                                    initCalendars(node); // Altındaki elementleri tara
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            observer.observe(document.body, { childList: true, subtree: true });
+            
+            /* // ÖRNEK: Ajax ile DOM'a sonradan takvim ekleseydiniz otomatik çalışacaktı:
+             setTimeout(() => {
+                 const container = document.createElement('div');
+                 container.innerHTML = '<h5 class="mt-5">Sonradan Eklenen Takvim (Observer Yakalar)</h5><div data-pia-calendar="true"></div>';
+                 document.querySelector('.container').appendChild(container);
+             }, 5000); 
+            */
+        });
+    </script>
+</body>
+</html>
