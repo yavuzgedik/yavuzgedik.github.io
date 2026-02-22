@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiaMask - Form Maskeleme ve Validasyon</title>
+    
+    <!-- 1. Bootstrap 5 CSS Zorunlu Bağımlılık -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            padding-bottom: 4rem;
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            color: white;
+            padding: 3.5rem 0;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border-bottom: 5px solid #0dcaf0;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+            height: 100%; /* Satırlardaki kartların eşit boyda olması için */
+        }
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #f0f0f0;
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 1.25rem 1.5rem;
+            border-top-left-radius: 12px !important;
+            border-top-right-radius: 12px !important;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
+        .example-badge {
+            background-color: #f1f3f5;
+            color: #495057;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.85em;
+            display: inline-block;
+            margin-top: 0.5rem;
+            border: 1px solid #e9ecef;
+        }
+        /* Kod blokları için tasarım */
+        .code-block {
+            background-color: #212529;
+            color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            border-left: 4px solid #0dcaf0;
+        }
+        .step-number {
+            display: inline-flex;
+            width: 30px;
+            height: 30px;
+            background-color: #0dcaf0;
+            color: #000;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-3"><i class="bi bi-shield-check text-info"></i> PiaMask.js</h1>
+            <p class="lead mb-0 opacity-75">Sıfır Kod ile Form Maskeleme ve Otomatik Validasyon Kütüphanesi</p>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- KURULUM DOKÜMANTASYONU (Tam Genişlik) -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-info" style="border-width: 2px;">
+                    <div class="card-header bg-info bg-opacity-10 text-dark d-flex align-items-center">
+                        <i class="bi bi-book fs-4 me-2 text-info"></i> <span>Kurulum ve Başlangıç Rehberi</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">PiaMask, Bootstrap 5'in yerleşik <code>is-invalid</code> ve <code>is-valid</code> sınıflarını kullanarak çalışır. Bu yüzden öncelikle Bootstrap'in projede yüklü olduğundan emin olun.</p>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-6 mb-3">
+                                <h5 class="fw-bold"><span class="step-number">1</span> Bağımlılıkları Ekleyin</h5>
+                                <p class="text-muted small">Projelerinizin `&lt;head&gt;` etiketine Bootstrap 5 CSS dosyasını, sayfanın en altına ise PiaMask.js'i ekleyin.</p>
+                                <div class="code-block">
+&lt;!-- 1. Bootstrap 5 CSS --&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
+
+&lt;!-- 2. PiaMask JS (Body sonuna) --&gt;
+&lt;script src="piamask.js"&gt;&lt;/script&gt;
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5 class="fw-bold"><span class="step-number">2</span> Form ve Input Ayarları</h5>
+                                <p class="text-muted small">Tarayıcının varsayılan uyarılarını kapatmak için formunuza <code>novalidate</code> ekleyin. Ardından inputlara <code>data-pia-required="true"</code> verin.</p>
+                                <div class="code-block">
+&lt;form novalidate&gt;
+    &lt;input type="email" 
+           data-pia-required="true" 
+           data-pia-msg-required="E-posta boş olamaz"
+           data-pia-msg-invalid="Geçerli bir e-posta girin"&gt;
+    &lt;button type="submit"&gt;Gönder&lt;/button&gt;
+&lt;/form&gt;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ÖRNEKLER BAŞLIYOR (col-md-6, col-12) -->
+        <!-- Canlı Form Test Alanı (Tüm input tipleri submit edilirken test edilebilir) -->
+        <form id="testForm" novalidate>
+            <div class="row">
+                
+                <!-- STANDART İNPUTLAR & VALİDASYON -->
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header text-primary">
+                            <i class="bi bi-ui-checks"></i> 1. Standart Form Validasyonu (Yeni)
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small">Sadece maskeleme değil, standart HTML5 inputları için de otomatik doğrulama sağlar. Form gönderilmeden önce (Submit) tümü otomatik denetlenir.</p>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">E-Posta Adresi <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" 
+                                    data-pia-required="true"
+                                    data-pia-msg-required="Lütfen e-posta adresinizi yazın."
+                                    data-pia-msg-invalid="Geçerli bir e-posta adresi formatı giriniz (örn: isim@domain.com)."
+                                    placeholder="ornek@sirket.com">
+                                <div class="example-badge">type="email" data-pia-required="true"</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Şifre (Min 6 Karakter) <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" 
+                                    data-pia-required="true"
+                                    data-pia-min="6"
+                                    data-pia-msg-invalid="Şifreniz en az 6 karakterden oluşmalıdır."
+                                    placeholder="******">
+                                <div class="example-badge">type="password" data-pia-required="true" data-pia-min="6"</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Toplantı Zamanı (Datetime-local) <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" 
+                                    data-pia-required="true"
+                                    data-pia-msg-required="Lütfen toplantı tarihi ve saatini seçin.">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Açıklama / Mesaj</label>
+                                <textarea class="form-control" rows="2" 
+                                    data-pia-required="true" 
+                                    data-pia-min="20"
+                                    data-pia-msg-invalid="Açıklama en az 20 karakter olmalıdır."
+                                    placeholder="En az 20 karakterlik bir açıklama yazın..."></textarea>
+                                <div class="example-badge d-block mt-2">textarea data-pia-required="true" data-pia-min="20"</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MASKELEME: TCKN / VKN -->
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header text-purple" style="color: #6f42c1;">
+                            <i class="bi bi-person-vcard"></i> 2. TCKN ve VKN (Sabit & Esnek Uzunluk)
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">T.C. Kimlik Numarası (Sabit 11) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" 
+                                    data-pia-mask="tckn" 
+                                    data-pia-required="true"
+                                    data-pia-msg-invalid="TCKN tam 11 haneli olmalıdır."
+                                    placeholder="11 Haneli TCKN giriniz">
+                                <div class="example-badge">data-pia-mask="tckn"</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Vergi Kimlik Numarası (Sabit 10)</label>
+                                <input type="text" class="form-control" 
+                                    data-pia-mask="vkn" 
+                                    data-pia-msg-invalid="Geçerli bir 10 haneli VKN giriniz."
+                                    placeholder="10 Haneli VKN giriniz">
+                                <div class="example-badge">data-pia-mask="vkn"</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-danger">TCKN / VKN Ortak (Min 10 - Max 11) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" 
+                                    data-pia-mask="numeric" 
+                                    data-pia-min="10" 
+                                    data-pia-max="11" 
+                                    data-pia-required="true"
+                                    data-pia-msg-invalid="Bu alan 10 veya 11 rakamdan oluşmalıdır."
+                                    placeholder="10 veya 11 hane giriniz">
+                                <div class="example-badge d-block mt-2">
+                                    data-pia-mask="numeric" data-pia-min="10" data-pia-max="11"
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MASKELEME: PARA BİRİMİ -->
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card border-success">
+                        <div class="card-header text-success border-success bg-success bg-opacity-10">
+                            <i class="bi bi-currency-euro"></i> 3. Para Birimi (Akıllı Kuruş Dönüşümü)
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Tutar Girişi <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-lg text-end fw-bold text-success" 
+                                        data-pia-mask="currency" 
+                                        data-pia-required="true"
+                                        placeholder="0,00">
+                                    <span class="input-group-text bg-success text-white">₺</span>
+                                </div>
+                                <div class="example-badge d-block mt-2">data-pia-mask="currency" data-pia-required="true"</div>
+                                <div class="alert alert-success mt-3 py-2 mb-0" style="font-size: 0.85rem;">
+                                    <strong>Numpad Nokta Desteği:</strong> Rakam klavyesindeki noktaya (.) bassanız dahi anında virgüle çevrilir. Binlik ayraçlar otomatik atılır.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MASKELEME: TELEFON & TARİH -->
+                <div class="col-12 col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header text-secondary">
+                            <i class="bi bi-telephone"></i> 4. Telefon, Tarih ve IBAN
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Cep Telefonu <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" 
+                                    data-pia-mask="phone" 
+                                    data-pia-required="true"
+                                    placeholder="(5XX) XXX XX XX">
+                                <div class="example-badge">data-pia-mask="phone"</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Özel Formatlı Tarih</label>
+                                <input type="text" class="form-control" 
+                                    data-pia-mask="date" 
+                                    placeholder="GG/AA/YYYY"
+                                    data-pia-msg-invalid="Geçerli bir tam tarih girin.">
+                                <div class="example-badge">data-pia-mask="date"</div>
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label fw-bold">IBAN Numarası</label>
+                                <input type="text" class="form-control" 
+                                    data-pia-mask="iban" 
+                                    data-pia-msg-invalid="Geçerli bir IBAN giriniz."
+                                    placeholder="TRXX XXXX XXXX XXXX XXXX XXXX XX">
+                                <div class="example-badge">data-pia-mask="iban"</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBMIT BUTONU -->
+                <div class="col-12 text-center mb-5">
+                    <hr class="mb-4">
+                    <p class="text-muted">Aşağıdaki butona basarak form gönderimini tetikleyin. Hatalı olan tüm alanlar Bootstrap standartlarında kırmızıya dönecektir.</p>
+                    <button type="submit" class="btn btn-primary btn-lg px-5 py-3 rounded-pill fw-bold shadow">
+                        <i class="bi bi-send-fill"></i> Formu Doğrula ve Gönder
+                    </button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- PiaMask JS Library (Maskeleme & Form Validasyonu Ortak Motoru) -->
+    <script>
+        /**
+         * PiaMask.js - Versiyon 3.0 (Maskeleme + Auto Validation)
+         * Tüm Inputları, form gönderimini ve maskeleri yönetir.
+         */
+        class PiaMask {
+            constructor(element, options = {}) {
+                this.el = typeof element === 'string' ? document.querySelector(element) : element;
+                if (!this.el) return;
+
+                // Dataset'ten ve HTML özelliklerinden ayarları topla
+                const dataOptions = {
+                    mask: this.el.getAttribute('data-pia-mask'), // tckn, vkn, currency vs.
+                    min: this.el.getAttribute('data-pia-min') || this.el.getAttribute('minlength'),
+                    max: this.el.getAttribute('data-pia-max') || this.el.getAttribute('maxlength'),
+                    required: this.el.getAttribute('data-pia-required') === 'true' || this.el.hasAttribute('required'),
+                    msgRequired: this.el.getAttribute('data-pia-msg-required') || 'Bu alan zorunludur.',
+                    msgInvalid: this.el.getAttribute('data-pia-msg-invalid') || 'Geçersiz değer.'
+                };
+
+                this.options = { ...dataOptions, ...options };
+                this.type = this.el.type; // native HTML type (email, password, text, date vs.)
+                this.tagName = this.el.tagName.toLowerCase(); // input, textarea, select
+                
+                this.init();
+            }
+
+            init() {
+                // Mobil klavye optimizasyonu (Sadece maskeli alanlar için)
+                if (this.options.mask) {
+                    this.setInputMode();
+                }
+
+                // Bootstrap Invalid Feedback Elementini Oluştur ve Yerleştir
+                this.feedbackEl = document.createElement('div');
+                this.feedbackEl.className = 'invalid-feedback fw-bold';
+                
+                // Eğer input-group içindeyse dışarıya koy (Tasarım bozulmasın diye)
+                if (this.el.parentNode.classList.contains('input-group')) {
+                    this.el.parentNode.parentNode.insertBefore(this.feedbackEl, this.el.parentNode.nextSibling);
+                } else {
+                    this.el.parentNode.insertBefore(this.feedbackEl, this.el.nextSibling);
+                }
+
+                // Maskeleme Eventleri (Sadece mask tanımlıysa çalışır)
+                if (this.options.mask) {
+                    this.el.addEventListener('input', (e) => this.handleMaskInput(e));
+                    this.el.addEventListener('keydown', (e) => this.handleKeydown(e));
+                    this.el.addEventListener('paste', () => {
+                        setTimeout(() => { this.el.dispatchEvent(new Event('input')); }, 0);
+                    });
+                    
+                    // İlk yüklemede değer varsa formatla
+                    if (this.el.value) {
+                        this.el.value = this.format(this.el.value);
+                    }
+                } else {
+                    // Normal inputlar (email, password vb.) hata temizliği için
+                    this.el.addEventListener('input', () => {
+                        this.el.classList.remove('is-invalid', 'is-valid');
+                    });
+                }
+
+                // Çıkışta Doğrulama Yap (Tüm input tipleri için)
+                this.el.addEventListener('blur', () => this.validate());
+            }
+
+            setInputMode() {
+                const mask = this.options.mask;
+                if (['numeric', 'tckn', 'vkn', 'phone', 'date', 'credit-card'].includes(mask)) {
+                    this.el.setAttribute('inputmode', 'numeric');
+                } else if (mask === 'currency') {
+                    this.el.setAttribute('inputmode', 'decimal');
+                }
+            }
+
+            handleKeydown(e) {
+                // Numpad'deki nokta için özel müdahale (Currency için)
+                if (this.options.mask === 'currency' && (e.key === '.' || e.code === 'NumpadDecimal')) {
+                    e.preventDefault();
+                    let start = this.el.selectionStart;
+                    let end = this.el.selectionEnd;
+                    let val = this.el.value;
+                    this.el.value = val.substring(0, start) + ',' + val.substring(end);
+                    this.el.setSelectionRange(start + 1, start + 1);
+                    this.el.dispatchEvent(new Event('input'));
+                }
+            }
+
+            handleMaskInput(e) {
+                // Hata mesajını yazarken kaldır
+                this.el.classList.remove('is-invalid', 'is-valid');
+
+                let start = this.el.selectionStart;
+                let originalValue = this.el.value;
+                
+                let rawBeforeCursor = originalValue.substring(0, start);
+                let charsBeforeCursor = this.getCleanCharCount(rawBeforeCursor);
+
+                let formattedValue = this.format(originalValue);
+                this.el.value = formattedValue;
+
+                let newCursorPos = this.calculateCursorPosition(formattedValue, charsBeforeCursor);
+                this.el.setSelectionRange(newCursorPos, newCursorPos);
+            }
+
+            // --- EVRENSEL VALIDATION SİSTEMİ ---
+            validate() {
+                let val = this.el.value;
+                let isValid = true;
+                let errorMsg = '';
+                
+                let isReq = this.options.required;
+                let min = parseInt(this.options.min);
+                let max = parseInt(this.options.max);
+
+                // 1. Boşluk Kontrolü
+                if (isReq && (!val || val.trim() === '')) {
+                    isValid = false;
+                    errorMsg = this.options.msgRequired;
+                } 
+                else if (val && val.trim() !== '') {
+                    // Maskeli alanlar için karakter sayısı temizlenmiş veri üzerinden hesaplanır
+                    let countLen = this.options.mask ? this.getCleanCharCount(val) : val.length;
+
+                    // 2. Min/Max Uzunluk Kontrolü
+                    if (min && countLen < min) {
+                        isValid = false;
+                        errorMsg = this.options.msgInvalid !== 'Geçersiz değer.' ? this.options.msgInvalid : `En az ${min} karakter girmelisiniz.`;
+                    } else if (max && countLen > max) {
+                        isValid = false;
+                        errorMsg = this.options.msgInvalid !== 'Geçersiz değer.' ? this.options.msgInvalid : `En fazla ${max} karakter girebilirsiniz.`;
+                    }
+                    
+                    // 3. Native Type Kontrolleri (Email)
+                    else if (this.type === 'email') {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(val)) {
+                            isValid = false;
+                            errorMsg = this.options.msgInvalid !== 'Geçersiz değer.' ? this.options.msgInvalid : 'Geçerli bir e-posta adresi giriniz.';
+                        }
+                    }
+
+                    // 4. Özel Maske Kuralları
+                    else if (this.options.mask) {
+                        if (this.options.mask === 'tckn' && countLen !== 11) {
+                            isValid = false; errorMsg = this.options.msgInvalid;
+                        } else if (this.options.mask === 'vkn' && countLen !== 10) {
+                            isValid = false; errorMsg = this.options.msgInvalid;
+                        } else if (this.options.mask === 'phone' && countLen !== 10) {
+                            isValid = false; errorMsg = this.options.msgInvalid;
+                        } else if (this.options.mask === 'date' && countLen !== 8) {
+                            isValid = false; errorMsg = this.options.msgInvalid;
+                        } else if (this.options.mask === 'iban' && countLen < 24) { // TR dahil 26 genellikle
+                            isValid = false; errorMsg = this.options.msgInvalid;
+                        }
+                    }
+                }
+
+                // 5. Ekrana Çizme (Bootstrap Sınıfları)
+                if ((!val || val.trim() === '') && !isReq) {
+                    // Zorunlu değilse ve boşsa classları temizle
+                    this.el.classList.remove('is-invalid', 'is-valid');
+                } else if (!isValid) {
+                    this.el.classList.add('is-invalid');
+                    this.el.classList.remove('is-valid');
+                    this.feedbackEl.innerHTML = errorMsg;
+                } else {
+                    this.el.classList.remove('is-invalid');
+                    this.el.classList.add('is-valid');
+                }
+
+                return isValid;
+            }
+
+            // Temiz (formatsız) karakter sayısını verir (Maskeler için)
+            getCleanCharCount(str) {
+                if (this.options.mask === 'currency') return str.replace(/[^\d,]/g, '').length;
+                if (this.options.mask === 'iban') return str.replace(/[^A-Za-z0-9]/g, '').length;
+                return str.replace(/\D/g, '').length;
+            }
+
+            calculateCursorPosition(formattedStr, targetCleanCount) {
+                let cleanCount = 0;
+                for (let i = 0; i < formattedStr.length; i++) {
+                    let char = formattedStr[i];
+                    let isCleanChar = false;
+
+                    if (this.options.mask === 'currency') isCleanChar = /[\d,]/.test(char);
+                    else if (this.options.mask === 'iban') isCleanChar = /[A-Za-z0-9]/.test(char);
+                    else isCleanChar = /\d/.test(char);
+
+                    if (isCleanChar) cleanCount++;
+                    if (cleanCount === targetCleanCount) return i + 1;
+                }
+                return formattedStr.length;
+            }
+
+            format(value) {
+                switch (this.options.mask) {
+                    case 'tckn': return this.formatNumericLength(value, 11);
+                    case 'vkn': return this.formatNumericLength(value, 10);
+                    case 'numeric': return this.formatNumericLength(value, this.options.max || 999);
+                    case 'phone': return this.formatPhone(value);
+                    case 'date': return this.formatDate(value);
+                    case 'currency': return this.formatCurrency(value);
+                    case 'iban': return this.formatIBAN(value);
+                    case 'credit-card': return this.formatCreditCard(value);
+                    default: return value;
+                }
+            }
+
+            // --- FORMATLAYICILAR ---
+
+            formatNumericLength(val, length) {
+                let clean = val.replace(/\D/g, '');
+                return clean.substring(0, length);
+            }
+
+            formatPhone(val) {
+                let clean = val.replace(/\D/g, '');
+                if (clean.startsWith('0')) clean = clean.substring(1);
+                if (clean.length > 10) clean = clean.substring(0, 10);
+                
+                let res = '';
+                if (clean.length > 0) res += '(' + clean.substring(0, 3);
+                if (clean.length >= 4) res += ') ' + clean.substring(3, 6);
+                if (clean.length >= 7) res += ' ' + clean.substring(6, 8);
+                if (clean.length >= 9) res += ' ' + clean.substring(8, 10);
+                return res;
+            }
+
+            formatDate(val) {
+                let clean = val.replace(/\D/g, '');
+                if (clean.length > 8) clean = clean.substring(0, 8);
+                
+                let day = clean.substring(0, 2);
+                let month = clean.substring(2, 4);
+                let year = clean.substring(4, 8);
+
+                if (day.length === 2 && parseInt(day) > 31) day = '31';
+                if (day.length === 2 && parseInt(day) === 0) day = '01';
+                if (month.length === 2 && parseInt(month) > 12) month = '12';
+                if (month.length === 2 && parseInt(month) === 0) month = '01';
+
+                let res = '';
+                if (day) res += day;
+                if (month) res += '/' + month;
+                if (year) res += '/' + year;
+                return res;
+            }
+
+            formatCurrency(val) {
+                let clean = val.replace(/\./g, '');
+                clean = clean.replace(/[^\d,]/g, '');
+
+                let firstCommaIndex = clean.indexOf(',');
+                if (firstCommaIndex !== -1) {
+                    let beforeComma = clean.substring(0, firstCommaIndex);
+                    let afterComma = clean.substring(firstCommaIndex + 1).replace(/,/g, '');
+                    clean = beforeComma + ',' + afterComma;
+                }
+
+                if (!clean) return '';
+
+                let parts = clean.split(',');
+                let integerPart = parts[0];
+                let decimalPart = parts.length > 1 ? ',' + parts[1].substring(0, 2) : '';
+
+                if (integerPart.length > 1 && integerPart.startsWith('0')) {
+                    integerPart = parseInt(integerPart, 10).toString();
+                }
+
+                integerPart = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                return integerPart + decimalPart;
+            }
+
+            formatIBAN(val) {
+                let clean = val.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                if (clean.length > 0 && !clean.startsWith('TR')) {
+                    if (clean.startsWith('T') && clean.length === 1) { /* Bekle */ } 
+                    else { clean = 'TR' + clean.replace(/^TR/i, ''); }
+                }
+                if (clean.length > 26) clean = clean.substring(0, 26);
+                let parts = clean.match(/.{1,4}/g);
+                return parts ? parts.join(' ') : '';
+            }
+
+            formatCreditCard(val) {
+                let clean = val.replace(/\D/g, '');
+                if (clean.length > 16) clean = clean.substring(0, 16);
+                let parts = clean.match(/.{1,4}/g);
+                return parts ? parts.join(' ') : '';
+            }
+        }
+
+        // --- GLOBAL BAŞLATICI & FORM SUBMIT YAKALAYICI ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // PiaMask yeteneği gerektiren tüm inputları bul
+            // Maskesi olanlar, zorunlu olanlar veya validation gerektirenler (email vb.)
+            const targetInputs = document.querySelectorAll(
+                '[data-pia-mask], [data-pia-required="true"], input[type="email"], input[type="password"]'
+            );
+            
+            const piaInstances = [];
+            
+            targetInputs.forEach(input => {
+                // Aynı inputa birden fazla instance tanımlamamak için kontrol
+                if (!input.classList.contains('pia-initialized')) {
+                    piaInstances.push(new PiaMask(input));
+                    input.classList.add('pia-initialized');
+                }
+            });
+
+            // Form Submit Interceptor (Otomatik Yakalayıcı)
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', (e) => {
+                    let isFormValid = true;
+                    let firstInvalidEl = null;
+
+                    // Bu forma ait tüm PiaMask instancelerini doğrula
+                    piaInstances.forEach(instance => {
+                        if (instance.el.form === form) {
+                            let isValid = instance.validate();
+                            if (!isValid) {
+                                isFormValid = false;
+                                if (!firstInvalidEl) firstInvalidEl = instance.el;
+                            }
+                        }
+                    });
+
+                    // Eğer form geçersizse, gönderimi durdur ve ilk hataya scroll yap
+                    if (!isFormValid) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        if (firstInvalidEl) {
+                            firstInvalidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalidEl.focus({ preventScroll: true });
+                        }
+                    } else {
+                        // Eğer form geçerliyse, test ekranı için uyarı göster (Gerçek projede bu else bloğu silinir)
+                        e.preventDefault();
+                        alert("Harika! Tüm validasyonlar başarıyla geçti. Form gönderilebilir.");
+                    }
+                });
+            });
+        });
+
+    </script>
+</body>
+</html>
