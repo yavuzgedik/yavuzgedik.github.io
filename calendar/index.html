@@ -150,7 +150,13 @@
                     .pia-day-header { background-color: var(--bs-gray-100); padding: 0.75rem 0.5rem; text-align: center; font-weight: 600; font-size: 0.9rem; color: var(--bs-gray-700); }
                     .pia-day-cell { background-color: #fff; min-height: 120px; padding: 0.5rem; cursor: pointer; transition: background-color 0.2s; display: flex; flex-direction: column; min-width: 0; }
                     .pia-day-cell:hover { background-color: var(--bs-gray-50); }
-                    .pia-day-cell.pia-other-month { background-color: var(--bs-gray-100); color: var(--bs-gray-500); cursor: default; }
+                    
+                    /* Diğer Ay Günleri Stili (Ocak sonu, Mart başı vb. için) */
+                    .pia-day-cell.pia-other-month { background-color: var(--bs-gray-100); }
+                    .pia-day-cell.pia-other-month .pia-day-number { color: var(--bs-gray-500); }
+                    .pia-day-cell.pia-other-month .pia-event { opacity: 0.65; } /* Diğer aydaki etkinlikleri hafif soluk göster */
+                    .pia-day-cell.pia-other-month .pia-event:hover { opacity: 0.9; }
+
                     .pia-day-cell.pia-today { background-color: rgba(var(--bs-primary-rgb), 0.05); }
                     
                     .pia-day-number { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.5rem; text-align: right; display: block; }
@@ -174,7 +180,9 @@
                             overflow-x: auto; 
                             overflow-y: hidden;
                             -webkit-overflow-scrolling: touch; /* Mobil akıcı scroll */
+                            scroll-snap-type: x mandatory; /* İsteğe bağlı, hücrelere yapışması için */
                         }
+                        .pia-day-header, .pia-day-cell { scroll-snap-align: start; }
                         .pia-day-header { padding: 0.4rem 0.2rem; font-size: 0.8rem; }
                         .pia-day-cell { min-height: 80px; padding: 0.25rem; }
                         .pia-day-number { font-size: 0.85rem; margin-bottom: 0.25rem; }
@@ -258,11 +266,28 @@
 
                 this.element.appendChild(grid);
                 this._renderEvents();
+                
+                // Mobilde aktif güne kaydırma tetiklemesi (sadece aktif aydaysa çalışır)
+                if (isCurrentMonth) {
+                    this._scrollToToday();
+                }
+            }
+
+            _scrollToToday() {
+                setTimeout(() => {
+                    const grid = this.element.querySelector('.pia-grid');
+                    const todayCell = this.element.querySelector('.pia-today');
+                    
+                    if (grid && todayCell && window.innerWidth <= 768) {
+                        // Seçili olan 'today' hücresinin yatay eksendeki pozisyonunu hesapla ve ekranın ortasına getirmeye çalış
+                        const scrollPos = todayCell.offsetLeft - (grid.clientWidth / 2) + (todayCell.clientWidth / 2);
+                        grid.scrollTo({ left: scrollPos, behavior: 'smooth' });
+                    }
+                }, 50); // DOM'un tam yerleşmesi için kısa bir gecikme
             }
 
             _renderDaysOfWeek(grid) {
                 const formatter = new Intl.DateTimeFormat(this.options.locale, { weekday: 'short' });
-                const days = [];
                 // Pazartesi'den başlayacak şekilde ayarla
                 const baseDate = new Date(2021, 0, 4); // 4 Ocak 2021 Pazartesi
                 for (let i = 0; i < 7; i++) {
@@ -274,6 +299,31 @@
                     cell.textContent = formatter.format(d);
                     grid.appendChild(cell);
                 }
+            }
+
+            _formatDateString(year, monthIndex, day) {
+                // Ay indeksi 0-11 arasıdır. JS Date nesnesi bunu kendi toparlar (ör: monthIndex -1 ise geçen yıl aralık olur)
+                const d = new Date(year, monthIndex, day);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+
+            _createDayCell(grid, dateStr, dayNum, customClass = '') {
+                const cell = document.createElement('div');
+                cell.className = `pia-day-cell ${customClass}`;
+                cell.dataset.date = dateStr;
+                
+                cell.innerHTML = `
+                    <span class="pia-day-number">${dayNum}</span>
+                    <div class="pia-events-container" data-container-date="${dateStr}"></div>
+                `;
+
+                // Hücre tıklama olayı -> Yeni etkinlik ekle
+                cell.addEventListener('click', (e) => {
+                    if(e.target.closest('.pia-event')) return;
+                    this.openModal(dateStr);
+                });
+
+                grid.appendChild(cell);
             }
 
             _renderMonthDays(grid) {
@@ -290,51 +340,28 @@
                 const today = new Date();
                 const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
 
-                // Önceki ayın boşlukları
+                // --- Önceki Ayın Boşluklarını Doldur (Artık Tam Fonksiyonlu) ---
                 const prevMonthLastDay = new Date(year, month, 0).getDate();
                 for (let i = firstDayIndex - 1; i >= 0; i--) {
-                    const cell = document.createElement('div');
-                    cell.className = 'pia-day-cell pia-other-month';
-                    cell.innerHTML = `<span class="pia-day-number">${prevMonthLastDay - i}</span>`;
-                    grid.appendChild(cell);
+                    const dayNum = prevMonthLastDay - i;
+                    const dateStr = this._formatDateString(year, month - 1, dayNum);
+                    this._createDayCell(grid, dateStr, dayNum, 'pia-other-month');
                 }
 
-                // Mevcut ayın günleri
+                // --- Mevcut Ayın Günleri ---
                 for (let day = 1; day <= totalDays; day++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'pia-day-cell';
-                    if (isCurrentMonth && day === today.getDate()) {
-                        cell.classList.add('pia-today');
-                    }
-                    
-                    // Tarih bilgisini tutalım "YYYY-MM-DD"
-                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    cell.dataset.date = dateStr;
-                    
-                    cell.innerHTML = `
-                        <span class="pia-day-number">${day}</span>
-                        <div class="pia-events-container" data-container-date="${dateStr}"></div>
-                    `;
-
-                    // Gün tıklama olayı -> Yeni etkinlik ekle
-                    cell.addEventListener('click', (e) => {
-                        // Eğer tıklanan yer bir event ise modalı açma, onu event listener'ı halledecek
-                        if(e.target.closest('.pia-event')) return;
-                        this.openModal(dateStr);
-                    });
-
-                    grid.appendChild(cell);
+                    const dateStr = this._formatDateString(year, month, day);
+                    const customClass = (isCurrentMonth && day === today.getDate()) ? 'pia-today' : '';
+                    this._createDayCell(grid, dateStr, day, customClass);
                 }
 
-                // Sonraki ayın boşluklarını doldur (Tabloyu 35 veya 42 hücreye tamamla)
+                // --- Sonraki Ayın Boşluklarını Doldur (Artık Tam Fonksiyonlu) ---
                 const totalCells = firstDayIndex + totalDays;
                 const remainingCells = totalCells > 35 ? 42 - totalCells : 35 - totalCells;
                 
                 for (let i = 1; i <= remainingCells; i++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'pia-day-cell pia-other-month';
-                    cell.innerHTML = `<span class="pia-day-number">${i}</span>`;
-                    grid.appendChild(cell);
+                    const dateStr = this._formatDateString(year, month + 1, i);
+                    this._createDayCell(grid, dateStr, i, 'pia-other-month');
                 }
             }
 
@@ -384,6 +411,13 @@
                     }
                     
                     this._renderEvents();
+                    
+                    // Events render edildikten sonra güncel duruma tekrar kaydırma ihtimalini garantiye al
+                    const today = new Date();
+                    if (today.getFullYear() === this.currentDate.getFullYear() && today.getMonth() === this.currentDate.getMonth()) {
+                        this._scrollToToday();
+                    }
+
                 } catch (error) {
                     console.error("PiaCalendar: Etkinlikler yüklenemedi.", error);
                 } finally {
@@ -575,19 +609,25 @@
          * ve otomatik olarak PiaCalendar nesnesine çevirir. (PiaSelect felsefesi)
          */
         document.addEventListener('DOMContentLoaded', () => {
+            // Önceki aya ait örnek bir tarih oluşturalım (Ay geçişini test etmek için)
+            const today = new Date();
+            const prevMonthDate = new Date(today.getFullYear(), today.getMonth(), 0); // Önceki ayın son günü
+            const prevMonthDateStr = prevMonthDate.toISOString().split('T')[0];
+
             // Demo için sahte bir veritabanı (Memory)
             let mockDatabase = [
                 { id: '1', title: 'Ekip Toplantısı (Uzun Başlık Testi Taşma Olmasın)', date: new Date().toISOString().split('T')[0], description: 'Aylık değerlendirme', color: 'primary' },
                 { id: '2', title: 'Müşteri Görüşmesi', date: new Date().toISOString().split('T')[0], description: 'Zoom üzerinden', color: 'warning' },
-                { id: '3', title: 'Proje Teslimi', date: new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().split('T')[0], description: 'Son tarih', color: 'danger' },
-                { id: '4', title: 'Eğitim', date: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString().split('T')[0], description: 'Şirket içi eğitim', color: 'success' }
+                { id: '3', title: 'Proje Teslimi', date: new Date(new Date().setDate(today.getDate() + 2)).toISOString().split('T')[0], description: 'Son tarih', color: 'danger' },
+                { id: '4', title: 'Eğitim', date: new Date(new Date().setDate(today.getDate() - 3)).toISOString().split('T')[0], description: 'Şirket içi eğitim', color: 'success' },
+                // Önceki ayın görünür günlerini test etmek için eklenen kayıt
+                { id: '5', title: 'Geçen Ay Sonu Kapanışı', date: prevMonthDateStr, description: 'Geçen ayın muhasebe kayıtları', color: 'dark' } 
             ];
 
             // Otomatik başlatma fonksiyonu
             const initCalendars = (rootNode) => {
                 const elements = rootNode.querySelectorAll ? rootNode.querySelectorAll('[data-pia-calendar]') : [];
                 elements.forEach(el => {
-                    // Eğer önceden init edilmişse atla (PiaCalendar constructor içinde de kontrol var ama güvence)
                     if (el.dataset.piaInitialized) return;
                     
                     // Demo Backend Entegrasyonu Yapılandırması (Simülasyon)
@@ -598,7 +638,16 @@
                                 setTimeout(() => {
                                     const filtered = mockDatabase.filter(e => {
                                         const eventDate = new Date(e.date);
-                                        return eventDate.getFullYear() === year && (eventDate.getMonth() + 1) === month;
+                                        const eYear = eventDate.getFullYear();
+                                        const eMonth = eventDate.getMonth() + 1;
+                                        
+                                        // Geliştirme: Sadece o ay değil, bir önceki ve bir sonraki ayı da kapsayalım
+                                        // Böylece takvim tablosunda gri renkle görünen diğer ayın günleri de verilerle dolar
+                                        const isCurrentMonth = eYear === year && eMonth === month;
+                                        const isPrevMonth = (month === 1) ? (eYear === year - 1 && eMonth === 12) : (eYear === year && eMonth === month - 1);
+                                        const isNextMonth = (month === 12) ? (eYear === year + 1 && eMonth === 1) : (eYear === year && eMonth === month + 1);
+
+                                        return isCurrentMonth || isPrevMonth || isNextMonth;
                                     });
                                     // Listede "description" göndermiyoruz (optimizasyon), sadece grid'de görünecek alanlar.
                                     const lightData = filtered.map(({description, ...rest}) => rest);
@@ -661,9 +710,9 @@
                         mutation.addedNodes.forEach(node => {
                             if (node.nodeType === 1) { // Element node
                                 if (node.matches && node.matches('[data-pia-calendar]')) {
-                                    initCalendars(node.parentNode); // Kendisini de kapsayacak şekilde gönder
+                                    initCalendars(node.parentNode);
                                 } else {
-                                    initCalendars(node); // Altındaki elementleri tara
+                                    initCalendars(node);
                                 }
                             }
                         });
