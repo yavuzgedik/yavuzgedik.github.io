@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Builder Ön Yüz</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body { background-color: #f0f2f5; }
+        .form-canvas { min-height: 500px; }
+        /* Soru alanlarına tıklandığında veya üzerine gelindiğinde hafif bir vurgu */
+        .field-wrapper { border-left: 4px solid transparent; transition: all 0.2s; }
+        .field-wrapper:hover { border-left: 4px solid #0d6efd; box-shadow: 0 .125rem .25rem rgba(0,0,0,.075); }
+        /* Başlık ve açıklama inputlarını daha şık göstermek için */
+        .border-bottom-only {
+            border: none;
+            border-bottom: 1px solid #ced4da;
+            border-radius: 0;
+            padding-left: 0;
+        }
+        .border-bottom-only:focus {
+            box-shadow: none;
+            border-bottom: 2px solid #0d6efd;
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid mt-4 mb-5">
+    <div class="row">
+        
+        <div class="col-md-3 col-lg-2 mb-3">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-white fw-bold">
+                    <i class="bi bi-tools"></i> Araç Kutusu
+                </div>
+                <div class="card-body p-2">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="text">
+                            <i class="bi bi-fonts me-2"></i> Kısa Metin
+                        </button>
+                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="textarea">
+                            <i class="bi bi-text-paragraph me-2"></i> Uzun Metin
+                        </button>
+                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="select">
+                            <i class="bi bi-menu-button-wide me-2"></i> Açılır Liste
+                        </button>
+                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="checkbox">
+                            <i class="bi bi-check2-square me-2"></i> Onay Kutusu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-lg-8">
+            <div class="card shadow form-canvas border-top-0 border-end-0 border-bottom-0 border-primary border-5">
+                <div class="card-body p-4 pt-5">
+                    
+                    <div class="mb-4">
+                        <input type="text" class="form-control form-control-lg border-bottom-only fw-bold fs-3 mb-2" placeholder="Form Başlıksız" value="Müşteri Geri Bildirim Formu" id="mainFormTitle">
+                        <input type="text" class="form-control border-bottom-only text-muted" placeholder="Form açıklaması ekleyin" id="mainFormDesc">
+                    </div>
+
+                    <div id="fieldsContainer">
+                        </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const fieldsContainer = document.getElementById('fieldsContainer');
+    const addButtons = document.querySelectorAll('.btn-add-field');
+
+    // Araç kutusundaki butonlara tıklanma olayı
+    addButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const fieldType = this.getAttribute('data-type');
+            addFieldToCanvas(fieldType);
+        });
+    });
+
+    // Canvas'a yeni eleman ekleyen fonksiyon
+    function addFieldToCanvas(type) {
+        // Her eleman için benzersiz bir ID oluşturuyoruz (İleride veri kaydederken çok işimize yarayacak)
+        const uniqueId = 'field_' + Math.random().toString(36).substr(2, 9);
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = 'card mb-4 field-wrapper bg-white';
+        wrapper.id = uniqueId;
+
+        let previewHTML = '';
+        let typeName = '';
+
+        // Seçilen tipe göre önizleme HTML'i oluştur
+        switch (type) {
+            case 'text':
+                typeName = 'Kısa Metin Sorusunu Girin';
+                previewHTML = `<input type="text" class="form-control" placeholder="Kullanıcı buraya kısa yanıt yazacak..." disabled>`;
+                break;
+            case 'textarea':
+                typeName = 'Uzun Metin Sorusunu Girin';
+                previewHTML = `<textarea class="form-control" rows="3" placeholder="Kullanıcı buraya uzun yanıt yazacak..." disabled></textarea>`;
+                break;
+            case 'select':
+                typeName = 'Seçim Sorusunu Girin';
+                // Not: Şimdilik statik bir önizleme. İleride "Seçenek 1", "Seçenek 2" ekleme modülü yapacağız.
+                previewHTML = `
+                    <select class="form-select" disabled>
+                        <option>Seçenek 1</option>
+                        <option>Seçenek 2</option>
+                        <option>Seçenek 3</option>
+                    </select>
+                    <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle"></i> Seçenekleri düzenleme özelliği eklenecek.</small>
+                `;
+                break;
+            case 'checkbox':
+                typeName = 'Onay Kutusu Sorusunu Girin';
+                previewHTML = `
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" disabled>
+                        <label class="form-check-label text-muted">Kullanıcı seçeneği</label>
+                    </div>
+                `;
+                break;
+        }
+
+        // Elemanın HTML iskeleti (Soru başlığı + Önizleme + Alt araç çubuğu)
+        wrapper.innerHTML = `
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control border-bottom-only fw-semibold mb-3 question-title" placeholder="${typeName}">
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <select class="form-select form-select-sm d-inline-block w-auto text-muted border-0 bg-light">
+                            <option value="text" ${type === 'text' ? 'selected' : ''}>Kısa Metin</option>
+                            <option value="textarea" ${type === 'textarea' ? 'selected' : ''}>Uzun Metin</option>
+                            <option value="select" ${type === 'select' ? 'selected' : ''}>Açılır Liste</option>
+                            <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>Onay Kutusu</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="field-preview px-2 pb-2">
+                    ${previewHTML}
+                </div>
+
+                <hr class="text-muted">
+                
+                <div class="d-flex justify-content-end align-items-center">
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input required-switch" type="checkbox" id="req_${uniqueId}">
+                        <label class="form-check-label text-muted small" for="req_${uniqueId}">Zorunlu</label>
+                    </div>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete">
+                        <i class="bi bi-trash3"></i> Sil
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Silme butonuna event listener ekle
+        wrapper.querySelector('.btn-delete').addEventListener('click', function() {
+            wrapper.remove();
+        });
+
+        // Container'a ekle
+        fieldsContainer.appendChild(wrapper);
+        
+        // Eklenen son elemanın soru inputuna focus ol (UX için)
+        wrapper.querySelector('.question-title').focus();
+    }
+});
+  </script>
+
+</body>
+</html>
