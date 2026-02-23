@@ -39,19 +39,42 @@
                 </div>
                 <div class="card-body p-2">
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="text">
-                            <i class="bi bi-fonts me-2"></i> Kısa Metin
-                        </button>
-                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="textarea">
-                            <i class="bi bi-text-paragraph me-2"></i> Uzun Metin
-                        </button>
-                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="select">
-                            <i class="bi bi-menu-button-wide me-2"></i> Açılır Liste
-                        </button>
-                        <button class="btn btn-outline-secondary text-start btn-add-field" data-type="checkbox">
-                            <i class="bi bi-check2-square me-2"></i> Onay Kutusu
-                        </button>
-                    </div>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="text">
+        <i class="bi bi-fonts me-2"></i> Kısa Metin
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="textarea">
+        <i class="bi bi-text-paragraph me-2"></i> Uzun Metin
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="email">
+        <i class="bi bi-envelope me-2"></i> E-Posta
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="phone">
+        <i class="bi bi-telephone me-2"></i> Telefon
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="number">
+        <i class="bi bi-123 me-2"></i> Sayısal Değer
+    </button>
+
+    <hr class="text-muted my-1"> <button class="btn btn-outline-secondary text-start btn-add-field" data-type="radio">
+        <i class="bi bi-ui-radios me-2"></i> Tekli Seçim (Radio)
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="checkbox">
+        <i class="bi bi-check2-square me-2"></i> Çoklu Seçim (Checkbox)
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="select">
+        <i class="bi bi-menu-button-wide me-2"></i> Açılır Liste
+    </button>
+
+    <hr class="text-muted my-1"> <button class="btn btn-outline-secondary text-start btn-add-field" data-type="date">
+        <i class="bi bi-calendar-date me-2"></i> Tarih
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="time">
+        <i class="bi bi-clock me-2"></i> Saat
+    </button>
+    <button class="btn btn-outline-secondary text-start btn-add-field" data-type="file">
+        <i class="bi bi-cloud-upload me-2"></i> Dosya Yükleme
+    </button>
+</div>
                 </div>
             </div>
         </div>
@@ -61,8 +84,17 @@
                 <div class="card-body p-4 pt-5">
                     
                     <div class="mb-4">
-                        <input type="text" class="form-control form-control-lg border-bottom-only fw-bold fs-3 mb-2" placeholder="Form Başlıksız" value="Müşteri Geri Bildirim Formu" id="mainFormTitle">
-                        <input type="text" class="form-control border-bottom-only text-muted" placeholder="Form açıklaması ekleyin" id="mainFormDesc">
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+    <div class="w-75">
+        <input type="text" class="form-control form-control-lg border-bottom-only fw-bold fs-3 mb-2" placeholder="Form Başlıksız" value="Müşteri Geri Bildirim Formu" id="mainFormTitle">
+        <input type="text" class="form-control border-bottom-only text-muted" placeholder="Form açıklaması ekleyin" id="mainFormDesc">
+    </div>
+    <div>
+        <button class="btn btn-primary px-4 shadow-sm" id="btnSaveForm">
+            <i class="bi bi-save me-2"></i> Formu Kaydet
+        </button>
+    </div>
+</div>
                     </div>
 
                     <div id="fieldsContainer">
@@ -90,13 +122,12 @@
         });
     });
 
-    // Event Delegation: Dinamik eklenen butonlar için (Seçenek Ekle / Seçenek Sil)
+    // Event Delegation: Dinamik elemanlar için tıklama ve değişiklik olayları
     fieldsContainer.addEventListener('click', function(e) {
-        // Seçenek Sil butonuna tıklandıysa
+        // Seçenek Sil
         if (e.target.closest('.btn-remove-option')) {
             const optionRow = e.target.closest('.option-row');
             const optionsContainer = optionRow.parentElement;
-            // Ekranda en az 1 seçenek kalmasını sağla
             if (optionsContainer.querySelectorAll('.option-row').length > 1) {
                 optionRow.remove();
             } else {
@@ -104,14 +135,13 @@
             }
         }
 
-        // Seçenek Ekle butonuna tıklandıysa
+        // Seçenek Ekle
         if (e.target.closest('.btn-add-option')) {
-            const optionsContainer = e.target.closest('.field-preview').querySelector('.options-container');
+            const manualPanel = e.target.closest('.manual-options-panel');
+            const optionsContainer = manualPanel.querySelector('.options-container');
             const optionCount = optionsContainer.querySelectorAll('.option-row').length + 1;
-            
-            // Seçenek tipi (ikon için)
             const type = optionsContainer.getAttribute('data-type');
-            const iconClass = type === 'checkbox' ? 'bi-square' : 'bi-circle';
+            const iconClass = type === 'checkbox' ? 'bi-square' : (type === 'radio' ? 'bi-circle' : 'bi-list');
 
             const newOptionHTML = `
                 <div class="d-flex align-items-center mb-2 option-row">
@@ -124,52 +154,126 @@
         }
     });
 
+    // Dinamik Veri (Sistemden Çek) Anahtarı Değiştiğinde
+    fieldsContainer.addEventListener('change', function(e) {
+        if (e.target.classList.contains('dynamic-data-toggle')) {
+            const wrapper = e.target.closest('.field-wrapper');
+            const manualPanel = wrapper.querySelector('.manual-options-panel');
+            const dynamicPanel = wrapper.querySelector('.dynamic-settings-panel');
+            
+            if (e.target.checked) {
+                manualPanel.classList.add('d-none'); // Manuel girişi gizle
+                dynamicPanel.classList.remove('d-none'); // Dinamik ayarları göster
+                updateDependsOnDropdown(wrapper); // Bağlı olduğu alan listesini güncelle
+            } else {
+                manualPanel.classList.remove('d-none');
+                dynamicPanel.classList.add('d-none');
+            }
+        }
+    });
+
+    // Dropdown'a her odaklanıldığında güncel listeyi çek (İsim değişikliklerini yakalamak için)
+    fieldsContainer.addEventListener('focusin', function(e) {
+        if (e.target.classList.contains('depends-on-select')) {
+            updateDependsOnDropdown(e.target.closest('.field-wrapper'), e.target);
+        }
+    });
+
+    // Üst Alana Bağla dropdown'unu formdaki diğer 'select' alanlarıyla doldurur
+    function updateDependsOnDropdown(currentWrapper, selectElement = null) {
+        const dependsOnSelect = selectElement || currentWrapper.querySelector('.depends-on-select');
+        const currentId = currentWrapper.id;
+        const currentValue = dependsOnSelect.value; // Seçili değeri aklında tut
+        
+        dependsOnSelect.innerHTML = '<option value="">-- Bağımsız (Ana Liste) --</option>';
+        
+        // Sadece diğer "Açılır Liste" (select) alanlarını bul
+        const allSelectFields = document.querySelectorAll('.field-wrapper[data-field-type="select"]');
+        allSelectFields.forEach(field => {
+            if (field.id !== currentId) { // Kendisini listeye ekleme
+                const title = field.querySelector('.question-title').value || 'İsimsiz Soru';
+                dependsOnSelect.insertAdjacentHTML('beforeend', `<option value="${field.id}">${title}</option>`);
+            }
+        });
+        
+        dependsOnSelect.value = currentValue; // Eski seçimi geri yükle
+    }
+
     // Canvas'a yeni soru ekleyen fonksiyon
     function addFieldToCanvas(type) {
         const uniqueId = 'field_' + Math.random().toString(36).substr(2, 9);
         const wrapper = document.createElement('div');
         wrapper.className = 'card mb-4 field-wrapper bg-white';
         wrapper.id = uniqueId;
+        wrapper.setAttribute('data-field-type', type);
 
         let previewHTML = '';
         let typeName = '';
 
-        // Dinamik seçenekler için HTML iskeleti oluşturan yardımcı fonksiyon
-        const generateOptionsHTML = (inputType) => {
-            const iconClass = inputType === 'checkbox' ? 'bi-square' : 'bi-circle';
-            return `
-                <div class="options-container" data-type="${inputType}">
-                    <div class="d-flex align-items-center mb-2 option-row">
-                        <i class="bi ${iconClass} me-2 text-muted"></i>
-                        <input type="text" class="form-control form-control-sm border-bottom-only w-50 option-input" value="Seçenek 1">
-                        <button type="button" class="btn btn-link text-danger btn-sm btn-remove-option px-2"><i class="bi bi-x-lg"></i></button>
+        const generateOptionsHTML = (inputType, id) => {
+            let iconClass = 'bi-list';
+            if(inputType === 'checkbox') iconClass = 'bi-square';
+            if(inputType === 'radio') iconClass = 'bi-circle';
+
+            // Dinamik Veri Ayarları (Sadece Select için aktif edelim şimdilik, istenirse radio'ya da eklenir)
+            let dynamicSettingsHTML = '';
+            if (inputType === 'select') {
+                dynamicSettingsHTML = `
+                    <div class="form-check form-switch mb-3 bg-light p-2 rounded border">
+                        <input class="form-check-input ms-1 dynamic-data-toggle" type="checkbox" id="dyn_${id}">
+                        <label class="form-check-label ms-2 text-primary fw-semibold" for="dyn_${id}">
+                            <i class="bi bi-database-down"></i> Sistem Verisi Kullan (Dinamik Liste)
+                        </label>
                     </div>
-                </div>
-                <div class="mt-2">
-                    <button type="button" class="btn btn-link btn-sm text-decoration-none btn-add-option p-0">
-                        <i class="bi bi-plus-lg"></i> Yeni Seçenek Ekle
-                    </button>
+                    <div class="dynamic-settings-panel d-none bg-white p-3 rounded mb-3 border border-primary border-opacity-25">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted mb-1 fw-bold">Veri Kaynağı Seçin:</label>
+                                <select class="form-select form-select-sm data-source-select border-primary">
+                                    <option value="">-- Kaynak Seç --</option>
+                                    <option value="Cariler">Cari Kartlar</option>
+                                    <option value="CariSubeleri">Cari Şubeleri</option>
+                                    <option value="Urunler">Ürünler / Hizmetler</option>
+                                    <option value="Personeller">Personel Listesi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted mb-1 fw-bold">Üst Alana Bağla (Opsiyonel):</label>
+                                <select class="form-select form-select-sm depends-on-select">
+                                    <option value="">-- Bağımsız (Ana Liste) --</option>
+                                </select>
+                                <small class="text-muted" style="font-size: 0.7rem;">Örn: Cari seçildiğinde o carinin şubeleri gelsin.</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                ${dynamicSettingsHTML}
+                <div class="manual-options-panel">
+                    <div class="options-container" data-type="${inputType}">
+                        <div class="d-flex align-items-center mb-2 option-row">
+                            <i class="bi ${iconClass} me-2 text-muted"></i>
+                            <input type="text" class="form-control form-control-sm border-bottom-only w-50 option-input" value="Seçenek 1">
+                            <button type="button" class="btn btn-link text-danger btn-sm btn-remove-option px-2"><i class="bi bi-x-lg"></i></button>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-link btn-sm text-decoration-none btn-add-option p-0">
+                            <i class="bi bi-plus-lg"></i> Yeni Seçenek Ekle
+                        </button>
+                    </div>
                 </div>
             `;
         };
 
+        // ... [Önceki switch-case yapısı aynı şekilde kalacak, select/radio/checkbox için generateOptionsHTML(type, uniqueId) çağrılacak]
+        // Kısaltılmış örnek:
         switch (type) {
-            case 'text':
-                typeName = 'Kısa Metin';
-                previewHTML = `<input type="text" class="form-control" placeholder="Kısa yanıt metni..." disabled>`;
-                break;
-            case 'textarea':
-                typeName = 'Uzun Metin';
-                previewHTML = `<textarea class="form-control" rows="3" placeholder="Uzun yanıt metni..." disabled></textarea>`;
-                break;
-            case 'select':
-                typeName = 'Açılır Liste';
-                previewHTML = generateOptionsHTML('select');
-                break;
-            case 'checkbox':
-                typeName = 'Onay Kutusu';
-                previewHTML = generateOptionsHTML('checkbox');
-                break;
+            case 'text': typeName = 'Kısa Metin'; previewHTML = `<input type="text" class="form-control" disabled>`; break;
+            case 'select': typeName = 'Açılır Liste'; previewHTML = generateOptionsHTML('select', uniqueId); break;
+            // ... diğer case'ler
         }
 
         wrapper.innerHTML = `
@@ -182,33 +286,79 @@
                         <span class="badge bg-secondary text-light fw-normal p-2"><i class="bi bi-info-circle"></i> ${typeName}</span>
                     </div>
                 </div>
-                
-                <div class="field-preview px-2 pb-3">
-                    ${previewHTML}
-                </div>
-
+                <div class="field-preview px-2 pb-3">${previewHTML}</div>
                 <hr class="text-muted mt-0 mb-3">
-                
                 <div class="d-flex justify-content-end align-items-center">
                     <div class="form-check form-switch me-3">
                         <input class="form-check-input required-switch" type="checkbox" id="req_${uniqueId}">
                         <label class="form-check-label text-muted small" for="req_${uniqueId}">Zorunlu</label>
                     </div>
-                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-field">
-                        <i class="bi bi-trash3"></i> Sil
-                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm btn-delete-field"><i class="bi bi-trash3"></i> Sil</button>
                 </div>
             </div>
         `;
 
-        // Soruyu komple silme
-        wrapper.querySelector('.btn-delete-field').addEventListener('click', function() {
-            wrapper.remove();
+        wrapper.querySelector('.btn-delete-field').addEventListener('click', () => wrapper.remove());
+        fieldsContainer.appendChild(wrapper);
+    }
+
+    // KAYDET BUTONU VE YENİ JSON MANTIĞI
+    document.getElementById('btnSaveForm').addEventListener('click', function() {
+        const formTitle = document.getElementById('mainFormTitle').value;
+        const formDesc = document.getElementById('mainFormDesc').value;
+        
+        const formJSON = {
+            Title: formTitle,
+            Description: formDesc,
+            Fields: []
+        };
+
+        const fieldNodes = document.querySelectorAll('.field-wrapper');
+        
+        fieldNodes.forEach((node, index) => {
+            const fieldId = node.id;
+            const fieldType = node.getAttribute('data-field-type');
+            const questionTitle = node.querySelector('.question-title').value;
+            const isRequired = node.querySelector('.required-switch').checked;
+
+            let dataSourceType = "manual";
+            let dataSource = null;
+            let dependsOn = null;
+            let optionsArray = null;
+
+            // Dinamik Veri mi Seçilmiş?
+            const dynamicToggle = node.querySelector('.dynamic-data-toggle');
+            if (dynamicToggle && dynamicToggle.checked) {
+                dataSourceType = "dynamic";
+                dataSource = node.querySelector('.data-source-select').value;
+                dependsOn = node.querySelector('.depends-on-select').value || null;
+            } 
+            // Manuel Veri ise Seçenekleri Topla
+            else if (['select', 'radio', 'checkbox'].includes(fieldType)) {
+                optionsArray = [];
+                node.querySelectorAll('.option-input').forEach(optInput => {
+                    if(optInput.value.trim() !== "") {
+                        optionsArray.push(optInput.value.trim());
+                    }
+                });
+            }
+
+            formJSON.Fields.push({
+                Id: fieldId, // Artık ID çok önemli (DependsOn için)
+                Order: index + 1,
+                Type: fieldType,
+                Title: questionTitle,
+                IsRequired: isRequired,
+                DataSourceType: dataSourceType,
+                DataSource: dataSource,
+                DependsOn: dependsOn,
+                Options: optionsArray
+            });
         });
 
-        fieldsContainer.appendChild(wrapper);
-        wrapper.querySelector('.question-title').focus();
-    }
+        console.log("Sunucuya Gidecek JSON:", JSON.stringify(formJSON, null, 2));
+        alert("Form başarıyla kurgulandı! Konsola (F12) bakabilirsin.");
+    });
 });
   </script>
 
