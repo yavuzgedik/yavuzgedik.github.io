@@ -108,7 +108,7 @@
                                 <h6 class="fw-bold"><span class="step-number">1</span> Bağımlılıkları Ekleyin</h6>
                                 <p class="text-muted small">Projelerinizin `&lt;head&gt;` etiketine Bootstrap 5 CSS dosyasını, sayfanın en altına ise PiaMask.js'i ekleyin.</p>
                                 <pre class="code-block">&lt;!-- 1. Bootstrap 5 CSS --&gt;
-&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/..." rel="stylesheet"&gt;
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
 
 &lt;!-- 2. PiaMask JS (Body sonuna) --&gt;
 &lt;script src="piamask.js"&gt;&lt;/script&gt;</pre>
@@ -117,10 +117,10 @@
                                 <h6 class="fw-bold"><span class="step-number">2</span> Form ve Input Ayarları</h6>
                                 <p class="text-muted small">HTML formunuza <code>novalidate</code> niteliğini verin. Ardından inputları data nitelikleriyle zenginleştirin.</p>
                                 <pre class="code-block">&lt;form novalidate&gt;
-    &lt;input type="email" 
+    &lt;input type="email" class="form-control"
            data-pia-required="true" 
            data-pia-msg-required="E-posta boş olamaz"&gt;
-    &lt;button type="submit"&gt;Gönder&lt;/button&gt;
+    &lt;button type="submit" class="btn btn-primary"&gt;Gönder&lt;/button&gt;
 &lt;/form&gt;</pre>
                             </div>
                         </div>
@@ -137,7 +137,7 @@
                     <div class="card shadow-sm h-100 border-0">
                         <div class="card-body">
                             <h5 class="card-title">1. Standart Girişler ve Karakter Sayacı</h5>
-                            <p class="text-muted small">Maskesiz, standart HTML5 elementleri. Textarea için <code>data-pia-counter="true"</code> kullanarak sayaç eklendi.</p>
+                            <p class="text-muted small">Maskesiz, standart HTML5 elementleri. Textarea için <code>data-pia-counter="true"</code> kullanarak sayaç eklendi. (Max sınırı geçilemez)</p>
                             
                             <div class="mb-3">
                                 <label class="form-label fw-bold">E-Posta Adresi <span class="text-danger">*</span></label>
@@ -160,11 +160,13 @@
                                     placeholder="En az 20, en fazla 100 karakter..."></textarea>
                             </div>
 
-                            <pre class="code-block mt-3">&lt;textarea class="form-control"
+                            <pre class="code-block mt-3">&lt;textarea class="form-control" rows="3"
   data-pia-required="true"
   data-pia-min="20"
   data-pia-max="100"
-  data-pia-counter="true"&gt;&lt;/textarea&gt;</pre>
+  data-pia-counter="true"
+  data-pia-msg-invalid="Açıklama 20 ile 100 karakter arasında olmalıdır."
+  placeholder="En az 20, en fazla 100 karakter..."&gt;&lt;/textarea&gt;</pre>
                         </div>
                     </div>
                 </div>
@@ -176,6 +178,7 @@
                             <h5 class="card-title">2. TCKN ve VKN (Sayaçlı Maskeleme)</h5>
                             <p class="text-muted small">Rakam maskeli inputlarda otomatik sayaç sadece temiz (rakam) değerleri sayar.</p>
 
+                            <!-- Sabit 11 Haneli TCKN -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold">T.C. Kimlik Numarası <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" 
@@ -185,8 +188,17 @@
                                     data-pia-required="true"
                                     data-pia-msg-invalid="TCKN tam 11 haneli olmalıdır."
                                     placeholder="11 Haneli TCKN giriniz">
+                                
+                                <pre class="code-block mt-2">&lt;input type="text" class="form-control" 
+  data-pia-mask="tckn"
+  data-pia-max="11" 
+  data-pia-counter="true"
+  data-pia-required="true"&gt;</pre>
                             </div>
 
+                            <hr class="text-muted">
+
+                            <!-- Esnek 10/11 Haneli TCKN/VKN Ortak -->
                             <div class="mb-3">
                                 <label class="form-label fw-bold">TCKN / VKN Ortak (Min 10 - Max 11)</label>
                                 <input type="text" class="form-control" 
@@ -196,12 +208,13 @@
                                     data-pia-counter="true"
                                     data-pia-msg-invalid="Bu alan 10 veya 11 rakamdan oluşmalıdır."
                                     placeholder="10 veya 11 hane giriniz">
-                            </div>
 
-                            <pre class="code-block mt-3">&lt;input type="text" 
-  data-pia-mask="tckn"
+                                <pre class="code-block mt-2">&lt;input type="text" class="form-control" 
+  data-pia-mask="numeric"
+  data-pia-min="10" 
   data-pia-max="11" 
   data-pia-counter="true"&gt;</pre>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -211,26 +224,39 @@
                     <div class="card shadow-sm h-100 border-0">
                         <div class="card-body">
                             <h5 class="card-title">3. Para Birimi (Akıllı Kuruş Dönüşümü)</h5>
-                            <p class="text-muted small">Numpad noktasını (.), ondalık virgüle (,) çevirir. Sade tasarımla sunulmuştur.</p>
+                            <p class="text-muted small">Numpad noktasını (.), ondalık virgüle (,) çevirir. Sade tasarımla sunulmuştur. Butonlarla dışarıdan veri atamayı test edebilirsiniz.</p>
                             
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Maaş Tutarı <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control text-end" 
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control text-end" id="salaryInput"
                                         data-pia-mask="currency" 
                                         data-pia-required="true"
                                         placeholder="0,00">
                                     <span class="input-group-text bg-light text-dark">₺</span>
                                 </div>
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setSalary('1251,75')">Veri Ata (1251,75)</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="setSalary('1200')">Veri Ata (1200)</button>
+                                </div>
                             </div>
 
                             <pre class="code-block mt-3">&lt;div class="input-group"&gt;
-  &lt;input type="text" 
-         class="form-control text-end" 
+  &lt;input type="text" class="form-control text-end" 
+         id="salaryInput"
          data-pia-mask="currency" 
-         data-pia-required="true"&gt;
-  &lt;span class="input-group-text"&gt;₺&lt;/span&gt;
-&lt;/div&gt;</pre>
+         data-pia-required="true"
+         placeholder="0,00"&gt;
+  &lt;span class="input-group-text bg-light text-dark"&gt;₺&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  // Dışarıdan değer atamak ve formatı tetiklemek için:
+  const input = document.getElementById('salaryInput');
+  input.value = "1251,75";
+  input.dispatchEvent(new Event('input')); // Formatla
+  input.dispatchEvent(new Event('blur'));  // Doğrula (Validasyon)
+&lt;/script&gt;</pre>
                         </div>
                     </div>
                 </div>
@@ -252,10 +278,11 @@
                                     data-pia-msg-invalid="Lütfen doğru sınırlar içinde (min 2024) bir tarih seçin.">
                             </div>
 
-                            <pre class="code-block mt-3">&lt;!-- 4 Haneli Yıl Kilidi --&gt;
-&lt;input type="datetime-local" 
-       min="2024-01-01T00:00" 
-       max="9999-12-31T23:59"&gt;</pre>
+                            <pre class="code-block mt-3">&lt;input type="datetime-local" class="form-control"
+  data-pia-required="true"
+  min="2024-01-01T00:00" 
+  max="9999-12-31T23:59"
+  data-pia-msg-invalid="Lütfen doğru sınırlar içinde (min 2024) bir tarih seçin."&gt;</pre>
                         </div>
                     </div>
                 </div>
@@ -293,11 +320,22 @@
                                 </div>
                             </div>
 
-                            <pre class="code-block mt-3">&lt;!-- Backend Veri Gönderimi --&gt;
-&lt;select name="country_code"&gt;...&lt;/select&gt;
-&lt;input name="phone_number" data-pia-mask="phone"&gt;
-// Form post edildiğinde backend'e iki ayrı veri gider:
-// country_code="+90", phone_number="(555) 123 45 67"</pre>
+                            <pre class="code-block mt-3">&lt;div class="input-group"&gt;
+  &lt;select class="form-select bg-light" name="country_code" style="max-width: 90px; cursor: pointer;"&gt;
+    &lt;option value="+90" selected&gt;+90&lt;/option&gt;
+    &lt;option value="+49"&gt;+49&lt;/option&gt;
+    &lt;option value="+1"&gt;+1&lt;/option&gt;
+    &lt;option value="+44"&gt;+44&lt;/option&gt;
+  &lt;/select&gt;
+  &lt;input type="text" class="form-control" name="phone_number"
+    data-pia-mask="phone" 
+    data-pia-required="true"
+    placeholder="(5XX) XXX XX XX"&gt;
+&lt;/div&gt;
+
+&lt;!-- Form post edildiğinde backend'e iki ayrı veri gider: --&gt;
+&lt;!-- country_code="+90" --&gt;
+&lt;!-- phone_number="(555) 123 45 67" --&gt;</pre>
                         </div>
                     </div>
                 </div>
@@ -317,7 +355,18 @@
     <!-- PiaMask JS Library -->
     <script>
         /**
-         * PiaMask.js - Versiyon 4.0 (Sadeleştirilmiş, Counter Eklenmiş, Date Sınırlandırılmış)
+         * Örnek 3 İçin Dinamik Veri Atama Fonksiyonu
+         */
+        function setSalary(val) {
+            const input = document.getElementById('salaryInput');
+            input.value = val;
+            // PiaMask'ın değişikliği algılaması için olayları tetikliyoruz
+            input.dispatchEvent(new Event('input'));
+            input.dispatchEvent(new Event('blur'));
+        }
+
+        /**
+         * PiaMask.js - Versiyon 4.1 (Textarea MaxLength Fix, Counter Eklenmiş, Date Sınırlandırılmış)
          */
         class PiaMask {
             constructor(element, options = {}) {
@@ -342,7 +391,13 @@
             }
 
             init() {
+                // Eğer maske varsa klavye tipini belirle
                 if (this.options.mask) this.setInputMode();
+
+                // Eğer maske yoksa ve maksimum sınır belirlenmişse, HTML5 maxLength özelliğini atayarak fazla yazımı engelle
+                if (!this.options.mask && this.options.max) {
+                    this.el.setAttribute('maxlength', this.options.max);
+                }
 
                 // Bootstrap Invalid Feedback Elementini Oluştur
                 this.feedbackEl = document.createElement('div');
