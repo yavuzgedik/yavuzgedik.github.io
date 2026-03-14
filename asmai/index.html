@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AssemblyAI Türkçe Real-Time</title>
+    <title>AssemblyAI - Modern AudioWorklet</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        #transcript { height: 350px; overflow-y: auto; background: white; border-radius: 12px; padding: 20px; border: 1px solid #dee2e6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        #transcript { height: 350px; overflow-y: auto; background: white; border-radius: 12px; padding: 20px; border: 1px solid #dee2e6; }
         .partial { color: #adb5bd; font-style: italic; }
-        .final { color: #212529; font-weight: 500; display: block; margin-bottom: 10px; padding-left: 10px; border-left: 3px solid #0d6efd; }
+        .final { color: #212529; font-weight: 500; display: block; margin-bottom: 8px; border-left: 3px solid #0d6efd; padding-left: 10px; }
     </style>
 </head>
 <body class="bg-light">
@@ -17,17 +17,14 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow border-0">
-                <div class="card-body p-4">
-                    <h4 class="text-center mb-4">Türkçe Canlı Transkripsiyon</h4>
-                    
-                    <div class="input-group mb-4">
-                        <input type="password" id="apiKey" class="form-control form-control-lg" placeholder="AssemblyAI API Key">
-                        <button id="startBtn" class="btn btn-primary px-4">Başlat</button>
-                        <button id="stopBtn" class="btn btn-outline-danger px-4" disabled>Durdur</button>
+                <div class="card-body">
+                    <h4 class="text-center mb-4">Türkçe Canlı Transkripsiyon (Worklet)</h4>
+                    <input type="password" id="apiKey" class="form-control mb-3" placeholder="API Key">
+                    <div class="d-flex gap-2 mb-3">
+                        <button id="startBtn" class="btn btn-primary w-100">Başlat</button>
+                        <button id="stopBtn" class="btn btn-danger w-100" disabled>Durdur</button>
                     </div>
-
-                    <div id="status" class="badge w-100 mb-3 p-2 bg-secondary">Durum: Bağlantı Bekleniyor</div>
-                    
+                    <div id="status" class="alert alert-secondary py-1 text-center">Hazır</div>
                     <div id="transcript"></div>
                 </div>
             </div>
@@ -36,106 +33,99 @@
 </div>
 
 <script>
-    let socket;
-    let audioContext;
-    let processor;
-    let stream;
+    // --- 1. Audio Worklet Kodunu Tanımlıyoruz ---
+    const workletCode = `
+        class AudioProcessor extends AudioWorkletProcessor {
+            process(inputs) {
+                const input = inputs[0][0]; // Sol kanal verisini al
+                if (input) {
+                    // Float32 verisini Int16 (PCM) formatına çeviriyoruz
+                    const pcmData = new Int16Array(input.length);
+                    for (let i = 0; i < input.length; i++) {
+                        pcmData[i] = Math.max(-1, Math.min(1, input[i])) * 0x7FFF;
+                    }
+                    // Ana thread'e veriyi gönder
+                    this.port.postMessage(pcmData.buffer);
+                }
+                return true;
+            }
+        }
+        registerProcessor('audio-processor', AudioProcessor);
+    `;
+
+    let socket, audioContext, stream, workletNode;
 
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
+    const statusDiv = document.getElementById('status');
     const transcriptDiv = document.getElementById('transcript');
-    const statusBadge = document.getElementById('status');
-    const apiKeyInput = document.getElementById('apiKey');
-
-    // 3006 Hatasını önlemek için güvenli base64 çevirici
-    function convertToBase64(buffer) {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-    }
 
     startBtn.onclick = async () => {
-        const key = apiKeyInput.value.trim();
-        if (!key) return alert("Lütfen API Key girin!");
+        const key = document.getElementById('apiKey').value.trim();
+        if(!key) return alert("API Key eksik!");
 
         try {
+            // Mikrofonu başlat
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
-            
-            const source = audioContext.createMediaStreamSource(stream);
-            processor = audioContext.createScriptProcessor(4096, 1, 1);
+            audioContext = new AudioContext({ sampleRate: 16000 });
 
-            // V3 Protokolü: speech_model=whisper-rt Türkçe için zorunludur
-            const url = `wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=whisper-rt&token=${key}`;
-            socket = new WebSocket(url);
+            // Worklet modülünü yükle
+            const blob = new Blob([workletCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            await audioContext.audioWorklet.addModule(url);
+
+            // WebSocket Bağlantısı
+            const wsUrl = `wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=whisper-rt&token=${key}`;
+            socket = new WebSocket(wsUrl);
 
             socket.onopen = () => {
-                statusBadge.innerText = "Bağlı - Konuşun";
-                statusBadge.className = "badge w-100 mb-3 p-2 bg-success";
+                statusDiv.innerText = "Bağlandı - Konuşun";
+                statusDiv.className = "alert alert-success py-1 text-center";
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
+
+                // Sesi yakalayıp göndermeye başla
+                const source = audioContext.createMediaStreamSource(stream);
+                workletNode = new AudioWorkletNode(audioContext, 'audio-processor');
+                
+                workletNode.port.onmessage = (event) => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        const base64Audio = btoa(String.fromCharCode(...new Uint8Array(event.data)));
+                        socket.send(JSON.stringify({ audio_data: base64Audio }));
+                    }
+                };
+
+                source.connect(workletNode);
+                workletNode.connect(audioContext.destination);
             };
 
             socket.onmessage = (event) => {
-                const response = JSON.parse(event.data);
-                
-                if (response.message_type === "SessionBegins") return;
-                
-                if (response.text) {
-                    if (response.message_type === "FinalTranscript") {
+                const res = JSON.parse(event.data);
+                if (res.text) {
+                    if (res.message_type === "FinalTranscript") {
                         const div = document.createElement('div');
                         div.className = "final";
-                        div.innerText = response.text;
+                        div.innerText = res.text;
                         transcriptDiv.appendChild(div);
-                        // Varsa partial metni sil
-                        const p = document.querySelector('.partial');
-                        if (p) p.remove();
+                        if (document.querySelector('.partial')) document.querySelector('.partial').remove();
                     } else {
-                        // Geçici sonuçlar (Partial)
-                        let p = document.querySelector('.partial');
-                        if (!p) {
-                            p = document.createElement('span');
-                            p.className = "partial";
-                            transcriptDiv.appendChild(p);
-                        }
-                        p.innerText = " " + response.text;
+                        let p = document.querySelector('.partial') || document.createElement('span');
+                        p.className = "partial";
+                        p.innerText = " " + res.text;
+                        transcriptDiv.appendChild(p);
                     }
                     transcriptDiv.scrollTop = transcriptDiv.scrollHeight;
                 }
             };
 
-            socket.onclose = (e) => {
-                console.log(`Kapandı: ${e.code} ${e.reason}`);
-                stopRecording();
+            socket.onclose = (e) => { 
+                console.log("Kapandı:", e.code); 
+                stopRecording(); 
             };
-
-            processor.onaudioprocess = (e) => {
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                    const inputData = e.inputBuffer.getChannelData(0);
-                    const pcmData = new Int16Array(inputData.length);
-                    for (let i = 0; i < inputData.length; i++) {
-                        pcmData[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7FFF;
-                    }
-                    
-                    const base64Audio = convertToBase64(pcmData.buffer);
-                    
-                    // KRİTİK: Sadece audio_data doluysa gönder
-                    if (base64Audio.length > 0) {
-                        const message = { audio_data: base64Audio };
-                        socket.send(JSON.stringify(message));
-                    }
-                }
-            };
-
-            source.connect(processor);
-            processor.connect(audioContext.destination);
 
         } catch (err) {
-            alert("Mikrofon hatası: " + err.message);
+            console.error(err);
+            alert("Hata: " + err.message);
         }
     };
 
@@ -146,11 +136,10 @@
         }
         if (stream) stream.getTracks().forEach(t => t.stop());
         if (audioContext) audioContext.close();
-        
         startBtn.disabled = false;
         stopBtn.disabled = true;
-        statusBadge.innerText = "Bağlantı Kesildi";
-        statusBadge.className = "badge w-100 mb-3 p-2 bg-danger";
+        statusDiv.innerText = "Durduruldu";
+        statusDiv.className = "alert alert-danger py-1 text-center";
     }
 
     stopBtn.onclick = stopRecording;
