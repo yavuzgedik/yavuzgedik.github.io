@@ -6,9 +6,9 @@
     <title>AssemblyAI Türkçe Real-Time</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        #transcript { height: 350px; overflow-y: auto; background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; }
-        .partial { color: #6c757d; font-style: italic; }
-        .final { color: #0d6efd; font-weight: bold; display: block; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 4px; }
+        #transcript { height: 350px; overflow-y: auto; background: white; border-radius: 12px; padding: 20px; border: 1px solid #dee2e6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .partial { color: #adb5bd; font-style: italic; }
+        .final { color: #212529; font-weight: 500; display: block; margin-bottom: 10px; padding-left: 10px; border-left: 3px solid #0d6efd; }
     </style>
 </head>
 <body class="bg-light">
@@ -16,20 +16,19 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-dark text-white text-center py-3">
-                    <h5 class="mb-0">Türkçe Sesli Komut Testi (v3)</h5>
-                </div>
+            <div class="card shadow border-0">
                 <div class="card-body p-4">
-                    <div class="input-group mb-3">
-                        <input type="password" id="apiKey" class="form-control" placeholder="AssemblyAI API Key Yapıştırın">
-                        <button id="startBtn" class="btn btn-success px-4">Başlat</button>
-                        <button id="stopBtn" class="btn btn-danger px-4" disabled>Durdur</button>
+                    <h4 class="text-center mb-4">Türkçe Canlı Transkripsiyon</h4>
+                    
+                    <div class="input-group mb-4">
+                        <input type="password" id="apiKey" class="form-control form-control-lg" placeholder="AssemblyAI API Key">
+                        <button id="startBtn" class="btn btn-primary px-4">Başlat</button>
+                        <button id="stopBtn" class="btn btn-outline-danger px-4" disabled>Durdur</button>
                     </div>
 
-                    <div id="status" class="alert alert-secondary py-2 text-center">Durum: Hazır</div>
+                    <div id="status" class="badge w-100 mb-3 p-2 bg-secondary">Durum: Bağlantı Bekleniyor</div>
                     
-                    <div id="transcript" class="shadow-sm"></div>
+                    <div id="transcript"></div>
                 </div>
             </div>
         </div>
@@ -45,14 +44,15 @@
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
     const transcriptDiv = document.getElementById('transcript');
-    const statusDiv = document.getElementById('status');
+    const statusBadge = document.getElementById('status');
     const apiKeyInput = document.getElementById('apiKey');
 
-    // Güvenli Base64 Dönüştürücü
-    function bufferToBase64(buffer) {
+    // 3006 Hatasını önlemek için güvenli base64 çevirici
+    function convertToBase64(buffer) {
         let binary = '';
         const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.byteLength; i++) {
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
         return window.btoa(binary);
@@ -60,24 +60,22 @@
 
     startBtn.onclick = async () => {
         const key = apiKeyInput.value.trim();
-        if(!key) return alert("Lütfen API Key girin!");
+        if (!key) return alert("Lütfen API Key girin!");
 
         try {
-            statusDiv.innerText = "Mikrofon bağlanıyor...";
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            // Audio Context başlat
             audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+            
             const source = audioContext.createMediaStreamSource(stream);
             processor = audioContext.createScriptProcessor(4096, 1, 1);
 
-            // WebSocket Bağlantısı (Parametreler URL içinde)
+            // V3 Protokolü: speech_model=whisper-rt Türkçe için zorunludur
             const url = `wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&speech_model=whisper-rt&token=${key}`;
             socket = new WebSocket(url);
 
             socket.onopen = () => {
-                statusDiv.innerText = "Bağlantı Aktif - Konuşabilirsiniz";
-                statusDiv.className = "alert alert-success py-2 text-center";
+                statusBadge.innerText = "Bağlı - Konuşun";
+                statusBadge.className = "badge w-100 mb-3 p-2 bg-success";
                 startBtn.disabled = true;
                 stopBtn.disabled = false;
             };
@@ -85,21 +83,19 @@
             socket.onmessage = (event) => {
                 const response = JSON.parse(event.data);
                 
-                if (response.error) {
-                    console.error("Hata Mesajı:", response.error);
-                    return;
-                }
-
+                if (response.message_type === "SessionBegins") return;
+                
                 if (response.text) {
                     if (response.message_type === "FinalTranscript") {
                         const div = document.createElement('div');
                         div.className = "final";
                         div.innerText = response.text;
                         transcriptDiv.appendChild(div);
-                        // Geçici metni temizle
+                        // Varsa partial metni sil
                         const p = document.querySelector('.partial');
                         if (p) p.remove();
                     } else {
+                        // Geçici sonuçlar (Partial)
                         let p = document.querySelector('.partial');
                         if (!p) {
                             p = document.createElement('span');
@@ -113,15 +109,10 @@
             };
 
             socket.onclose = (e) => {
-                console.warn(`Soket Kapandı. Kod: ${e.code}, Neden: ${e.reason}`);
+                console.log(`Kapandı: ${e.code} ${e.reason}`);
                 stopRecording();
             };
 
-            socket.onerror = (err) => {
-                console.error("WebSocket Hatası:", err);
-            };
-
-            // Ses verisini yakala ve gönder
             processor.onaudioprocess = (e) => {
                 if (socket && socket.readyState === WebSocket.OPEN) {
                     const inputData = e.inputBuffer.getChannelData(0);
@@ -130,10 +121,12 @@
                         pcmData[i] = Math.max(-1, Math.min(1, inputData[i])) * 0x7FFF;
                     }
                     
-                    const base64Audio = bufferToBase64(pcmData.buffer);
-                    // Sadece audio_data içeren temiz bir JSON gönder
-                    if (base64Audio) {
-                        socket.send(JSON.stringify({ audio_data: base64Audio }));
+                    const base64Audio = convertToBase64(pcmData.buffer);
+                    
+                    // KRİTİK: Sadece audio_data doluysa gönder
+                    if (base64Audio.length > 0) {
+                        const message = { audio_data: base64Audio };
+                        socket.send(JSON.stringify(message));
                     }
                 }
             };
@@ -142,16 +135,13 @@
             processor.connect(audioContext.destination);
 
         } catch (err) {
-            console.error("Başlatma hatası:", err);
-            alert("Bağlantı hatası: " + err.message);
+            alert("Mikrofon hatası: " + err.message);
         }
     };
 
     function stopRecording() {
-        if (socket) {
-            if(socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({ terminate_session: true }));
-            }
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({ terminate_session: true }));
             socket.close();
         }
         if (stream) stream.getTracks().forEach(t => t.stop());
@@ -159,12 +149,11 @@
         
         startBtn.disabled = false;
         stopBtn.disabled = true;
-        statusDiv.innerText = "Bağlantı Kesildi";
-        statusDiv.className = "alert alert-danger py-2 text-center";
+        statusBadge.innerText = "Bağlantı Kesildi";
+        statusBadge.className = "badge w-100 mb-3 p-2 bg-danger";
     }
 
     stopBtn.onclick = stopRecording;
 </script>
-
 </body>
 </html>
