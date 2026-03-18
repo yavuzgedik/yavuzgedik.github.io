@@ -2,16 +2,22 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>OTOBAN 1</title>
     <!-- FontAwesome Entegrasyonu -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Hatalı Seçim ve Uzun Basma Engelleme Kapsamlı CSS */
         * {
             box-sizing: border-box;
             user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        body {
+        body, html {
             margin: 0;
             padding: 0;
             background-color: #050505;
@@ -19,31 +25,25 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            width: 100vw;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden;
+            overscroll-behavior: none; /* Sayfanın aşağı/yukarı çekilerek yenilenmesini önler */
         }
-        /* Konsol Ekranı Kapsayıcısı */
-        #main-wrapper {
-            display: flex;
-            flex-direction: column;
+        #game-container {
             width: 100%;
             max-width: 450px;
             height: 100vh;
-            max-height: 800px;
-            background: #111;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
-            overflow: hidden;
-        }
-        #game-container {
-            flex: 1; /* Kalan alanı kaplar */
             position: relative;
             background: #87CEEB; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.8);
             overflow: hidden;
         }
         canvas {
             display: block;
             width: 100%;
             height: 100%;
+            touch-action: none; /* Canvas üzerinde kaydırma/yakınlaştırmayı tamamen iptal et */
         }
         .screen {
             position: absolute;
@@ -58,9 +58,8 @@
             padding: 20px;
             z-index: 10;
         }
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
+        
         h1 {
             color: #f1c40f;
             margin-bottom: 10px;
@@ -81,7 +80,7 @@
             border: none;
             padding: 15px 30px;
             font-size: 1.3rem;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -92,7 +91,6 @@
         }
         button:hover { background: #c0392b; }
         button:active { transform: scale(0.95); }
-        
         .btn-secondary { background: #3498db; }
         .btn-secondary:hover { background: #2980b9; }
 
@@ -111,235 +109,245 @@
             margin-bottom: 20px;
             text-decoration: underline;
         }
+        
+        /* --- HUD (Skor ve Hız Ayarı) --- */
         #hud {
             position: absolute;
             top: 20px;
             left: 20px;
             color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
             z-index: 5;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 10px;
+            pointer-events: none; /* HUD'ın altındaki tıklamaları engellemesin */
         }
-        #hud span { color: #f1c40f; }
+        .score-box {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .score-box span { color: #f1c40f; }
         #level-display {
             font-size: 1rem;
             color: #ecf0f1;
-            font-weight: normal;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+        
+        /* Hız Slider (Kaplumbağa - Tavşan) Sağ Kenar Dikey Tasarım */
+        #speed-control {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: auto; /* Slider tıklanabilsin */
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(5px);
+            padding: 15px 10px;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            z-index: 15;
+            transition: opacity 0.3s;
+        }
+        #speed-control span {
+            font-size: 1.5rem;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.5));
+        }
+        .slider-wrapper {
+            height: 140px;
+            width: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 140px; 
+            height: 8px;
+            background: transparent;
+            touch-action: none; /* Kaydırmayı engelle */
+            transform: rotate(-90deg);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 26px; width: 26px;
+            border-radius: 50%;
+            background: #f1c40f;
+            cursor: pointer;
+            margin-top: -9px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            border: 3px solid #fff;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 8px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
         }
 
         /* --- Şerit Değişimi Uyarı Efektleri --- */
         #warning-overlay {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 4; 
+            position: absolute; inset: 0; pointer-events: none; z-index: 4; 
             box-shadow: inset 0 0 60px 20px rgba(231, 76, 60, 0.8);
             animation: pulseWarning 0.5s infinite alternate;
         }
         #warning-text {
-            position: absolute;
-            top: 100px;
-            width: 100%;
-            text-align: center;
-            color: #e74c3c;
-            font-size: 1.4rem;
-            font-weight: 900;
+            position: absolute; top: 120px; width: 100%; text-align: center;
+            color: #e74c3c; font-size: 1.4rem; font-weight: 900;
             text-shadow: 0 0 10px #000, 2px 2px 4px rgba(0,0,0,0.8);
-            z-index: 5;
-            animation: pulseWarning 0.5s infinite alternate;
-            pointer-events: none;
-            letter-spacing: 1px;
+            z-index: 5; animation: pulseWarning 0.5s infinite alternate;
+            pointer-events: none; letter-spacing: 1px;
         }
-        @keyframes pulseWarning {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes pulseWarning { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- Mobil Konsol Paneli --- */
-        #console-area {
-            height: 140px;
-            background: #1a1a1a;
-            border-top: 3px solid #333;
+        /* --- Ekran Üstü Kontroller (Sol - Sağ) --- */
+        #on-screen-controls {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            padding: 0 25px;
-            box-shadow: inset 0 15px 15px -15px rgba(0,0,0,0.8);
-            position: relative;
-            z-index: 15;
+            padding: 0 20px;
+            z-index: 6;
+            pointer-events: none; /* Boşluklardan tıklama geçsin */
         }
-        
-        .controls-group {
-            display: flex;
-        }
-        .controls-group.col {
-            flex-direction: column;
-            gap: 12px;
-        }
-        .controls-group.row {
-            flex-direction: row;
-            gap: 12px;
-        }
-
-        /* 3D Modern Buton Tasarımı */
         .ctrl-btn {
-            width: 58px;
-            height: 58px;
-            border-radius: 12px;
-            background: linear-gradient(145deg, #333, #222);
+            pointer-events: auto; /* Sadece butonlar tıklanabilsin */
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.25);
             color: rgba(255, 255, 255, 0.9);
-            border: 1px solid #444;
-            font-size: 26px;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            font-size: 32px;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            user-select: none;
-            box-shadow: 0 6px 0 #0d0d0d, 0 8px 10px rgba(0,0,0,0.6);
-            transition: all 0.1s ease;
-            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            transition: transform 0.1s, background 0.1s;
+            touch-action: manipulation;
         }
         .ctrl-btn:active, .ctrl-btn.active {
-            transform: translateY(6px);
-            box-shadow: 0 0px 0 #0d0d0d, 0 2px 3px rgba(0,0,0,0.6);
-            background: linear-gradient(145deg, #2ecc71, #27ae60);
-            border-color: #2ecc71;
-            color: #fff;
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.5);
+            border-color: #fff;
         }
 
+        /* PC'de ekrandaki butonları gizle (Ok tuşları kullanılır) */
         @media (hover: hover) and (pointer: fine) {
-            #console-area { display: none; }
+            #on-screen-controls { display: none; }
         }
 
         /* --- Skor Tablosu --- */
         #scores-list-container {
-            width: 100%;
-            max-width: 350px;
-            max-height: 350px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            text-align: left;
+            width: 100%; max-width: 350px; max-height: 350px;
+            overflow-y: auto; margin-bottom: 20px; padding: 10px;
+            background: rgba(255,255,255,0.1); border-radius: 10px; text-align: left;
         }
         .score-item {
-            background: rgba(0,0,0,0.6);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 4px solid #f1c40f;
+            background: rgba(0,0,0,0.6); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;
+            display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #f1c40f;
         }
         .score-item span { font-size: 1.1rem; }
         .score-item small { color: #bdc3c7; font-size: 0.85rem; display: block; margin-top: 3px; }
         .delete-btn {
-            background: #c0392b;
-            color: white;
-            border: none;
-            width: 35px; height: 35px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex; justify-content: center; align-items: center;
+            background: #c0392b; color: white; border: none; width: 35px; height: 35px;
+            border-radius: 5px; cursor: pointer; display: flex; justify-content: center; align-items: center;
             padding: 0; margin: 0;
         }
     </style>
 </head>
 <body>
 
-<div id="main-wrapper">
-    <div id="game-container">
-        <!-- Uyarı Efektleri -->
-        <div id="warning-overlay" class="hidden"></div>
-        <div id="warning-text" class="hidden">⚠️ ŞERİT DEĞİŞİMİ YAKLAŞIYOR ⚠️</div>
+<div id="game-container">
+    <!-- Uyarı Efektleri -->
+    <div id="warning-overlay" class="hidden"></div>
+    <div id="warning-text" class="hidden">⚠️ YOL DEĞİŞİYOR ⚠️</div>
 
-        <canvas id="gameCanvas" width="450" height="800"></canvas>
-        
-        <div id="hud">
-            <div>Skor: <span id="score-display">0</span></div>
-            <div id="level-display">Seviye 1: Yeşil Vadi</div>
-        </div>
-
-        <!-- Başlangıç Ekranı -->
-        <div id="start-screen" class="screen">
-            <h1>OTOBAN 1</h1>
-            <p><b>Yönlendirme:</b> A/D tuşları veya ekrandaki Ok ikonları.<br><br><b>Hız Kontrolü:</b> W/S tuşları veya Yukarı/Aşağı ikonları.</p>
-            <button id="start-btn">Oyuna Başla</button>
-            <button id="show-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
-        </div>
-
-        <!-- PWA Kurulum Uyarı Ekranı -->
-        <div id="pwa-install-screen" class="screen hidden" style="z-index: 20; background: rgba(0, 0, 0, 0.95);">
-            <h1 style="font-size: 2.2rem; color: #3498db; margin-bottom: 15px;"><i class="fa-solid fa-mobile-screen-button"></i></h1>
-            <h2 style="color: #f1c40f; margin-top: 0;">Uygulama Olarak Ekle</h2>
-            <p>OTOBAN 1'i ana ekranına ekleyerek tam ekran ve daha akıcı bir deneyim yaşayabilirsin!</p>
-            <button id="pwa-install-btn" style="background: #2ecc71;">Evet, Ekle</button>
-            <button id="pwa-cancel-btn" class="btn-secondary" style="background: #7f8c8d;">Hayır, Teşekkürler</button>
-        </div>
-
-        <!-- Skor Ekranı (Ayarlar) -->
-        <div id="scores-screen" class="screen hidden">
-            <h1 style="font-size: 2.2rem; color: #3498db;">Ayarlar & Skorlar</h1>
-            
-            <button id="settings-install-btn" class="hidden" style="background: #2ecc71; margin-bottom: 15px;">
-                <i class="fa-solid fa-download"></i> Uygulama Olarak Ekle
-            </button>
-
-            <div id="scores-list-container">
-                <!-- JavaScript ile doldurulacak -->
-            </div>
-            
-            <button id="close-scores-btn">Geri Dön</button>
-            <button id="clear-scores-btn" style="background: #e67e22;">Tümünü Temizle</button>
-        </div>
-
-        <!-- Oyun Sonu Ekranı -->
-        <div id="game-over-screen" class="screen hidden">
-            <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
-            <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
-            <p class="share-link">yavuzgedik.github.io/otoban1</p>
-            <button id="restart-btn">Tekrar Oyna</button>
-            <button id="game-over-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
-            <button id="share-btn" class="whatsapp-btn">
-                <i class="fa-brands fa-whatsapp" style="font-size: 1.5rem;"></i>
-                WhatsApp ile Paylaş
-            </button>
-        </div>
-    </div>
+    <canvas id="gameCanvas" width="450" height="800"></canvas>
     
-    <!-- Mobil Konsol Alanı -->
-    <div id="console-area">
-        <!-- SOL TARAF: HIZ KONTROLLERİ (Yukarı/Aşağı) -->
-        <div class="controls-group col">
-            <div class="ctrl-btn" id="btn-up"><i class="fa-solid fa-chevron-up"></i></div>
-            <div class="ctrl-btn" id="btn-down"><i class="fa-solid fa-chevron-down"></i></div>
+    <div id="hud">
+        <div class="score-box">Skor: <span id="score-display">0</span></div>
+        <div id="level-display">Seviye 1: Yeşil Vadi</div>
+    </div>
+
+    <!-- Hız Kontrol Slider'ı (Sağ Kenar Dikey) - Başlangıçta gizli -->
+    <div id="speed-control" class="hidden">
+        <span>🐇</span>
+        <div class="slider-wrapper">
+            <!-- Default olarak yavaş (0.6). Kaplumbağa(0.3) ile Tavşan(1.4) arası değer -->
+            <input type="range" id="speed-slider" min="0.3" max="1.4" step="0.1" value="0.6">
         </div>
-        <!-- SAĞ TARAF: YÖN KONTROLLERİ (Sol/Sağ) -->
-        <div class="controls-group row">
-            <div class="ctrl-btn" id="btn-left"><i class="fa-solid fa-chevron-left"></i></div>
-            <div class="ctrl-btn" id="btn-right"><i class="fa-solid fa-chevron-right"></i></div>
-        </div>
+        <span>🐢</span>
+    </div>
+
+    <!-- Ekran İçi Kontroller (Sadece Sağ-Sol) -->
+    <div id="on-screen-controls">
+        <div class="ctrl-btn" id="btn-left"><i class="fa-solid fa-chevron-left"></i></div>
+        <div class="ctrl-btn" id="btn-right"><i class="fa-solid fa-chevron-right"></i></div>
+    </div>
+
+    <!-- Başlangıç Ekranı -->
+    <div id="start-screen" class="screen">
+        <h1>OTOBAN 1</h1>
+        <p style="font-size: 1.2rem;"><b>Yönlendirme:</b><br>Ekranda beliren Sağ/Sol oklarına dokun veya Klavyedeki Ok tuşlarını kullan.<br><br><b>Hız:</b> Ekranın sol üstünden hızı ayarlayabilirsin.</p>
+        <button id="start-btn" style="background: #2ecc71;">Oyuna Başla</button>
+        <button id="show-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
+    </div>
+
+    <!-- PWA Kurulum Uyarı Ekranı -->
+    <div id="pwa-install-screen" class="screen hidden" style="z-index: 20; background: rgba(0, 0, 0, 0.95);">
+        <h1 style="font-size: 2.2rem; color: #3498db; margin-bottom: 15px;"><i class="fa-solid fa-mobile-screen-button"></i></h1>
+        <h2 style="color: #f1c40f; margin-top: 0;">Uygulama Olarak Ekle</h2>
+        <p>OTOBAN 1'i ana ekranına ekleyerek tam ekran ve daha akıcı bir deneyim yaşayabilirsin!</p>
+        <button id="pwa-install-btn" style="background: #2ecc71;">Evet, Ekle</button>
+        <button id="pwa-cancel-btn" class="btn-secondary" style="background: #7f8c8d;">Hayır, Teşekkürler</button>
+    </div>
+
+    <!-- Skor Ekranı (Ayarlar) -->
+    <div id="scores-screen" class="screen hidden">
+        <h1 style="font-size: 2.2rem; color: #3498db;">Ayarlar & Skorlar</h1>
+        <button id="settings-install-btn" class="hidden" style="background: #2ecc71; margin-bottom: 15px;">
+            <i class="fa-solid fa-download"></i> Uygulama Olarak Ekle
+        </button>
+        <div id="scores-list-container"></div>
+        <button id="close-scores-btn">Geri Dön</button>
+        <button id="clear-scores-btn" style="background: #e67e22;">Tümünü Temizle</button>
+    </div>
+
+    <!-- Oyun Sonu Ekranı -->
+    <div id="game-over-screen" class="screen hidden">
+        <h1 style="color: #e74c3c;">Kaza Yaptın!</h1>
+        <p style="font-size: 1.5rem; margin-bottom: 5px;">Skorun: <span id="final-score" style="color: #f1c40f; font-weight: bold;">0</span></p>
+        <p class="share-link">yavuzgedik.github.io/otoban1</p>
+        <button id="restart-btn" style="background: #e74c3c;">Tekrar Oyna</button>
+        <button id="game-over-scores-btn" class="btn-secondary"><i class="fa-solid fa-gear"></i> Skor Tablosu</button>
+        <button id="share-btn" class="whatsapp-btn">
+            <i class="fa-brands fa-whatsapp" style="font-size: 1.5rem;"></i> Paylaş
+        </button>
     </div>
 </div>
 
 <script>
     // --- PWA KURULUMU (TEK DOSYA İÇİN DİNAMİK MANIFEST VE SW) ---
-    // 1. Dinamik Manifest Oluştur
     const manifest = {
         name: "OTOBAN 1",
         short_name: "OTOBAN 1",
         start_url: location.href,
         display: "standalone",
-        background_color: "#111111",
+        background_color: "#87CEEB",
         theme_color: "#3498db",
         icons: [{
-            src: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23111'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='60' fill='%23f1c40f' font-family='sans-serif' font-weight='bold' font-style='italic'%3EO1%3C/text%3E%3C/svg%3E",
+            src: "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23111' rx='30'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='70' fill='%23f1c40f' font-family='sans-serif' font-weight='bold' font-style='italic'%3EO1%3C/text%3E%3C/svg%3E",
             sizes: "192x192",
             type: "image/svg+xml"
         }]
@@ -351,11 +359,10 @@
     manifestLink.href = manifestUrl;
     document.head.appendChild(manifestLink);
 
-    // 2. Dinamik Service Worker Oluştur (Uygulamanın yüklenebilmesi için gerekli)
     const swCode = `
         self.addEventListener('install', (e) => { self.skipWaiting(); });
         self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
-        self.addEventListener('fetch', (e) => { }); // Minimal fetch
+        self.addEventListener('fetch', (e) => { }); 
     `;
     const swBlob = new Blob([swCode], {type: 'application/javascript'});
     const swUrl = URL.createObjectURL(swBlob);
@@ -363,7 +370,6 @@
         navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Hatası:', err));
     }
 
-    // 3. PWA Install Ekranı Mantığı
     let deferredPrompt;
     const pwaScreen = document.getElementById('pwa-install-screen');
     const btnPwaInstall = document.getElementById('pwa-install-btn');
@@ -371,21 +377,14 @@
     const btnSettingsInstall = document.getElementById('settings-install-btn');
 
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Otomatik promptu engelle
         e.preventDefault();
-        // Eventi kaydet
         deferredPrompt = e;
-        
-        // Ayarlar ekranındaki gizli "Uygulama Olarak Ekle" butonunu görünür yap
         btnSettingsInstall.classList.remove('hidden');
-
-        // Kullanıcı önceden "Hayır" demediyse PWA ekranını göster
         if (!localStorage.getItem('pwa_dismissed')) {
             pwaScreen.classList.remove('hidden');
         }
     });
 
-    // PWA Ekranı "Evet" butonu
     btnPwaInstall.addEventListener('click', async () => {
         pwaScreen.classList.add('hidden');
         if (deferredPrompt) {
@@ -398,13 +397,11 @@
         }
     });
 
-    // PWA Ekranı "Hayır" butonu
     btnPwaCancel.addEventListener('click', () => {
         pwaScreen.classList.add('hidden');
-        localStorage.setItem('pwa_dismissed', 'true'); // Bir daha rahatsız etme
+        localStorage.setItem('pwa_dismissed', 'true');
     });
 
-    // Ayarlar / Skor Ekranındaki "Uygulama Olarak Ekle" butonu
     btnSettingsInstall.addEventListener('click', async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -416,7 +413,6 @@
         }
     });
 
-    // Uygulama başarıyla kurulduğunda her şeyi temizle
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
         btnSettingsInstall.classList.add('hidden');
@@ -445,6 +441,8 @@
     const finalScoreDisplay = document.getElementById('final-score');
     const warningOverlay = document.getElementById('warning-overlay');
     const warningText = document.getElementById('warning-text');
+    const speedSlider = document.getElementById('speed-slider');
+    const speedControlBox = document.getElementById('speed-control');
     
     // Butonlar
     const startBtn = document.getElementById('start-btn');
@@ -458,7 +456,7 @@
     // Oyun Değişkenleri
     let isPlaying = false;
     let score = 0;
-    let gameSpeed = 8;
+    let gameBaseSpeed = 7; 
     let frameCount = 0;
     let offset = 0;
 
@@ -468,22 +466,21 @@
     let currentRoadWidth = targetLanes * laneWidth; 
     let nextLaneChangeScore = 500;
 
+    // Çocuk Dostu Pastel/Parlak Temalar (Leveller)
     const themes = [
-        { name: "Yeşil Vadi", skyTop: "#87CEEB", skyBottom: "rgba(39, 174, 96, 0)", grass: "#27ae60", road: "#34495e", treeShadow: "rgba(0,0,0,0.3)", treeBase: "#5D4037", treeLeaves1: "#1e8449", treeLeaves2: "#27ae60", isNight: false },
-        { name: "Kızgın Çöl", skyTop: "#e67e22", skyBottom: "rgba(243, 156, 18, 0)", grass: "#f1c40f", road: "#2c3e50", treeShadow: "rgba(0,0,0,0.2)", treeBase: "#d35400", treeLeaves1: "#e67e22", treeLeaves2: "#f39c12", isNight: false },
-        { name: "Neon Gece", skyTop: "#111111", skyBottom: "rgba(26, 37, 47, 0)", grass: "#1a252f", road: "#151515", treeShadow: "rgba(0,0,0,0.8)", treeBase: "#000", treeLeaves1: "#2c3e50", treeLeaves2: "#34495e", isNight: true },
-        { name: "Kutup Noktası", skyTop: "#bdc3c7", skyBottom: "rgba(236, 240, 241, 0)", grass: "#ecf0f1", road: "#7f8c8d", treeShadow: "rgba(0,0,0,0.1)", treeBase: "#7f8c8d", treeLeaves1: "#bdc3c7", treeLeaves2: "#ffffff", isNight: false }
+        { name: "Yeşil Vadi", skyTop: "#74b9ff", skyBottom: "rgba(116, 185, 255, 0)", grass: "#2ecc71", road: "#34495e", treeShadow: "rgba(0,0,0,0.2)", treeBase: "#8e44ad", treeLeaves1: "#1abc9c", treeLeaves2: "#16a085", isNight: false },
+        { name: "Sıcak Çöl", skyTop: "#fab1a0", skyBottom: "rgba(250, 177, 160, 0)", grass: "#f1c40f", road: "#2c3e50", treeShadow: "rgba(0,0,0,0.15)", treeBase: "#e17055", treeLeaves1: "#ff9f43", treeLeaves2: "#e67e22", isNight: false },
+        { name: "Yıldızlı Gece", skyTop: "#2c3e50", skyBottom: "rgba(44, 62, 80, 0)", grass: "#34495e", road: "#1e272e", treeShadow: "rgba(0,0,0,0.6)", treeBase: "#111", treeLeaves1: "#6c5ce7", treeLeaves2: "#4834d4", isNight: true },
+        { name: "Kutup Noktası", skyTop: "#81ecec", skyBottom: "rgba(129, 236, 236, 0)", grass: "#dfe6e9", road: "#b2bec3", treeShadow: "rgba(0,0,0,0.1)", treeBase: "#636e72", treeLeaves1: "#ffffff", treeLeaves2: "#f5f6fa", isNight: false }
     ];
     let currentLevel = 1;
     let currentTheme = themes[0];
 
-    // Kontroller
-    let keys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, a: false, d: false, w: false, s: false };
+    // Kontroller (Sadece Sağ-Sol)
+    let keys = { ArrowLeft: false, ArrowRight: false, a: false, d: false };
 
     const btnLeft = document.getElementById('btn-left');
     const btnRight = document.getElementById('btn-right');
-    const btnUp = document.getElementById('btn-up');
-    const btnDown = document.getElementById('btn-down');
 
     function bindBtn(btn, keyName) {
         const press = (e) => { e.preventDefault(); keys[keyName] = true; btn.classList.add('active'); };
@@ -496,19 +493,17 @@
     }
     bindBtn(btnLeft, 'ArrowLeft');
     bindBtn(btnRight, 'ArrowRight');
-    bindBtn(btnUp, 'ArrowUp');
-    bindBtn(btnDown, 'ArrowDown');
 
     window.addEventListener('keydown', (e) => {
         if(keys.hasOwnProperty(e.key)) keys[e.key] = true;
-        if(['a', 'A', 'd', 'D', 'w', 'W', 's', 'S'].includes(e.key)) keys[e.key.toLowerCase()] = true;
+        if(['a', 'A', 'd', 'D'].includes(e.key)) keys[e.key.toLowerCase()] = true;
     });
     window.addEventListener('keyup', (e) => {
         if(keys.hasOwnProperty(e.key)) keys[e.key] = false;
-        if(['a', 'A', 'd', 'D', 'w', 'W', 's', 'S'].includes(e.key)) keys[e.key.toLowerCase()] = false;
+        if(['a', 'A', 'd', 'D'].includes(e.key)) keys[e.key.toLowerCase()] = false;
     });
 
-    let player = { x: 0, y: 0, width: 44, height: 80, speed: 8, color: '#3498db' };
+    let player = { x: 0, y: 0, width: 46, height: 75, speed: 7, color: '#0984e3' }; // Tombul oyuncak araba ölçüleri
     let enemies = [];
     let sceneries = []; 
     let coins = [];
@@ -573,9 +568,19 @@
 
     shareBtn.addEventListener('click', () => {
         let finalScore = Math.floor(score);
-        let text = `OTOBAN 1 oyununda ${finalScore} puan yaptım! Sen beni geçebilir misin? Gel oyna: https://yavuzgedik.github.io/otoban1/`;
-        let url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
+        let text = `OTOBAN 1 oyununda ${finalScore} puan yaptım! Sen beni geçebilir misin?`;
+        let url = `https://yavuzgedik.github.io/otoban1/`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'OTOBAN 1',
+                text: text,
+                url: url
+            }).catch((error) => console.log('Paylaşım iptal edildi veya hata oluştu.', error));
+        } else {
+            let waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " Gel oyna: " + url)}`;
+            window.open(waUrl, '_blank');
+        }
     });
 
     startBtn.addEventListener('click', startGame);
@@ -624,71 +629,101 @@
         }
     }
 
+    // Çocuk Dostu (Yuvarlak) Araç Çizimi
     function drawCar3D(car, type) {
         let w = car.width, h = car.height, x = car.x, y = car.y;
         ctx.save(); ctx.translate(x, y);
 
-        let zOffset = -15; 
+        let zOffset = -12; 
         if (currentTheme.isNight) {
             ctx.save();
-            let lightLen = type === 'player' ? 350 : 180;
+            let lightLen = type === 'player' ? 300 : 150;
             let lightAlpha = type === 'player' ? '0.4' : '0.2';
             
-            let gradLeft = ctx.createLinearGradient(w*0.2, zOffset + h*0.2, w*0.2 - 30, zOffset - lightLen);
+            let gradLeft = ctx.createLinearGradient(w*0.2, zOffset + h*0.2, w*0.2 - 25, zOffset - lightLen);
             gradLeft.addColorStop(0, `rgba(255, 255, 200, ${lightAlpha})`);
             gradLeft.addColorStop(1, 'rgba(255, 255, 200, 0)');
             ctx.fillStyle = gradLeft;
-            ctx.beginPath(); ctx.moveTo(w*0.2, zOffset + h*0.2); ctx.lineTo(w*0.2 - 40, zOffset - lightLen); ctx.lineTo(w*0.2 + 20, zOffset - lightLen); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(w*0.2, zOffset + h*0.2); ctx.lineTo(w*0.2 - 35, zOffset - lightLen); ctx.lineTo(w*0.2 + 20, zOffset - lightLen); ctx.fill();
 
-            let gradRight = ctx.createLinearGradient(w*0.8, zOffset + h*0.2, w*0.8 + 30, zOffset - lightLen);
+            let gradRight = ctx.createLinearGradient(w*0.8, zOffset + h*0.2, w*0.8 + 25, zOffset - lightLen);
             gradRight.addColorStop(0, `rgba(255, 255, 200, ${lightAlpha})`);
             gradRight.addColorStop(1, 'rgba(255, 255, 200, 0)');
             ctx.fillStyle = gradRight;
-            ctx.beginPath(); ctx.moveTo(w*0.8, zOffset + h*0.2); ctx.lineTo(w*0.8 - 20, zOffset - lightLen); ctx.lineTo(w*0.8 + 40, zOffset - lightLen); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(w*0.8, zOffset + h*0.2); ctx.lineTo(w*0.8 - 20, zOffset - lightLen); ctx.lineTo(w*0.8 + 35, zOffset - lightLen); ctx.fill();
             ctx.restore();
         }
 
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        drawRoundRect(ctx, -5, h - 10, w + 10, 15, 5);
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
+        drawRoundRect(ctx, -5, h - 8, w + 10, 15, 8); // Yumuşak gölge
 
-        let tireW = 8, tireH = 16;
-        ctx.fillStyle = '#111';
-        ctx.fillRect(-2, h*0.2, tireW, tireH); ctx.fillRect(w - tireW + 2, h*0.2, tireW, tireH);
-        ctx.fillRect(-2, h*0.75, tireW, tireH); ctx.fillRect(w - tireW + 2, h*0.75, tireW, tireH);
+        let tireW = 10, tireH = 18; // Büyük, şirin tekerlekler
+        ctx.fillStyle = '#2d3436';
+        ctx.fillRect(-3, h*0.2, tireW, tireH); ctx.fillRect(w - tireW + 3, h*0.2, tireW, tireH);
+        ctx.fillRect(-3, h*0.7, tireW, tireH); ctx.fillRect(w - tireW + 3, h*0.7, tireW, tireH);
 
         if (type === 'truck') {
-            ctx.fillStyle = '#ecf0f1'; drawRoundRect(ctx, 0, zOffset, w, h * 0.8, 4);
-            ctx.fillStyle = '#bdc3c7'; ctx.fillRect(w*0.1, zOffset + h*0.1, w*0.35, h*0.6); ctx.fillRect(w*0.55, zOffset + h*0.1, w*0.35, h*0.6);
-            ctx.fillStyle = '#7f8c8d'; ctx.fillRect(0, h * 0.8 + zOffset, w, 10);
-            ctx.fillStyle = '#e74c3c'; ctx.fillRect(w*0.1, h*0.8 + zOffset + 2, w*0.2, 4); ctx.fillRect(w*0.7, h*0.8 + zOffset + 2, w*0.2, 4);
+            ctx.fillStyle = '#f5f6fa'; drawRoundRect(ctx, 0, zOffset, w, h * 0.8, 12); // Yuvarlak kasa
+            ctx.fillStyle = '#dcdde1'; ctx.fillRect(w*0.15, zOffset + h*0.1, w*0.3, h*0.6); ctx.fillRect(w*0.55, zOffset + h*0.1, w*0.3, h*0.6);
+            ctx.fillStyle = '#7f8c8d'; drawRoundRect(ctx, 2, h * 0.8 + zOffset, w-4, 10, 3); // Tampon
+            ctx.fillStyle = '#e84118'; ctx.fillRect(w*0.15, h*0.8 + zOffset + 2, w*0.2, 5); ctx.fillRect(w*0.65, h*0.8 + zOffset + 2, w*0.2, 5);
         } else {
-            let roofOffset = zOffset - 15;
-            let darkColor = shadeColor(car.color, -20);
-            ctx.fillStyle = car.color; drawRoundRect(ctx, 0, h*0.15 + zOffset, w, h*0.85, 6);
+            let roofOffset = zOffset - 18; // Yüksek tavan
+            let darkColor = shadeColor(car.color, -15);
+            let windowColor = '#74b9ff'; // Canlı mavi camlar
+
+            // Gövde (Alt Şasi - Yuvarlak)
+            ctx.fillStyle = car.color; 
+            drawRoundRect(ctx, 0, h*0.15 + zOffset, w, h*0.85, 15);
             
-            ctx.fillStyle = '#2c3e50'; ctx.beginPath();
-            ctx.moveTo(w*0.1, h*0.85 + zOffset); ctx.lineTo(w*0.9, h*0.85 + zOffset);
-            ctx.lineTo(w*0.8, h*0.5 + roofOffset); ctx.lineTo(w*0.2, h*0.5 + roofOffset); ctx.fill();
+            // Arka Cam
+            ctx.fillStyle = windowColor; 
+            ctx.beginPath();
+            ctx.moveTo(w*0.15, h*0.8 + zOffset); ctx.lineTo(w*0.85, h*0.8 + zOffset);
+            ctx.lineTo(w*0.75, h*0.45 + roofOffset); ctx.lineTo(w*0.25, h*0.45 + roofOffset); ctx.fill();
             
-            ctx.fillStyle = darkColor; drawRoundRect(ctx, w*0.2, h*0.2 + roofOffset, w*0.6, h*0.3, 4);
-            ctx.fillStyle = shadeColor(car.color, -40); ctx.fillRect(0, h - 8 + zOffset, w, 8);
-            ctx.fillStyle = '#c0392b'; ctx.fillRect(w*0.1, h - 6 + zOffset, w*0.25, 4); ctx.fillRect(w*0.65, h - 6 + zOffset, w*0.25, 4);
+            // Tavan
+            ctx.fillStyle = darkColor; 
+            drawRoundRect(ctx, w*0.2, h*0.2 + roofOffset, w*0.6, h*0.3, 8);
+            
+            // Arka Tampon
+            ctx.fillStyle = shadeColor(car.color, -30); 
+            drawRoundRect(ctx, 4, h - 10 + zOffset, w - 8, 8, 4);
+            
+            // Stop Lambaları
+            ctx.fillStyle = '#ff4757'; 
+            ctx.fillRect(w*0.15, h - 8 + zOffset, w*0.2, 5); ctx.fillRect(w*0.65, h - 8 + zOffset, w*0.2, 5);
             
             if (type === 'sports') {
-                ctx.fillStyle = '#222'; ctx.fillRect(w*0.05, h - 18 + zOffset, w*0.9, 5);
-                ctx.fillRect(w*0.2, h - 14 + zOffset, 4, 6); ctx.fillRect(w*0.8 - 4, h - 14 + zOffset, 4, 6);
+                ctx.fillStyle = '#ffbe76'; // Eğlenceli sarı/turuncu spoiler
+                drawRoundRect(ctx, w*0.05, h - 22 + zOffset, w*0.9, 6, 3);
             }
         }
         ctx.restore();
     }
 
+    // Çocuk Dostu (Pofuduk/Bulut Tipi) Ağaç Çizimi
     function drawTree3D(tree) {
-        let w = tree.size * 1.5, h = tree.size * 3;
+        let w = tree.size * 1.5, h = tree.size * 2.2;
         ctx.save(); ctx.translate(tree.x, tree.y);
-        ctx.fillStyle = currentTheme.treeShadow; ctx.beginPath(); ctx.arc(0, 0, w*0.6, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = currentTheme.treeBase; ctx.fillRect(-w*0.1, -h*0.2, w*0.2, h*0.2);
-        ctx.fillStyle = currentTheme.treeLeaves1; ctx.beginPath(); ctx.moveTo(0, -h); ctx.lineTo(w/2, -h*0.2); ctx.lineTo(-w/2, -h*0.2); ctx.fill();
-        ctx.fillStyle = currentTheme.treeLeaves2; ctx.beginPath(); ctx.moveTo(0, -h); ctx.lineTo(w*0.4, -h*0.4); ctx.lineTo(-w*0.4, -h*0.4); ctx.fill();
+        
+        // Gölge
+        ctx.fillStyle = currentTheme.treeShadow; 
+        ctx.beginPath(); ctx.arc(0, 0, w*0.7, 0, Math.PI*2); ctx.fill();
+        
+        // Gövde (Kısa ve kalın)
+        ctx.fillStyle = currentTheme.treeBase; 
+        drawRoundRect(ctx, -w*0.15, -h*0.3, w*0.3, h*0.3, 5);
+        
+        // Yapraklar (Bulut şeklinde yuvarlaklar)
+        ctx.fillStyle = currentTheme.treeLeaves1; 
+        ctx.beginPath(); ctx.arc(0, -h*0.5, w*0.6, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(-w*0.4, -h*0.7, w*0.45, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(w*0.4, -h*0.7, w*0.45, 0, Math.PI*2); ctx.fill();
+        
+        ctx.fillStyle = currentTheme.treeLeaves2; 
+        ctx.beginPath(); ctx.arc(0, -h*0.8, w*0.5, 0, Math.PI*2); ctx.fill();
+        
         ctx.restore();
     }
 
@@ -696,32 +731,36 @@
     function startGame() {
         startScreen.classList.add('hidden'); gameOverScreen.classList.add('hidden'); scoresScreen.classList.add('hidden');
         warningOverlay.classList.add('hidden'); warningText.classList.add('hidden');
-        pwaScreen.classList.add('hidden'); // Yeni eklenti - PWA ekranı açıksa kapat
+        pwaScreen.classList.add('hidden'); 
         
-        score = 0; gameSpeed = 8; frameCount = 0; offset = 0;
+        score = 0; gameBaseSpeed = 7; frameCount = 0; offset = 0;
         currentLevel = 1; currentTheme = themes[0]; levelDisplay.innerText = `Seviye ${currentLevel}: ${currentTheme.name}`;
         targetLanes = 3; currentRoadWidth = targetLanes * laneWidth; nextLaneChangeScore = 500;
         enemies = []; sceneries = []; coins = []; floatingTexts = [];
         
         player.x = (canvas.width / 2) - (player.width / 2); 
-        player.y = canvas.height - 150; 
+        player.y = canvas.height - 130; 
+        
+        // Hız kontrol panelini oyunda görünür yap
+        speedControlBox.classList.remove('hidden');
         
         isPlaying = true; requestAnimationFrame(gameLoop);
     }
 
     function spawnCoin() {
         let laneIndex = Math.floor(Math.random() * targetLanes);
-        coins.push({ lane: laneIndex, y: -200, radius: 14 });
+        coins.push({ lane: laneIndex, y: -200, radius: 16 }); // Biraz daha büyük altınlar
     }
 
     function spawnEnemy() {
         let rand = Math.random();
-        let type = 'sedan', width = 44, height = 80, speedMod = 0;
-        let colors = ['#e74c3c', '#9b59b6', '#e67e22', '#16a085', '#8e44ad'];
+        let type = 'sedan', width = 46, height = 75, speedMod = 0;
+        let colors = ['#ff4757', '#9b59b6', '#ffa502', '#2ed573', '#eccc68']; // Daha oyuncak renkler
         let color = colors[Math.floor(Math.random() * colors.length)];
 
-        if (rand < 0.25) { type = 'truck'; width = 54; height = 140; speedMod = -3; color = '#ecf0f1'; } 
-        else if (rand > 0.8) { type = 'sports'; width = 40; height = 75; speedMod = 3; color = '#f1c40f'; }
+        // TIR'ların hızı (speedMod) normal arabalarla (0) aynı yapıldı. Geriye gitme sorunu çözüldü.
+        if (rand < 0.25) { type = 'truck'; width = 56; height = 120; speedMod = 0; color = '#f1f2f6'; } 
+        else if (rand > 0.8) { type = 'sports'; width = 44; height = 70; speedMod = 2.5; color = '#ff6b81'; }
 
         let laneIndex = Math.floor(Math.random() * targetLanes);
 
@@ -750,23 +789,25 @@
         saveScore(score); 
         warningOverlay.classList.add('hidden'); 
         warningText.classList.add('hidden');
+        
+        // Hız kontrol panelini oyun bitince gizle
+        speedControlBox.classList.add('hidden');
+        
         gameOverScreen.classList.remove('hidden');
     }
 
     function update() {
         frameCount++; 
         
-        let speedMultiplier = 1;
-        if (keys.ArrowUp || keys.w) speedMultiplier = 1.6; 
-        if (keys.ArrowDown || keys.s) speedMultiplier = 0.5; 
-
-        let actualGameSpeed = gameSpeed * speedMultiplier;
+        // Hız Slider Çarpanı (Kullanıcı Kontrolü)
+        let sliderMultiplier = parseFloat(speedSlider.value); 
+        let actualGameSpeed = gameBaseSpeed * sliderMultiplier;
 
         offset += actualGameSpeed;
         score += actualGameSpeed * 0.02; 
         scoreDisplay.innerText = Math.floor(score);
         
-        gameSpeed = 8 + (score / 350); if (gameSpeed > 24) gameSpeed = 24; 
+        gameBaseSpeed = 7 + (score / 400); if (gameBaseSpeed > 18) gameBaseSpeed = 18;
 
         let newLevel = Math.floor(score / 1000) + 1;
         if (newLevel > currentLevel && newLevel <= themes.length) {
@@ -776,8 +817,9 @@
             spawnFloatingText(`SEVİYE ${currentLevel} !`, canvas.width/2, canvas.height/2, '#2ecc71', true);
         }
 
+        // --- Şerit Değişimi Uyarı Sistemi ---
         let scoreUntilChange = nextLaneChangeScore - score;
-        let warningThreshold = actualGameSpeed * 0.02 * 180; 
+        let warningThreshold = actualGameSpeed * 0.02 * 150; 
         if (scoreUntilChange > 0 && scoreUntilChange < warningThreshold) {
             warningOverlay.classList.remove('hidden'); warningText.classList.remove('hidden');
         } else {
@@ -801,7 +843,7 @@
         if (player.x < leftBoundary) player.x = leftBoundary;
         if (player.x + player.width > rightBoundary) player.x = rightBoundary - player.width;
         
-        player.y = canvas.height - 150; 
+        player.y = canvas.height - 130; 
 
         if (Math.random() < 0.15) spawnScenery();
         for (let i = sceneries.length - 1; i >= 0; i--) {
@@ -826,7 +868,7 @@
             }
         }
 
-        let spawnRate = Math.max(20, 50 - Math.floor(score / 200));
+        let spawnRate = Math.max(25, 60 - Math.floor(score / 150));
         if (frameCount % spawnRate === 0) spawnEnemy();
 
         for (let i = 0; i < enemies.length; i++) {
@@ -840,7 +882,7 @@
                 let e2 = enemies[j];
                 
                 let isSameLane = Math.abs(e1.targetLane - e2.targetLane) < 0.5;
-                let isBehind = e1.y < e2.y && e1.y > e2.y - 220; 
+                let isBehind = e1.y < e2.y && e1.y > e2.y - 200; 
                 
                 if (isSameLane && isBehind) {
                     isBlocked = true;
@@ -851,7 +893,7 @@
                     let pTargetLane = Math.max(0, Math.min(targetLanes - 1, Math.round((player.x + player.width/2 - leftEdge - laneWidth/2) / laneWidth)));
 
                     const isLaneSafe = (testLane) => {
-                        let enemyBlocks = enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - testLane) < 0.5 && Math.abs(e3.y - e1.y) < 220);
+                        let enemyBlocks = enemies.some(e3 => e3 !== e1 && Math.abs(e3.targetLane - testLane) < 0.5 && Math.abs(e3.y - e1.y) < 200);
                         if (enemyBlocks) return false;
                         if (testLane === pTargetLane && e1.y > player.y - 350) return false; 
                         return true;
@@ -866,7 +908,7 @@
                     
                     if (isBlocked) {
                         e1.speedMod = e2.speedMod - 0.5; 
-                        if (e1.y > e2.y - 130) e1.y = e2.y - 130; 
+                        if (e1.y > e2.y - 120) e1.y = e2.y - 120; 
                     }
                 }
             }
@@ -881,7 +923,7 @@
             e1.y += (actualGameSpeed * 0.6) - e1.speedMod; 
         }
 
-        let hitMargin = 6;
+        let hitMargin = 8; 
         for (let i = enemies.length - 1; i >= 0; i--) {
             let e = enemies[i];
             if (e.y > canvas.height + 100) { enemies.splice(i, 1); continue; }
@@ -911,25 +953,28 @@
         let stripLen = 50, stripCycle = 100, stripOffset = offset % stripCycle;
         for (let y = -stripCycle; y < canvas.height; y += stripCycle) {
             let actY = y + stripOffset;
-            ctx.fillStyle = '#e74c3c'; ctx.fillRect(leftEdge - 15, actY, 15, stripLen); ctx.fillRect(leftEdge + currentRoadWidth, actY, 15, stripLen);
-            ctx.fillStyle = '#ecf0f1'; ctx.fillRect(leftEdge - 15, actY + stripLen, 15, stripLen); ctx.fillRect(leftEdge + currentRoadWidth, actY + stripLen, 15, stripLen);
+            ctx.fillStyle = '#ff6b81'; ctx.fillRect(leftEdge - 15, actY, 15, stripLen); ctx.fillRect(leftEdge + currentRoadWidth, actY, 15, stripLen);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(leftEdge - 15, actY + stripLen, 15, stripLen); ctx.fillRect(leftEdge + currentRoadWidth, actY + stripLen, 15, stripLen);
         }
 
         let dashLen = 60, gapLen = 60, dashCycle = dashLen + gapLen, dashOffset = offset % dashCycle;
         let currentLanesCount = Math.round(currentRoadWidth / laneWidth);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
         for (let i = 1; i < currentLanesCount; i++) {
             let lineX = leftEdge + (currentRoadWidth / currentLanesCount) * i;
             for (let y = -dashCycle; y < canvas.height; y += dashCycle) {
-                ctx.fillRect(lineX - 3, y + dashOffset, 6, dashLen);
+                drawRoundRect(ctx, lineX - 4, y + dashOffset, 8, dashLen, 4); // Yuvarlak kesik şeritler
             }
         }
 
         coins.forEach(c => {
             ctx.save(); ctx.translate(c.x, c.y);
-            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.ellipse(0, 0, c.radius, c.radius * 0.4, 0, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#f39c12'; ctx.beginPath(); ctx.ellipse(0, 3, c.radius, c.radius * 0.4, 0, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.ellipse(0, 0, c.radius * 0.7, c.radius * 0.25, 0, 0, Math.PI*2); ctx.fill();
+            // Parlak Altın
+            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(0, 0, c.radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#f39c12'; ctx.beginPath(); ctx.arc(0, 3, c.radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(0, 0, c.radius * 0.8, 0, Math.PI*2); ctx.fill();
+            // Ortasına sevimli yıldız / detay
+            ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-4, -4, c.radius * 0.2, 0, Math.PI*2); ctx.fill();
             ctx.restore();
         });
 
@@ -942,7 +987,7 @@
         renderQueue.forEach(item => {
             if (item.type === 'tree') drawTree3D(item.obj);
             else if (item.type === 'enemy') drawCar3D(item.obj, item.obj.type);
-            else drawCar3D(item.obj, 'sports'); 
+            else drawCar3D(item.obj, 'player'); 
         });
 
         drawFloatingTexts();
