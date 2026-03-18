@@ -3,26 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tüccar Simülasyonu - Dashboard</title>
+    <title>Tüccar Simülasyonu - Başlangıç</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-color: #121418;
-            --card-bg: #1e2228;
-            --navbar-bg: #181b20;
-            --text-main: #e0e0e0;
-            --text-muted: #8b929a;
-            --accent-green: #2ecc71;
-            --accent-gold: #f1c40f;
-            --accent-blue: #3498db;
-            --border-color: #2c313a;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --navbar-bg: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-green: #34d399; 
+            --accent-gold: #fbbf24;  
+            --accent-blue: #38bdf8;  
+            --accent-danger: #ef4444;
+            --border-color: #334155;
         }
 
         body {
@@ -31,18 +32,25 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            padding-bottom: 70px; /* Alt menü için boşluk */
+            padding-bottom: 80px; 
             overflow-x: hidden;
+            /* Hikaye gereği başlangıçta gri tonlama aktif (JS ile kaldırılacak) */
+            transition: filter 2s ease-in-out;
+        }
+        
+        body.level-1-theme {
+            filter: grayscale(80%) contrast(1.1);
         }
 
-        /* Genel Kutu ve Kart Tasarımları (Ön Muhasebe Tarzı) */
         .app-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
         .list-group-item {
@@ -52,36 +60,67 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 12px 0;
         }
 
         /* Üst Bilgi Barı */
         .top-header {
             background-color: var(--navbar-bg);
             border-bottom: 1px solid var(--border-color);
-            padding: 10px 15px;
+            padding: 12px 15px;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Haber Bandı (News Ticker) */
+        .news-ticker-wrapper {
+            background-color: var(--accent-danger);
+            color: #fff;
+            padding: 4px 0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            overflow: hidden;
+            white-space: nowrap;
+            position: sticky;
+            top: 67px; /* Header'ın hemen altı */
+            z-index: 999;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+        }
+        .news-ticker-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 15s linear infinite;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
         }
 
         .stat-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .stat-value {
-            font-size: 1.1rem;
-            font-weight: 700;
+            font-size: 1.15rem;
+            font-weight: 800;
+            margin-top: 2px;
         }
 
-        .text-money { color: var(--accent-green); }
-        .text-fame { color: var(--accent-gold); }
+        .text-money { color: var(--accent-green) !important; }
+        .text-fame { color: var(--accent-gold) !important; }
+        .text-goodwill { color: #ec4899 !important; } /* Pembe tonu (İyilikseverlik) */
+        .text-muted { color: var(--text-muted) !important; }
 
-        /* Alt Navigasyon (Mobil Öncelikli) */
+        /* Alt Navigasyon */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -91,7 +130,7 @@
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
-            padding: 10px 0;
+            padding: 12px 0;
             z-index: 1000;
         }
 
@@ -109,14 +148,14 @@
 
         .nav-item i {
             font-size: 1.4rem;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .nav-item.active, .nav-item:hover {
             color: var(--accent-blue);
         }
 
-        /* İlerleme Çubuğu (Sevkiyat ve Pazar Yenilenmesi) */
+        /* İlerleme Çubuğu */
         .progress-container {
             width: 100%;
             background-color: var(--border-color);
@@ -132,51 +171,54 @@
             width: 0%;
             transition: width 0.1s linear;
         }
-        
-        .progress-bar-market {
-            background-color: var(--text-muted);
-        }
 
         /* Butonlar */
         .btn-custom {
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.9rem;
-            padding: 8px 16px;
+            padding: 10px 16px;
             transition: all 0.2s;
         }
-        .btn-buy { background-color: rgba(46, 204, 113, 0.1); color: var(--accent-green); border: 1px solid var(--accent-green); }
-        .btn-buy:hover { background-color: var(--accent-green); color: #fff; }
         
-        .btn-sell { background-color: rgba(52, 152, 219, 0.1); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
-        .btn-sell:hover { background-color: var(--accent-blue); color: #fff; }
+        .btn-buy { background-color: rgba(52, 211, 153, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .btn-buy:hover { background-color: var(--accent-green); color: #000; }
+        
+        .btn-sell { background-color: rgba(56, 189, 248, 0.15); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+        .btn-sell:hover { background-color: var(--accent-blue); color: #000; }
 
-        .btn-upgrade { background-color: rgba(241, 196, 15, 0.1); color: var(--accent-gold); border: 1px solid var(--accent-gold); width: 100%; }
+        .btn-upgrade { background-color: rgba(251, 191, 36, 0.15); color: var(--accent-gold); border: 1px solid var(--accent-gold); width: 100%; padding: 12px; }
         .btn-upgrade:hover { background-color: var(--accent-gold); color: #000; }
+
+        .btn-charity { background-color: rgba(236, 72, 153, 0.15); color: #ec4899; border: 1px solid #ec4899; width: 100%; padding: 12px; }
+        .btn-charity:hover { background-color: #ec4899; color: #fff; }
 
         /* Bildirim (Toast) Sistemi */
         #toast-container {
             position: fixed;
-            top: 70px;
+            top: 100px;
             right: 15px;
             z-index: 9999;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            max-width: 300px;
         }
         .custom-toast {
             background-color: var(--card-bg);
             border-left: 4px solid var(--accent-blue);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
             font-size: 0.9rem;
             animation: slideIn 0.3s ease-out forwards;
             opacity: 0;
+            font-weight: 600;
         }
         .custom-toast.success { border-left-color: var(--accent-green); }
         .custom-toast.warning { border-left-color: var(--accent-gold); }
+        .custom-toast.danger { border-left-color: var(--accent-danger); }
 
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
@@ -190,33 +232,63 @@
             align-items: center;
             justify-content: center;
             background-color: var(--bg-color);
+            background-image: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
         }
         .login-card {
-            width: 100%;
+            width: 90%;
             max-width: 400px;
-            padding: 30px;
+            padding: 40px 30px;
+            border-top: 4px solid var(--accent-gold);
         }
         .form-control {
-            background-color: var(--navbar-bg);
+            background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-main);
+            padding: 12px;
         }
         .form-control:focus {
-            background-color: var(--navbar-bg);
-            border-color: var(--accent-blue);
+            background-color: var(--bg-color);
+            border-color: var(--accent-gold);
             color: var(--text-main);
             box-shadow: none;
         }
 
-        /* Ortalanmış Max Genişlik (PC'de mobil uygulama görünümü) */
+        /* Modallar */
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+        .modal-header { border-bottom: 1px solid var(--border-color); }
+        .modal-footer { border-top: 1px solid var(--border-color); }
+        
+        .story-text {
+            font-family: 'Courier New', Courier, monospace;
+            color: #cbd5e1;
+            line-height: 1.6;
+            background: #0f172a;
+            padding: 15px;
+            border-left: 3px solid var(--accent-gold);
+            margin-bottom: 15px;
+        }
+
         .app-container {
             max-width: 600px;
             margin: 0 auto;
             position: relative;
         }
+        
+        .market-price-up { color: var(--accent-danger); animation: pulse 1s infinite; }
+        .market-price-down { color: var(--accent-green); }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
-<body>
+<body class="level-1-theme">
 
     <!-- Bildirim Konteyneri -->
     <div id="toast-container"></div>
@@ -224,14 +296,15 @@
     <!-- GİRİŞ EKRANI -->
     <div id="login-screen">
         <div class="app-card login-card text-center">
-            <i class="fa-solid fa-boxes-packing text-money mb-3" style="font-size: 3rem;"></i>
-            <h3 class="mb-4 text-white">Tüccar Simülasyonu</h3>
-            <p class="text-muted text-start mb-1"><small>Kullanıcı Adı</small></p>
-            <input type="text" id="username" class="form-control mb-3" placeholder="Örn: sirket_adiniz">
-            <p class="text-muted text-start mb-1"><small>Şifre</small></p>
-            <input type="password" id="password" class="form-control mb-4" placeholder="Şifre belirleyin">
-            <button class="btn btn-success w-100 btn-custom" onclick="login()">Giriş Yap / Kayıt Ol</button>
-            <p class="text-muted mt-3" style="font-size: 0.8rem;">Verileriniz tarayıcınıza güvenle kaydedilir.</p>
+            <i class="fa-solid fa-truck-pickup mb-3" style="font-size: 3.5rem; color: #64748b;"></i>
+            <h3 class="mb-2" style="color: #fff; font-weight: 800; letter-spacing: -1px;">Tüccar Simülasyonu</h3>
+            <p class="text-muted mb-4" style="font-size: 0.85rem;">Sıfırdan Ticaret Bakanlığı'na giden yol...</p>
+            
+            <p class="text-muted text-start mb-2"><small>Şirket / Karakter Adı</small></p>
+            <input type="text" id="username" class="form-control mb-4" placeholder="Örn: Rıza Lojistik">
+            
+            <button class="btn btn-warning w-100 btn-custom mb-3 fw-bold" onclick="login()">Kontağı Çalıştır</button>
+            <p class="text-muted m-0" style="font-size: 0.75rem;">Oyun verileri tarayıcınıza güvenle kaydedilir.</p>
         </div>
     </div>
 
@@ -242,32 +315,44 @@
         <header class="top-header">
             <div class="app-container d-flex justify-content-between align-items-center">
                 <div class="stat-box">
-                    <span class="text-muted"><i class="fa-solid fa-wallet"></i> Kasa</span>
+                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fa-solid fa-wallet"></i> Kasa</span>
                     <span class="stat-value text-money" id="ui-money">₺0</span>
                 </div>
                 <div class="stat-box">
-                    <span class="text-muted"><i class="fa-solid fa-star"></i> İtibar</span>
+                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fa-solid fa-handshake"></i> İtibar (Güven)</span>
                     <span class="stat-value text-fame" id="ui-fame">0</span>
                 </div>
                 <div class="stat-box">
-                    <span class="text-muted"><i class="fa-solid fa-award"></i> Seviye</span>
-                    <span class="stat-value text-white" id="ui-level">1</span>
+                    <span class="text-muted" style="font-size: 0.7rem;"><i class="fa-solid fa-heart"></i> İyilikseverlik</span>
+                    <span class="stat-value text-goodwill" id="ui-goodwill">0</span>
                 </div>
+                <!-- Bilgi Butonu -->
+                <button class="btn btn-sm" style="color: var(--text-muted); padding: 0; font-size: 1.2rem;" onclick="showStoryModal()" title="Hikaye ve Bilgi">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                </button>
             </div>
         </header>
 
+        <!-- Kayan Haber Bandı (Pazar Manipülasyonu) -->
+        <div class="news-ticker-wrapper">
+            <div class="app-container" style="overflow: hidden; display: flex; align-items: center; width: 100%;">
+                <i class="fa-solid fa-bolt me-2 ms-2"></i> <span style="font-weight: 800; margin-right: 10px;">SON DAKİKA:</span>
+                <span class="news-ticker-text" id="news-text">Kasabada sıradan bir gün. Piyasalar sakin seyrediyor... Beklemede kalın.</span>
+            </div>
+        </div>
+
         <!-- İçerik Alanı -->
-        <main class="app-container p-3 pt-4">
+        <main class="app-container p-3 pt-3">
             
             <!-- 1. PAZAR SEKMESİ -->
             <section id="tab-pazar">
                 <div class="d-flex justify-content-between align-items-end mb-3">
-                    <h5 class="m-0"><i class="fa-solid fa-store text-muted me-2"></i> Pazar Yeri</h5>
+                    <h5 class="m-0 text-white"><i class="fa-solid fa-store text-muted me-2"></i> Bölgesel Pazar</h5>
                     <small class="text-muted" id="market-timer-text">Yenilenme: 30s</small>
                 </div>
                 <!-- Pazar Yenilenme Barı -->
-                <div class="progress-container mb-3" style="height: 4px;">
-                    <div class="progress-bar progress-bar-market" id="market-progress" style="width: 0%;"></div>
+                <div class="progress-container mb-4" style="height: 4px;">
+                    <div class="progress-bar bg-secondary" id="market-progress" style="width: 0%;"></div>
                 </div>
 
                 <div id="market-items-container">
@@ -277,73 +362,99 @@
 
             <!-- 2. DEPO SEKMESİ -->
             <section id="tab-depo" class="d-none">
-                <h5 class="mb-3"><i class="fa-solid fa-warehouse text-muted me-2"></i> Şirket Deposu</h5>
+                <h5 class="mb-3 text-white"><i class="fa-solid fa-warehouse text-muted me-2"></i> Operasyon Merkezi</h5>
                 
                 <div class="app-card">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Doluluk Oranı</span>
+                    <div class="d-flex justify-content-between mb-2" style="font-weight: 600;">
+                        <span>Depo Doluluk Oranı</span>
                         <span id="ui-capacity-text">0 / 50</span>
                     </div>
-                    <div class="progress-container mb-3" style="height: 12px;">
+                    <div class="progress-container mb-4" style="height: 12px;">
                         <div class="progress-bar bg-warning" id="ui-capacity-bar" style="width: 0%;"></div>
                     </div>
                     
-                    <h6 class="text-muted mt-4 mb-2">Envanterdeki Mallar</h6>
+                    <h6 class="text-muted mt-2 mb-2">Envanterdeki Mallar</h6>
                     <ul class="list-group mb-4" id="inventory-list">
                         <!-- Envanter JS ile basılacak -->
                     </ul>
 
-                    <h6 class="text-muted mb-2">Geliştirmeler</h6>
-                    <button class="btn btn-upgrade" onclick="upgradeWarehouse()">
-                        <i class="fa-solid fa-plus-circle"></i> Depo Hacmini Genişlet (-₺500)
+                    <h6 class="text-muted mb-3 border-top border-secondary pt-3">Operasyonel Gelişimler</h6>
+                    
+                    <button id="btn-upg-tablet" class="btn btn-upgrade mb-2" onclick="buyUpgrade('tablet')">
+                        <i class="fa-solid fa-tablet-screen-button me-1"></i> Manuel Defterden Tablete Geç (-₺800)<br>
+                        <small class="text-muted" style="font-size: 0.7rem;">(+15 İtibar. Prestijli görünüm.)</small>
+                    </button>
+                    
+                    <button id="btn-upg-cold" class="btn btn-upgrade mb-2" onclick="buyUpgrade('coldStorage')">
+                        <i class="fa-solid fa-snowflake me-1"></i> Soğuk Hava Deposu Kur (-₺1500)<br>
+                        <small class="text-muted" style="font-size: 0.7rem;">(Kapasite +50 Artar, Kaliteli Tüccar imajı +20 İtibar)</small>
                     </button>
                 </div>
             </section>
 
             <!-- 3. FİLO (LOJİSTİK) SEKMESİ -->
             <section id="tab-filo" class="d-none">
-                <h5 class="mb-3"><i class="fa-solid fa-truck-fast text-muted me-2"></i> Lojistik ve Sevkiyat</h5>
+                <h5 class="mb-3 text-white"><i class="fa-solid fa-truck-fast text-muted me-2"></i> Lojistik & Rota Planı</h5>
                 
                 <div class="app-card mb-4">
                     <h6 class="text-muted mb-3">Aktif Teslimatlar</h6>
                     <div id="active-shipments">
-                        <p class="text-muted text-center py-3 m-0" id="no-shipment-msg">Şu an yolda olan sevkiyat yok.</p>
-                        <!-- Sevkiyatlar JS ile buraya basılacak -->
+                        <p class="text-muted text-center py-4 m-0" id="no-shipment-msg">
+                            <i class="fa-solid fa-road mb-2" style="font-size: 2rem; opacity: 0.5;"></i><br>
+                            Şu an rotada olan araç yok.
+                        </p>
                     </div>
                 </div>
 
                 <div class="app-card">
                     <h6 class="text-muted mb-3">Filo Geliştirmeleri</h6>
-                    <p class="mb-2" style="font-size: 0.9rem;">Mevcut Teslimat Süresi: <span id="ui-speed-text" class="text-white">10sn</span></p>
-                    <button class="btn btn-upgrade" onclick="upgradeVehicle()">
-                        <i class="fa-solid fa-gauge-high"></i> Araç Hızını Artır (-₺1000)
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span style="font-size: 0.95rem;">Mevcut Rota Süresi:</span>
+                        <span id="ui-speed-text" class="text-white fw-bold bg-dark px-2 py-1 rounded border border-secondary">10sn</span>
+                    </div>
+                    
+                    <button id="btn-upg-engine" class="btn btn-upgrade mb-2" onclick="buyUpgrade('engine')">
+                        <i class="fa-solid fa-gauge-high me-1"></i> Motor Bakımı ve Rota Optimizasyonu (-₺1000)<br>
+                        <small class="text-muted" style="font-size: 0.7rem;">(Teslimat süresini kısaltır)</small>
+                    </button>
+
+                    <button id="btn-upg-logo" class="btn btn-upgrade" onclick="buyUpgrade('logo')">
+                        <i class="fa-solid fa-paint-roller me-1"></i> Kamyoneti Boyat ve Logo Ekle (-₺1200)<br>
+                        <small class="text-muted" style="font-size: 0.7rem;">(Şehirde tanınırlık artar, +25 İtibar)</small>
                     </button>
                 </div>
             </section>
 
-            <!-- 4. GÖREVLER SEKMESİ -->
-            <section id="tab-gorevler" class="d-none">
-                <h5 class="mb-3"><i class="fa-solid fa-list-check text-muted me-2"></i> Görevler & Durum</h5>
+            <!-- 4. KASABA & SİYASET SEKMESİ -->
+            <section id="tab-kasaba" class="d-none">
+                <h5 class="mb-3 text-white"><i class="fa-solid fa-landmark text-muted me-2"></i> Kasaba Meydanı & Kariyer</h5>
                 
                 <div class="app-card">
-                    <h6 class="text-white mb-2">Seviye İlerlemesi</h6>
-                    <p class="text-muted" style="font-size: 0.85rem;">Seviye 2 (Ülke Geneli Ticaret) lisansını almak için 100 itibara ulaşmalısın. Her başarılı satış +5 İtibar kazandırır.</p>
+                    <h6 class="text-white mb-2">Bölgesel Bilinirlik (Lisans İlerlemesi)</h6>
+                    <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">Belediye Başkanı, yalnızca %100 Güven Endeksine (İtibar) ulaşanlara <strong>Şehirler Arası Taşıma Lisansı (Seviye 2)</strong> vermektedir.</p>
                     
-                    <div class="d-flex justify-content-between mt-3 mb-1" style="font-size: 0.8rem;">
-                        <span>İtibar Hedefi</span>
-                        <span id="ui-quest-fame">0 / 100</span>
+                    <div class="d-flex justify-content-between mt-4 mb-1" style="font-size: 0.85rem; font-weight: 600;">
+                        <span>Güven Endeksi (İtibar)</span>
+                        <span id="ui-quest-fame" class="text-fame">0 / 100</span>
                     </div>
-                    <div class="progress-container mb-2" style="height: 10px;">
-                        <div class="progress-bar bg-success" id="ui-quest-bar" style="width: 0%;"></div>
+                    <div class="progress-container mb-2" style="height: 12px;">
+                        <div class="progress-bar bg-warning" id="ui-quest-bar" style="width: 0%;"></div>
                     </div>
                 </div>
-                
-                <div class="app-card" id="level-2-unlocked-card" style="display: none; border-color: var(--accent-gold);">
-                    <div class="text-center py-2">
-                        <i class="fa-solid fa-crown text-fame mb-2" style="font-size: 2rem;"></i>
-                        <h6 class="text-white">Seviye 2 Aktif!</h6>
-                        <p class="text-muted m-0" style="font-size: 0.85rem;">Tebrikler, artık ülke genelinde tanınan bir tüccarsın. (Gelecek güncellemelerde yeni ürünler eklenecektir).</p>
-                    </div>
+
+                <div class="app-card">
+                    <h6 class="text-white mb-3"><i class="fa-solid fa-hand-holding-heart text-goodwill me-2"></i> Sosyal Sorumluluk</h6>
+                    <p class="text-muted mb-3" style="font-size: 0.85rem;">Siyasi kariyerin (Ticaret Bakanlığı) için sadece zengin olmak yetmez, halkın sevgisini de kazanmalısın. Maliyetli ama saygınlık getirir.</p>
+                    
+                    <button class="btn btn-charity mb-2" onclick="doCharity('school')">
+                        <i class="fa-solid fa-school me-1"></i> Kasaba Okulu İnşaatına Malzeme Taşı (-₺300)<br>
+                        <span style="font-size: 0.75rem; font-weight: normal;">(+10 İtibar, +5 İyilikseverlik)</span>
+                    </button>
+                    
+                    <button class="btn btn-charity" onclick="doCharity('bakery')">
+                        <i class="fa-solid fa-bread-slice me-1"></i> Fakirler İçin Fırına Ücretsiz Un Ver (-2 Un)<br>
+                        <span style="font-size: 0.75rem; font-weight: normal;">(+15 İtibar, +10 İyilikseverlik)</span>
+                    </button>
                 </div>
             </section>
 
@@ -352,99 +463,173 @@
         <!-- Alt Navigasyon Menüsü -->
         <nav class="bottom-nav">
             <div class="app-container d-flex justify-content-around w-100">
-                <div class="nav-item active" onclick="switchTab('pazar', this)">
+                <div class="nav-item active" id="nav-pazar" onclick="switchTab('pazar', this)">
                     <i class="fa-solid fa-store"></i>
                     <span>Pazar</span>
                 </div>
-                <div class="nav-item" onclick="switchTab('depo', this)">
-                    <i class="fa-solid fa-warehouse"></i>
+                <div class="nav-item" id="nav-depo" onclick="switchTab('depo', this)">
+                    <i class="fa-solid fa-boxes-stacked"></i>
                     <span>Depo</span>
                 </div>
-                <div class="nav-item" onclick="switchTab('filo', this)">
-                    <i class="fa-solid fa-truck-fast"></i>
+                <div class="nav-item" id="nav-filo" onclick="switchTab('filo', this)">
+                    <i class="fa-solid fa-route"></i>
                     <span>Filo</span>
                 </div>
-                <div class="nav-item" onclick="switchTab('gorevler', this)">
-                    <i class="fa-solid fa-list-check"></i>
-                    <span>Görevler</span>
+                <div class="nav-item" id="nav-kasaba" onclick="switchTab('kasaba', this)">
+                    <i class="fa-solid fa-landmark"></i>
+                    <span>Kasaba</span>
                 </div>
             </div>
         </nav>
 
     </div>
 
+    <!-- Hikaye ve Başlangıç Modal -->
+    <div class="modal fade" id="storyModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-white">
+                        <i class="fa-solid fa-book-open text-gold me-2"></i> Bölüm 1: Yeni Bir Başlangıç
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body" style="font-size: 0.95rem; line-height: 1.6;">
+                    <div class="story-text">
+                        "İflas etmiş bir aile işletmesinden geriye sadece eski, yıpranmış bir lojistik defteri ve kasabanın kenarında duran paslı, küçük bir kamyonet kaldı..."
+                    </div>
+                    <p>Sıfırdan başlıyorsun. Nakit para sadece bir araçtır; asıl önemli olan <strong>Bilinirlik (Güven)</strong> puanındır.</p>
+                    <ul class="list-unstyled text-muted" style="font-size: 0.85rem;">
+                        <li class="mb-2"><i class="fa-solid fa-check text-green me-2"></i> <strong>İlk Görev:</strong> Pazardan Ucuza Un alıp, Limandaki fırına satarak kâr elde et.</li>
+                        <li class="mb-2"><i class="fa-solid fa-check text-green me-2"></i> <strong>Haberleri Takip Et:</strong> Üstteki haber bandı piyasa krizlerini haber verir. Fırsatları değerlendir!</li>
+                        <li class="mb-2"><i class="fa-solid fa-check text-green me-2"></i> <strong>İtibar Kazan:</strong> Başarılı teslimatlar, aracını boyatmak veya kasabaya yardım etmek sana İtibar (Güven) kazandırır.</li>
+                        <li><i class="fa-solid fa-check text-green me-2"></i> <strong>Hedef:</strong> 100 İtibara ulaşıp Belediye Başkanı'nın dikkatini çekmek!</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning w-100 fw-bold" data-bs-dismiss="modal">Kontağı Çevir ve Başla</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Belediye Başkanı (Seviye 2) Modal -->
+    <div class="modal fade" id="mayorModal" tabindex="-1" data-bs-backdrop="static" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border: 2px solid var(--accent-gold); box-shadow: 0 0 20px rgba(251,191,36,0.3);">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title" style="color: var(--accent-gold);">
+                        <i class="fa-solid fa-certificate me-2"></i> Belediye Başkanlığı Makamı
+                    </h5>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <i class="fa-solid fa-city mb-3" style="font-size: 4rem; color: #fff;"></i>
+                    <h4 class="text-white mb-3">Tebrikler! Lisans Onaylandı.</h4>
+                    <p class="text-muted" style="font-size: 0.95rem;">
+                        "Kasabadaki çalışmalarını ve dürüst ticaretini yakından takip ediyorum. Artık o eski paslı kamyoneti aştın. Sana Şehirler Arası Taşıma Lisansı'nı takdim ediyorum."
+                    </p>
+                    <p class="text-success fw-bold mt-3">
+                        + Renkler geri döndü!<br>
+                        + Yüksek kârlı "Elektronik" ve "Mücevher" pazarı açıldı.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning w-100 fw-bold" data-bs-dismiss="modal" onclick="applyLevel2Visuals()">Yeni Şehirlere Açıl</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- JavaScript Mantığı -->
     <script>
         // --- TEMEL VERİ YAPISI VE AYARLAR ---
-        const GAME_SPEED = 30; // Pazar yenilenme süresi (saniye)
+        const GAME_SPEED = 30; 
         
-        // Ürün Katalogu (Sabit veriler)
+        // Ürün Katalogu (Hikayeye uygun)
         const productsCatalog = {
-            un: { id: 'un', name: 'Un', basePrice: 20, volatility: 8, icon: 'fa-wheat-awn' },
-            tekstil: { id: 'tekstil', name: 'Tekstil', basePrice: 80, volatility: 25, icon: 'fa-shirt' },
-            elektronik: { id: 'elektronik', name: 'Elektronik', basePrice: 350, volatility: 120, icon: 'fa-microchip' }
+            un: { id: 'un', name: 'Un Çuvalları', basePrice: 20, volatility: 8, icon: 'fa-wheat-awn', minLevel: 1 },
+            tekstil: { id: 'tekstil', name: 'Tekstil & Kumaş', basePrice: 80, volatility: 25, icon: 'fa-shirt', minLevel: 1 },
+            elektronik: { id: 'elektronik', name: 'Elektronik Parça', basePrice: 350, volatility: 120, icon: 'fa-microchip', minLevel: 2 },
+            mucevher: { id: 'mucevher', name: 'İşlenmiş Mücevher', basePrice: 1500, volatility: 500, icon: 'fa-gem', minLevel: 2 }
         };
 
-        // Oyuncu State (Durum) Objesi
+        // Haber Olayları (Market Manipülasyonu)
+        const marketEvents = [
+            { text: "Kuraklık vurdu! Fırınlar un bulamıyor, Un fiyatları tavan yaptı!", effectItem: 'un', effectMultiplier: 2.5 },
+            { text: "Bölge A'daki tekstil fabrikasında yangın çıktı! Kumaş karaborsaya düştü.", effectItem: 'tekstil', effectMultiplier: 2.0 },
+            { text: "Komşu kasabada hasat çok bereketli geçti. Un fiyatları çakıldı, alım fırsatı!", effectItem: 'un', effectMultiplier: 0.4 },
+            { text: "Hükümet tekstil ithalatını durdurdu. Yerli kumaş değerlendi.", effectItem: 'tekstil', effectMultiplier: 1.8 }
+        ];
+
         let state = {
             username: "",
             isLoggedIn: false,
-            money: 1000,
+            hasSeenStory: false,
+            money: 500, // Hikaye gereği düşük başlar
             reputation: 0,
+            goodwill: 0,
             level: 1,
-            warehouseCap: 50,
-            deliverySpeedMs: 10000, // 10 saniye
-            inventory: { un: 0, tekstil: 0, elektronik: 0 },
-            currentPrices: { un: 20, tekstil: 80, elektronik: 350 }
+            warehouseCap: 20, // Eski depo küçük başlar
+            deliverySpeedMs: 15000, // Paslı kamyonet yavaştır
+            inventory: { un: 0, tekstil: 0, elektronik: 0, mucevher: 0 },
+            currentPrices: { un: 20, tekstil: 80, elektronik: 350, mucevher: 1500 },
+            activeShipments: [],
+            upgrades: { tablet: false, coldStorage: false, engine: false, logo: false },
+            activeEventIndex: -1
         };
 
-        // Sevkiyat animasyonlarını hafızada tutmak için
-        let activeShipmentElements = 0; 
+        let storyModal;
+        let mayorModal;
 
-        // --- SİSTEM BAŞLATMA ---
         window.onload = () => {
+            storyModal = new bootstrap.Modal(document.getElementById('storyModal'));
+            mayorModal = new bootstrap.Modal(document.getElementById('mayorModal'));
             loadData();
             if (state.isLoggedIn) {
                 showGame();
             }
         };
 
-        // --- VERİ YÖNETİMİ (LOCALSTORAGE) ---
         function loadData() {
-            const saved = localStorage.getItem('merchantSimulationData');
+            const saved = localStorage.getItem('merchantSimulationDataV2');
             if (saved) {
-                state = { ...state, ...JSON.parse(saved) };
+                const parsed = JSON.parse(saved);
+                state = { ...state, ...parsed };
+                state.inventory = { ...{ un: 0, tekstil: 0, elektronik: 0, mucevher: 0 }, ...(parsed.inventory || {}) };
+                state.currentPrices = { ...{ un: 20, tekstil: 80, elektronik: 350, mucevher: 1500 }, ...(parsed.currentPrices || {}) };
+                state.upgrades = { ...{ tablet: false, coldStorage: false, engine: false, logo: false }, ...(parsed.upgrades || {}) };
+                state.activeShipments = parsed.activeShipments || [];
             }
         }
 
         function saveData() {
-            localStorage.setItem('merchantSimulationData', JSON.stringify(state));
+            localStorage.setItem('merchantSimulationDataV2', JSON.stringify(state));
             updateUI();
         }
 
-        // --- GİRİŞ / KAYIT ---
         function login() {
             const userInp = document.getElementById('username').value.trim();
-            const passInp = document.getElementById('password').value.trim();
-            
-            if (userInp === "" || passInp === "") {
-                showToast("Lütfen kullanıcı adı ve şifre girin.", "warning");
+            if (userInp === "") {
+                showToast("Lütfen karakter/şirket adınızı girin.", "warning");
                 return;
             }
 
-            // Basit MVP giriş mantığı (Güvenlik simülasyonu)
             if (state.username !== "" && state.username !== userInp) {
-                // Farklı bir hesapla giriyorsa sıfırla
-                localStorage.removeItem('merchantSimulationData');
-                state.money = 1000; state.reputation = 0; state.level = 1; 
-                state.warehouseCap = 50; state.deliverySpeedMs = 10000;
-                state.inventory = { un: 0, tekstil: 0, elektronik: 0 };
+                localStorage.removeItem('merchantSimulationDataV2');
+                state.money = 500; state.reputation = 0; state.goodwill = 0; state.level = 1; 
+                state.warehouseCap = 20; state.deliverySpeedMs = 15000;
+                state.inventory = { un: 0, tekstil: 0, elektronik: 0, mucevher: 0 };
+                state.activeShipments = [];
+                state.upgrades = { tablet: false, coldStorage: false, engine: false, logo: false };
+                state.hasSeenStory = false;
             }
 
             state.username = userInp;
             state.isLoggedIn = true;
             saveData();
-            showToast("Sisteme başarıyla giriş yapıldı.", "success");
             showGame();
         }
 
@@ -452,59 +637,74 @@
             document.getElementById('login-screen').classList.add('d-none');
             document.getElementById('game-screen').classList.remove('d-none');
             
+            if (!state.hasSeenStory) {
+                showStoryModal();
+                state.hasSeenStory = true;
+                saveData();
+            }
+
+            if(state.level >= 2) {
+                applyLevel2Visuals();
+            }
+
             updateUI();
             startMarketLoop();
+            resumeActiveShipments(); 
+        }
+
+        function showStoryModal() {
+            storyModal.show();
+        }
+
+        function applyLevel2Visuals() {
+            document.body.classList.remove('level-1-theme');
+            // İleride daha fazla renk efekti eklenebilir
         }
 
         // --- ARAYÜZ (UI) GÜNCELLEMELERİ ---
         function updateUI() {
-            // Üst Bar Güncelleme
             document.getElementById('ui-money').innerText = `₺${Math.floor(state.money)}`;
             document.getElementById('ui-fame').innerText = state.reputation;
-            document.getElementById('ui-level').innerText = state.level;
+            document.getElementById('ui-goodwill').innerText = state.goodwill;
 
-            // Depo Doluluk Hesaplama
-            let currentLoad = state.inventory.un + state.inventory.tekstil + state.inventory.elektronik;
+            let currentLoad = Object.values(state.inventory).reduce((a, b) => a + b, 0);
             document.getElementById('ui-capacity-text').innerText = `${currentLoad} / ${state.warehouseCap}`;
             let capPercent = (currentLoad / state.warehouseCap) * 100;
-            document.getElementById('ui-capacity-bar').style.width = `${capPercent}%`;
+            document.getElementById('ui-capacity-bar').style.width = `${Math.min(capPercent, 100)}%`;
             
-            // Hız metni güncelleme
             document.getElementById('ui-speed-text').innerText = `${state.deliverySpeedMs / 1000}sn`;
 
-            // Görevler sekmesi güncelleme
             document.getElementById('ui-quest-fame').innerText = `${state.reputation} / 100`;
             let questPercent = Math.min((state.reputation / 100) * 100, 100);
             document.getElementById('ui-quest-bar').style.width = `${questPercent}%`;
 
-            if (state.level >= 2) {
-                document.getElementById('level-2-unlocked-card').style.display = 'block';
-            }
-
             renderMarket();
             renderWarehouse();
+            checkUpgradesUI();
+            
+            if (state.activeShipments.length === 0) {
+                document.getElementById('no-shipment-msg').style.display = 'block';
+            } else {
+                document.getElementById('no-shipment-msg').style.display = 'none';
+            }
         }
 
-        // --- SEKME GEÇİŞ MANTIĞI ---
         function switchTab(tabId, el) {
-            // Buton aktiflik durumu
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            el.classList.add('active');
+            if(el) el.classList.add('active');
 
-            // Ekranları gizle/göster
-            const tabs = ['pazar', 'depo', 'filo', 'gorevler'];
+            const tabs = ['pazar', 'depo', 'filo', 'kasaba'];
             tabs.forEach(t => document.getElementById(`tab-${t}`).classList.add('d-none'));
             document.getElementById(`tab-${tabId}`).classList.remove('d-none');
 
-            // Sekmeye özel güncellemeler (Sadece o sekmeye girince render edilebilir)
             if(tabId === 'pazar') renderMarket();
             if(tabId === 'depo') renderWarehouse();
         }
 
-        // --- PAZAR YERİ MANTIĞI ---
+        // --- PAZAR YERİ VE HABER (EVENT) MANTIĞI ---
         let marketTimer = 0;
         function startMarketLoop() {
-            updateMarketPrices(); // İlk açılışta güncelle
+            updateMarketPrices(); 
             
             setInterval(() => {
                 marketTimer++;
@@ -513,22 +713,47 @@
 
                 if (marketTimer >= GAME_SPEED) {
                     marketTimer = 0;
+                    generateRandomEvent(); // Haber ve Fiyat manipülasyonu
                     updateMarketPrices();
-                    showToast("Pazar fiyatları güncellendi!", "info");
                 }
-            }, 1000); // Her saniye barı ilerlet
+            }, 1000); 
+        }
+
+        function generateRandomEvent() {
+            // %30 ihtimalle bir kriz/fırsat olayı tetiklenir
+            if(Math.random() < 0.3) {
+                const randIndex = Math.floor(Math.random() * marketEvents.length);
+                state.activeEventIndex = randIndex;
+                const event = marketEvents[randIndex];
+                
+                document.getElementById('news-text').innerText = event.text;
+                document.querySelector('.news-ticker-wrapper').style.backgroundColor = event.effectMultiplier > 1 ? "var(--accent-danger)" : "var(--accent-green)";
+                showToast("Piyasada olağandışı hareketlilik var! Haber bandına bak.", "warning");
+            } else {
+                state.activeEventIndex = -1; // Olay yok
+                document.getElementById('news-text').innerText = "Kasabada sıradan bir gün. Piyasalar sakin seyrediyor... Beklemede kalın.";
+                document.querySelector('.news-ticker-wrapper').style.backgroundColor = "#475569";
+            }
         }
 
         function updateMarketPrices() {
             for (let key in productsCatalog) {
                 const prod = productsCatalog[key];
-                // Fiyat dalgalanma formülü: basePrice + rastgele ( -volatility ile +volatility arası )
                 const change = (Math.random() * (prod.volatility * 2)) - prod.volatility;
                 let newPrice = prod.basePrice + change;
-                if (newPrice < 1) newPrice = 1; // Fiyat 1'in altına düşemez
+                
+                // Eğer aktif bir olay bu ürünü etkiliyorsa fiyatı manipüle et
+                if(state.activeEventIndex !== -1) {
+                    const event = marketEvents[state.activeEventIndex];
+                    if(event.effectItem === key) {
+                        newPrice = newPrice * event.effectMultiplier;
+                    }
+                }
+
+                if (newPrice < 1) newPrice = 1; 
                 state.currentPrices[key] = Math.floor(newPrice);
             }
-            saveData(); // Kaydet ve UI güncelle (renderMarket dahil)
+            saveData(); 
         }
 
         function renderMarket() {
@@ -537,22 +762,31 @@
 
             for (let key in productsCatalog) {
                 const prod = productsCatalog[key];
+                
+                if (state.level < prod.minLevel) continue;
+
                 const price = state.currentPrices[key];
                 
+                // Görsel fiyat uyarısı
+                let priceClass = "text-white";
+                if(state.activeEventIndex !== -1 && marketEvents[state.activeEventIndex].effectItem === key) {
+                    priceClass = marketEvents[state.activeEventIndex].effectMultiplier > 1 ? "market-price-up fw-bold" : "market-price-down fw-bold";
+                }
+
                 const card = document.createElement('div');
                 card.className = "app-card d-flex justify-content-between align-items-center";
                 card.innerHTML = `
                     <div class="d-flex align-items-center">
-                        <div class="bg-dark p-3 rounded-circle me-3 border border-secondary text-center" style="width: 50px; height: 50px;">
-                            <i class="fa-solid ${prod.icon} text-muted"></i>
+                        <div class="bg-dark p-3 rounded-circle me-3 border border-secondary text-center" style="width: 50px; height: 50px; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid ${prod.icon} text-muted" style="font-size: 1.2rem;"></i>
                         </div>
                         <div>
-                            <h6 class="m-0">${prod.name}</h6>
-                            <span class="text-money fw-bold">₺${price} / Adet</span>
+                            <h6 class="m-0 text-white">${prod.name}</h6>
+                            <span class="${priceClass}">₺${price} / Adet</span>
                         </div>
                     </div>
                     <div>
-                        <button class="btn btn-buy" onclick="buyItem('${key}')">Satın Al</button>
+                        <button class="btn btn-buy" onclick="buyItem('${key}')">Al</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -561,24 +795,24 @@
 
         function buyItem(itemId) {
             const price = state.currentPrices[itemId];
-            const currentLoad = state.inventory.un + state.inventory.tekstil + state.inventory.elektronik;
+            const currentLoad = Object.values(state.inventory).reduce((a, b) => a + b, 0);
             
             if (state.money < price) {
-                showToast("Yetersiz bakiye!", "warning");
+                showToast("Bütçe yetersiz!", "danger");
                 return;
             }
             if (currentLoad >= state.warehouseCap) {
-                showToast("Depo kapasitesi dolu! Önce depo alanını genişlet.", "warning");
+                showToast("Depo dolu! Alanı genişlet.", "warning");
                 return;
             }
 
             state.money -= price;
             state.inventory[itemId]++;
             saveData();
-            showToast(`1 Adet ${productsCatalog[itemId].name} satın alındı.`, "success");
+            showToast(`1 Adet ${productsCatalog[itemId].name} alındı.`, "success");
         }
 
-        // --- DEPO MANTIĞI ---
+        // --- DEPO, OPERASYON VE GELİŞTİRMELER ---
         function renderWarehouse() {
             const list = document.getElementById('inventory-list');
             list.innerHTML = "";
@@ -594,13 +828,13 @@
                     const li = document.createElement('li');
                     li.className = "list-group-item";
                     li.innerHTML = `
-                        <div>
+                        <div class="fw-bold text-white">
                             <i class="fa-solid ${prod.icon} text-muted me-2"></i> 
                             ${prod.name} 
-                            <span class="badge bg-secondary ms-2">${amount} Adet</span>
+                            <span class="badge bg-secondary ms-2" style="font-weight: 500;">${amount} Adet</span>
                         </div>
-                        <button class="btn btn-sm btn-sell" onclick="startShipment('${key}', ${currentMarketPrice})">
-                            <i class="fa-solid fa-truck-arrow-right"></i> Sat (₺${currentMarketPrice})
+                        <button class="btn btn-sm btn-sell fw-bold" onclick="startShipment('${key}', ${currentMarketPrice})">
+                            <i class="fa-solid fa-route me-1"></i> Gönder (₺${currentMarketPrice})
                         </button>
                     `;
                     list.appendChild(li);
@@ -608,118 +842,197 @@
             }
 
             if (!hasItems) {
-                list.innerHTML = `<li class="list-group-item text-muted justify-content-center">Deponuz şu an boş.</li>`;
+                list.innerHTML = `<li class="list-group-item text-muted justify-content-center py-4 border-0">Depo boş. Sokaklara in ve mal topla!</li>`;
             }
         }
 
-        function upgradeWarehouse() {
-            const cost = 500;
-            if (state.money >= cost) {
-                state.money -= cost;
-                state.warehouseCap += 25;
-                saveData();
-                showToast("Depo kapasitesi +25 artırıldı!", "success");
-            } else {
-                showToast("Yetersiz bakiye! ₺500 gerekli.", "warning");
-            }
+        function checkUpgradesUI() {
+            if(state.upgrades.tablet) document.getElementById('btn-upg-tablet').style.display = 'none';
+            if(state.upgrades.coldStorage) document.getElementById('btn-upg-cold').style.display = 'none';
+            if(state.upgrades.engine) document.getElementById('btn-upg-engine').style.display = 'none';
+            if(state.upgrades.logo) document.getElementById('btn-upg-logo').style.display = 'none';
         }
 
-        function upgradeVehicle() {
-            const cost = 1000;
-            if (state.deliverySpeedMs <= 2000) {
-                showToast("Araçlar zaten maksimum hızda!", "warning");
+        function buyUpgrade(type) {
+            let cost = 0;
+            if(type === 'tablet') cost = 800;
+            if(type === 'coldStorage') cost = 1500;
+            if(type === 'engine') cost = 1000;
+            if(type === 'logo') cost = 1200;
+
+            if (state.money < cost) {
+                showToast("Kasadaki nakit yetersiz!", "danger");
                 return;
             }
-            if (state.money >= cost) {
-                state.money -= cost;
-                state.deliverySpeedMs -= 2000; // 2 saniye hızlandır
-                saveData();
-                showToast("Araç hızı artırıldı! Teslimatlar artık daha hızlı.", "success");
-            } else {
-                showToast("Yetersiz bakiye! ₺1000 gerekli.", "warning");
+
+            state.money -= cost;
+            state.upgrades[type] = true;
+
+            // Etkileri uygula
+            if(type === 'tablet') {
+                state.reputation += 15;
+                showToast("Operasyonları dijitale taşıdın. İtibar arttı!", "success");
             }
+            if(type === 'coldStorage') {
+                state.warehouseCap += 50;
+                state.reputation += 20;
+                showToast("Soğuk Hava Deposu devrede. Kapasite uçuşta!", "success");
+            }
+            if(type === 'engine') {
+                state.deliverySpeedMs -= 5000; // 5 saniye kısalt
+                showToast("Motor yağlandı, rotalar optimize edildi. Araçlar daha hızlı!", "success");
+            }
+            if(type === 'logo') {
+                state.reputation += 25;
+                showToast("Paslı kamyonet artık logolu! Şehirde tanınıyorsun.", "success");
+            }
+
+            checkLevelUp();
+            saveData();
         }
 
-        // --- FİLO / SEVKİYAT MANTIĞI ---
+        // --- SOSYAL SORUMLULUK (SİYASET) ---
+        function doCharity(type) {
+            if(type === 'school') {
+                if(state.money >= 300) {
+                    state.money -= 300;
+                    state.reputation += 10;
+                    state.goodwill += 5;
+                    showToast("Okula malzeme taşıdın. Halk seni konuşuyor!", "success");
+                } else {
+                    showToast("Yeterli paran yok.", "danger");
+                }
+            } else if(type === 'bakery') {
+                if(state.inventory['un'] >= 2) {
+                    state.inventory['un'] -= 2;
+                    state.reputation += 15;
+                    state.goodwill += 10;
+                    showToast("Fakirlere ekmek için un verdin. Büyük sevap!", "success");
+                } else {
+                    showToast("Depoda yeterli Un yok.", "danger");
+                }
+            }
+            checkLevelUp();
+            saveData();
+        }
+
+        // --- LOJİSTİK VE SEVKİYAT ---
         function startShipment(itemId, sellPrice) {
             if (state.inventory[itemId] <= 0) return;
 
-            // Envanterden düş
             state.inventory[itemId]--;
-            saveData(); // UI'ı hemen güncelle (depo dolsun vs)
+            
+            const shipment = {
+                id: "ship_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+                itemId: itemId,
+                sellPrice: sellPrice,
+                startTime: Date.now(),
+                duration: state.deliverySpeedMs
+            };
 
-            // Lojistik sekmesine geçiş yap ki kullanıcı aracı görsün
-            document.querySelectorAll('.nav-item')[2].click(); 
+            state.activeShipments.push(shipment);
+            saveData(); 
 
-            // Ekranda aktif sevkiyat mesajını gizle
+            document.getElementById('nav-filo').click(); 
+            createShipmentUI(shipment, state.deliverySpeedMs);
+        }
+
+        function resumeActiveShipments() {
+            const now = Date.now();
+            const shipmentsToKeep = [];
+
+            state.activeShipments.forEach(shipment => {
+                const elapsedTime = now - shipment.startTime;
+                const remainingTime = shipment.duration - elapsedTime;
+
+                if (remainingTime <= 0) {
+                    completeShipmentReward(shipment, false);
+                } else {
+                    shipmentsToKeep.push(shipment);
+                    createShipmentUI(shipment, remainingTime);
+                }
+            });
+
+            state.activeShipments = shipmentsToKeep;
+            saveData();
+        }
+
+        function createShipmentUI(shipment, remainingTime) {
             document.getElementById('no-shipment-msg').style.display = 'none';
-
             const activeShipmentsDiv = document.getElementById('active-shipments');
-            const shipmentId = "ship_" + Date.now();
-            const prod = productsCatalog[itemId];
+            const prod = productsCatalog[shipment.itemId];
 
-            // UI Öğesi oluştur
             const shipCard = document.createElement('div');
-            shipCard.className = "app-card mb-2 p-2";
-            shipCard.id = shipmentId;
+            shipCard.className = "app-card mb-2 p-3";
+            shipCard.id = shipment.id;
             shipCard.innerHTML = `
-                <div class="d-flex justify-content-between mb-1" style="font-size: 0.85rem;">
-                    <span><i class="fa-solid fa-truck text-muted me-1"></i> ${prod.name} Teslimatı</span>
-                    <span class="text-money">Beklenen: ₺${sellPrice}</span>
+                <div class="d-flex justify-content-between mb-2" style="font-size: 0.9rem; font-weight: 600;">
+                    <span class="text-white"><i class="fa-solid fa-truck text-muted me-2"></i> ${prod.name} Rotada</span>
+                    <span class="text-money">Beklenen: ₺${shipment.sellPrice}</span>
                 </div>
                 <div class="progress-container" style="height: 6px;">
-                    <div class="progress-bar bg-primary" id="bar_${shipmentId}" style="width: 0%; transition: width ${state.deliverySpeedMs}ms linear;"></div>
+                    <div class="progress-bar bg-info" id="bar_${shipment.id}" style="width: 0%;"></div>
                 </div>
             `;
             activeShipmentsDiv.appendChild(shipCard);
-            activeShipmentsElements++;
 
-            // Animasyonu başlatmak için kısa bir timeout (DOM'un render edilmesi için)
             setTimeout(() => {
-                document.getElementById(`bar_${shipmentId}`).style.width = "100%";
+                const bar = document.getElementById(`bar_${shipment.id}`);
+                if(bar) {
+                    const percentDone = ((shipment.duration - remainingTime) / shipment.duration) * 100;
+                    bar.style.transition = 'none';
+                    bar.style.width = `${percentDone}%`;
+                    
+                    setTimeout(() => {
+                        bar.style.transition = `width ${remainingTime}ms linear`;
+                        bar.style.width = "100%";
+                    }, 50);
+                }
             }, 50);
 
-            // Teslimat bittiğinde çalışacak kod
             setTimeout(() => {
-                // Parayı ve itibarı ver
-                state.money += sellPrice;
-                state.reputation += 5;
-                
-                // Seviye atlama kontrolü
-                if (state.reputation >= 100 && state.level === 1) {
-                    state.level = 2;
-                    showToast("TEBRİKLER! Seviye 2 Lisansını aldınız!", "success");
-                }
-
-                saveData();
-
-                // UI Temizliği
-                if(document.getElementById(shipmentId)) {
-                    document.getElementById(shipmentId).remove();
-                }
-                activeShipmentsElements--;
-                
-                if (activeShipmentsElements <= 0) {
-                    document.getElementById('no-shipment-msg').style.display = 'block';
-                }
-
-                showToast(`${prod.name} teslim edildi. ₺${sellPrice} kazanıldı!`, "success");
-
-            }, state.deliverySpeedMs);
+                completeShipmentReward(shipment, true);
+            }, remainingTime);
         }
 
-        // --- TOAST (BİLDİRİM) SİSTEMİ ---
+        function completeShipmentReward(shipment, updateUINow) {
+            if (!state.activeShipments.some(s => s.id === shipment.id)) return;
+
+            state.money += shipment.sellPrice;
+            state.reputation += 3; // Teslimatın verdiği standart itibar
+            
+            checkLevelUp(updateUINow);
+
+            state.activeShipments = state.activeShipments.filter(s => s.id !== shipment.id);
+            saveData();
+
+            if (updateUINow) {
+                if(document.getElementById(shipment.id)) document.getElementById(shipment.id).remove();
+                const prod = productsCatalog[shipment.itemId];
+                showToast(`Sevkiyat tamam! ₺${shipment.sellPrice} kasaya girdi.`, "success");
+            }
+        }
+
+        function checkLevelUp(updateUINow = true) {
+            if (state.reputation >= 100 && state.level === 1) {
+                state.level = 2;
+                if(updateUINow) {
+                    mayorModal.show(); // Belediye Başkanı Ekranı Çıkar
+                }
+            }
+        }
+
+        // --- TOAST BİLDİRİM ---
         function showToast(message, type = "success") {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `custom-toast ${type}`;
             
-            let icon = type === "success" ? "fa-circle-check" : (type === "warning" ? "fa-triangle-exclamation" : "fa-circle-info");
+            let icon = type === "success" ? "fa-circle-check" : (type === "warning" ? "fa-triangle-exclamation" : "fa-bell");
             toast.innerHTML = `<i class="fa-solid ${icon} me-2"></i> ${message}`;
             
             container.appendChild(toast);
 
-            // 3 Saniye sonra sil
             setTimeout(() => {
                 toast.style.opacity = '0';
                 toast.style.transition = 'opacity 0.3s ease';
