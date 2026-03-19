@@ -337,13 +337,13 @@
                     <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Filo Geliştirmeleri</h6>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="fw-bold text-secondary">Mevcut Teslimat Süresi:</span>
-                        <span id="ui-speed-text" class="badge bg-primary fs-6">5sn</span>
+                        <span id="ui-speed-text" class="badge bg-primary fs-6">30sn</span>
                     </div>
                     
                     <button id="btn-upg-engine" class="btn btn-outline-danger w-100 mb-2 fw-bold text-start d-flex justify-content-between align-items-center" onclick="buyUpgrade('engine')">
                         <div>
                             <i class="fa-solid fa-gauge-high me-2"></i> Motor Bakımı <br>
-                            <small class="text-muted fw-normal stat-small">(Süreyi hızlandırır)</small>
+                            <small class="text-muted fw-normal stat-small">(Teslimatı 2sn hızlandırır)</small>
                         </div>
                         <span class="badge bg-danger" id="cost-engine">₺800</span>
                     </button>
@@ -511,18 +511,18 @@
         const maxLevel = levelsThresh.length;
 
         const productsCatalog = {
-            un:         { id: 'un',         name: 'Un Çuvalları',    basePrice: 20,      volatility: 5,     icon: 'fa-wheat-awn',    minLevel: 1 },
-            tekstil:    { id: 'tekstil',    name: 'Tekstil Kumaş',   basePrice: 80,      volatility: 15,    icon: 'fa-shirt',        minLevel: 1 },
-            elektronik: { id: 'elektronik', name: 'Elektronik Parça',basePrice: 350,     volatility: 80,    icon: 'fa-microchip',    minLevel: 2 },
-            mucevher:   { id: 'mucevher',   name: 'İşlenmiş Mücevher',basePrice: 1500,   volatility: 300,   icon: 'fa-gem',          minLevel: 2 },
-            otomotiv:   { id: 'otomotiv',   name: 'Otomotiv Parçası',basePrice: 4000,    volatility: 800,   icon: 'fa-car',          minLevel: 3 },
-            petrol:     { id: 'petrol',     name: 'Varil Petrol',    basePrice: 10000,   volatility: 2500,  icon: 'fa-oil-can',      minLevel: 4 },
-            kimya:      { id: 'kimya',      name: 'İlaç & Kimya',    basePrice: 25000,   volatility: 5000,  icon: 'fa-flask',        minLevel: 5 },
-            altin:      { id: 'altin',      name: 'Külçe Altın',     basePrice: 60000,   volatility: 12000, icon: 'fa-coins',        minLevel: 6 },
-            cip:        { id: 'cip',        name: 'Yarı İletken Çip',basePrice: 150000,  volatility: 35000, icon: 'fa-memory',       minLevel: 7 },
-            sanat:      { id: 'sanat',      name: 'Lüks Sanat Eseri',basePrice: 400000,  volatility: 90000, icon: 'fa-palette',      minLevel: 8 },
-            nadir:      { id: 'nadir',      name: 'Nadir Elementler',basePrice: 1000000, volatility: 250000,icon: 'fa-cube',         minLevel: 9 },
-            uzay:       { id: 'uzay',       name: 'Uzay Teknolojisi',basePrice: 3000000, volatility: 800000,icon: 'fa-rocket',       minLevel: 10 }
+            un:         { id: 'un',         name: 'Un',              basePrice: 20,      volatility: 5,     icon: 'fa-wheat-awn',    minLevel: 1 },
+            tekstil:    { id: 'tekstil',    name: 'Tekstil',         basePrice: 80,      volatility: 15,    icon: 'fa-shirt',        minLevel: 1 },
+            elektronik: { id: 'elektronik', name: 'Elektronik',      basePrice: 350,     volatility: 80,    icon: 'fa-microchip',    minLevel: 2 },
+            mucevher:   { id: 'mucevher',   name: 'Mücevher',        basePrice: 1500,    volatility: 300,   icon: 'fa-gem',          minLevel: 2 },
+            otomotiv:   { id: 'otomotiv',   name: 'Otomotiv',        basePrice: 4000,    volatility: 800,   icon: 'fa-car',          minLevel: 3 },
+            petrol:     { id: 'petrol',     name: 'Petrol',          basePrice: 10000,   volatility: 2500,  icon: 'fa-oil-can',      minLevel: 4 },
+            kimya:      { id: 'kimya',      name: 'Kimya',           basePrice: 25000,   volatility: 5000,  icon: 'fa-flask',        minLevel: 5 },
+            altin:      { id: 'altin',      name: 'Altın',           basePrice: 60000,   volatility: 12000, icon: 'fa-coins',        minLevel: 6 },
+            cip:        { id: 'cip',        name: 'Çip',             basePrice: 150000,  volatility: 35000, icon: 'fa-memory',       minLevel: 7 },
+            sanat:      { id: 'sanat',      name: 'Sanat',           basePrice: 400000,  volatility: 90000, icon: 'fa-palette',      minLevel: 8 },
+            nadir:      { id: 'nadir',      name: 'Nadir Element',   basePrice: 1000000, volatility: 250000,icon: 'fa-cube',         minLevel: 9 },
+            uzay:       { id: 'uzay',       name: 'Uzay Teknoloji',  basePrice: 3000000, volatility: 800000,icon: 'fa-rocket',       minLevel: 10 }
         };
 
         const marketEvents = [
@@ -552,7 +552,7 @@
             goodwill: 0,
             level: 1,
             warehouseCap: 20, 
-            deliverySpeedMs: 5000, 
+            deliverySpeedMs: 30000, // Teslimat süresi 30 saniyeden başlar
             inventory: {},
             stats: {},
             currentPrices: {},
@@ -582,7 +582,7 @@
         };
 
         function loadData() {
-            const saved = localStorage.getItem('merchantSimulationDataV5');
+            const saved = localStorage.getItem('merchantSimulationDataV6');
             if (saved) {
                 state = { ...state, ...JSON.parse(saved) };
                 initProductData();
@@ -590,13 +590,13 @@
         }
 
         function saveData() {
-            localStorage.setItem('merchantSimulationDataV5', JSON.stringify(state));
+            localStorage.setItem('merchantSimulationDataV6', JSON.stringify(state));
             updateUI();
         }
 
         function resetGame() {
             if(confirm("Tüm ilerlemeniz, şirket verileriniz ve birikiminiz silinecek. Emin misiniz?")) {
-                localStorage.removeItem('merchantSimulationDataV5');
+                localStorage.removeItem('merchantSimulationDataV6');
                 location.reload();
             }
         }
@@ -606,9 +606,9 @@
             if (userInp === "") { showToast("Lütfen bir isim girin.", "warning"); return; }
 
             if (state.username !== "" && state.username !== userInp) {
-                localStorage.removeItem('merchantSimulationDataV5');
+                localStorage.removeItem('merchantSimulationDataV6');
                 state.money = 1000; state.reputation = 0; state.goodwill = 0; state.level = 1; 
-                state.warehouseCap = 20; state.deliverySpeedMs = 5000;
+                state.warehouseCap = 20; state.deliverySpeedMs = 30000;
                 state.inventory = {}; state.stats = {}; state.currentPrices = {}; state.prevPrices={}; state.minPrices={}; state.maxPrices={};
                 state.activeShipments = []; state.upgrades = { tablet: 0, coldStorage: 0, engine: 0, logo: 0 };
                 state.hasSeenStory = false; state.marketTimer = 0;
@@ -896,7 +896,7 @@
 
             if(type === 'tablet') state.reputation += 10;
             if(type === 'coldStorage') { state.warehouseCap += 25; state.reputation += 5; }
-            if(type === 'engine') { state.deliverySpeedMs = Math.max(1000, state.deliverySpeedMs - 500); }
+            if(type === 'engine') { state.deliverySpeedMs = Math.max(4000, state.deliverySpeedMs - 2000); }
             if(type === 'logo') state.reputation += 15;
 
             showToast("Geliştirme satın alındı!", "success");
