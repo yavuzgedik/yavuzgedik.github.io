@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tüccar Simülasyonu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PWA Manifest Link (Dinamik olarak JS ile doldurulacak) -->
+    <link id="manifest-link" rel="manifest" href="">
+    <style>
+        /* Mobil uygulama hissi için ekstra stiller */
+        body {
+            overscroll-behavior-y: contain; /* Yenilemek için kaydırmayı engeller */
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* İlerleme çubuğu animasyonu */
+        .progress-bar {
+            transition: width 1s linear;
+        }
+        /* Toast animasyonu */
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-enter { animation: slideInUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 h-[100dvh] flex justify-center overflow-hidden">
+
+    <!-- Ana Mobil Konteyner -->
+    <div id="app" class="w-full max-w-md h-full bg-slate-50 text-slate-900 flex flex-col relative shadow-2xl overflow-hidden">
+        
+        <!-- Üst Bar (Durum) -->
+        <header class="bg-indigo-700 text-white p-3 shadow-md z-10 shrink-0">
+            <div class="flex justify-between items-center mb-2">
+                <div>
+                    <h1 class="font-bold text-lg leading-tight" id="playerNameDisplay">Tüccar</h1>
+                    <div class="text-xs text-indigo-200" id="gameTimeDisplay">1. Gün - 08:00</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-black text-xl text-green-400" id="moneyDisplay">₺1,000</div>
+                    <div class="text-xs text-indigo-200">Kapasite: <span id="storageDisplay">0/50</span></div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center text-sm bg-indigo-800 rounded-lg p-2">
+                <div class="flex items-center gap-1" title="İtibar">
+                    <i data-lucide="star" class="w-4 h-4 text-yellow-400"></i>
+                    <span id="reputationDisplay">0</span>
+                </div>
+                <div class="flex items-center gap-1" title="İyilik Puanı">
+                    <i data-lucide="heart" class="w-4 h-4 text-red-400"></i>
+                    <span id="goodnessDisplay">0</span>
+                </div>
+                <div class="flex items-center gap-1 font-bold" title="Seviye">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
+                    Seviye <span id="levelDisplay">1</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Haber Bandı -->
+        <div class="bg-slate-800 text-amber-300 text-xs py-1 px-3 whitespace-nowrap overflow-hidden shrink-0">
+            <marquee id="newsTicker" behavior="scroll" direction="left" scrollamount="4">Şehre hoş geldin! Piyasalar bugün oldukça sakin görünüyor. Ticarete başlamak için Pazar'ı ziyaret et.</marquee>
+        </div>
+
+        <!-- Ana İçerik Alanı -->
+        <main id="mainContent" class="flex-1 overflow-y-auto hide-scrollbar bg-slate-100 p-4 pb-20 relative">
+            <!-- Pazar View -->
+            <div id="view-pazar" class="view-section">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><i data-lucide="store" class="w-5 h-5"></i> Toptancı Pazarı</h2>
+                <p class="text-xs text-slate-500 mb-4">Piyasa fiyatları her 15 saniyede bir güncellenir.</p>
+                <div id="marketList" class="flex flex-col gap-3"></div>
+            </div>
+
+            <!-- Depo View -->
+            <div id="view-depo" class="view-section hidden">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><i data-lucide="package" class="w-5 h-5"></i> Depom</h2>
+                <div id="inventoryList" class="flex flex-col gap-3"></div>
+            </div>
+
+            <!-- Filo View -->
+            <div id="view-filo" class="view-section hidden">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><i data-lucide="truck" class="w-5 h-5"></i> Aktif Sevkiyatlar</h2>
+                <div id="shipmentList" class="flex flex-col gap-3"></div>
+            </div>
+
+            <!-- Kasaba View -->
+            <div id="view-kasaba" class="view-section hidden">
+                <h2 class="text-lg font-bold mb-3 flex items-center gap-2"><i data-lucide="building-2" class="w-5 h-5"></i> Kasaba Merkezi</h2>
+                
+                <!-- Banka & Kredi -->
+                <div class="bg-white rounded-xl shadow p-4 mb-4 border border-slate-200">
+                    <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2"><i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i> Banka (Kredi Sistemi)</h3>
+                    <p class="text-xs text-slate-500 mb-3">Nakit sıkıntısına düştüğünde kredi çekebilirsin. Taksitleri oyun günü bazında ödenir.</p>
+                    <div id="activeLoansContainer" class="mb-3 hidden">
+                        <div class="text-sm font-semibold text-red-600 mb-1">Aktif Krediler:</div>
+                        <ul id="activeLoansList" class="text-xs space-y-1"></ul>
+                    </div>
+                    <div class="grid grid-cols-1 gap-2" id="loanOffers">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+
+                <!-- Geliştirmeler -->
+                <div class="bg-white rounded-xl shadow p-4 mb-4 border border-slate-200">
+                    <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2"><i data-lucide="hammer" class="w-4 h-4 text-orange-600"></i> Geliştirmeler</h3>
+                    <div class="grid grid-cols-1 gap-2" id="upgradesList">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+
+                <!-- Sosyal Sorumluluk -->
+                <div class="bg-white rounded-xl shadow p-4 border border-slate-200">
+                    <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2"><i data-lucide="users" class="w-4 h-4 text-purple-600"></i> Sosyal Sorumluluk</h3>
+                    <p class="text-xs text-slate-500 mb-3">Kasaba halkına yardım et, itibar ve iyilik puanı kazan.</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <button onclick="app.donate(100, 5, 10, 'Okula Bağış')" class="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 p-2 rounded-lg text-sm font-semibold flex justify-between items-center transition">
+                            <span>Okula Bağış Yap (₺100)</span>
+                            <span class="text-xs">+5 İtibar, +10 İyilik</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Alt Navigasyon Barı -->
+        <nav class="bg-white border-t border-slate-200 flex justify-around p-2 pb-safe absolute bottom-0 w-full z-10">
+            <button onclick="app.switchTab('pazar')" id="tab-pazar" class="nav-btn flex flex-col items-center p-2 text-indigo-600 transition">
+                <i data-lucide="store" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-bold">Pazar</span>
+            </button>
+            <button onclick="app.switchTab('depo')" id="tab-depo" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-indigo-500 transition">
+                <i data-lucide="package" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-bold">Depo</span>
+            </button>
+            <button onclick="app.switchTab('filo')" id="tab-filo" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-indigo-500 transition relative">
+                <i data-lucide="truck" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-bold">Filo</span>
+                <span id="filoBadge" class="absolute top-1 right-2 bg-red-500 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+            </button>
+            <button onclick="app.switchTab('kasaba')" id="tab-kasaba" class="nav-btn flex flex-col items-center p-2 text-slate-400 hover:text-indigo-500 transition">
+                <i data-lucide="building-2" class="w-6 h-6 mb-1"></i>
+                <span class="text-[10px] font-bold">Kasaba</span>
+            </button>
+        </nav>
+
+        <!-- Modallar / Uyarılar -->
+        <div id="modalOverlay" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+            <div id="modalContent" class="bg-white rounded-2xl p-5 w-11/12 max-w-sm shadow-2xl transform scale-95 transition-transform">
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2"></h3>
+                <p id="modalBody" class="text-sm text-slate-600 mb-5"></p>
+                <div id="modalActions" class="flex gap-3 justify-end"></div>
+            </div>
+        </div>
+
+        <!-- Toast Bildirim Alanı -->
+        <div id="toastContainer" class="absolute bottom-20 left-0 w-full flex flex-col items-center gap-2 pointer-events-none z-40 px-4"></div>
+
+    </div>
+
+    <script>
+        // --- PWA SETUP (Single File Hack) ---
+        const manifest = {
+            name: "Tüccar Simülasyonu",
+            short_name: "Tüccar",
+            description: "Al-sat yaparak büyüyen bir ticaret simülasyonu.",
+            start_url: ".",
+            display: "standalone",
+            background_color: "#1e1b4b",
+            theme_color: "#4338ca",
+            icons: [
+                {
+                    src: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDMzOGNhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTMgM2gxOG0tMiAwdi0ySDV2Mm0tMiA0aDIybS0yIDB2LTE0SDV2MTRtLTEgNGgyMG0tMiAwdjJIN3YtMm0xMiA0SDUiLz48L3N2Zz4=",
+                    sizes: "192x192",
+                    type: "image/svg+xml"
+                }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        document.getElementById('manifest-link').href = URL.createObjectURL(manifestBlob);
+
+        // Dummy Service Worker for installability
+        const swCode = `self.addEventListener('fetch', (e) => {});`;
+        const swBlob = new Blob([swCode], {type: 'application/javascript'});
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(console.error);
+        }
+        // ------------------------------------
+
+        // --- GAME LOGIC & STATE ---
+        const app = (() => {
+            // Statik Veriler
+            const PRODUCTS = [
+                { id: 'su', name: 'Su', basePrice: 10, vol: 0.15, minLevel: 1, icon: 'droplet', color: 'text-blue-500' },
+                { id: 'bugday', name: 'Buğday', basePrice: 30, vol: 0.25, minLevel: 1, icon: 'wheat', color: 'text-yellow-600' },
+                { id: 'odun', name: 'Odun', basePrice: 80, vol: 0.30, minLevel: 2, icon: 'tree-pine', color: 'text-emerald-700' },
+                { id: 'kumas', name: 'Kumaş', basePrice: 200, vol: 0.35, minLevel: 3, icon: 'scissors', color: 'text-pink-500' },
+                { id: 'demir', name: 'Demir', basePrice: 500, vol: 0.40, minLevel: 5, icon: 'anvil', color: 'text-gray-600' },
+                { id: 'altin', name: 'Altın', basePrice: 1500, vol: 0.50, minLevel: 8, icon: 'coins', color: 'text-yellow-400' }
+            ];
+
+            const UPGRADES = [
+                { id: 'depo1', name: 'Depo Genişletme (+20)', cost: 500, type: 'storage', value: 20, level: 1 },
+                { id: 'depo2', name: 'Lojistik Merkezi (+50)', cost: 2500, type: 'storage', value: 50, level: 3 },
+                { id: 'hiz1', name: 'Motor Bakımı (%20 Hız)', cost: 1000, type: 'speed', value: 0.8, level: 2 },
+                { id: 'hiz2', name: 'Yeni Kamyonlar (%30 Hız)', cost: 4000, type: 'speed', value: 0.7, level: 5 }
+            ];
+
+            const LOANS = [
+                { id: 'kisa', name: 'Kısa Vadeli', amount: 1000, payback: 1200, days: 3 },
+                { id: 'orta', name: 'Orta Vadeli', amount: 5000, payback: 6500, days: 5 },
+                { id: 'uzun', name: 'Uzun Vadeli', amount: 20000, payback: 28000, days: 8 }
+            ];
+
+            const CRISIS_EVENTS = [
+                { name: 'Lastik Patladı!', desc: 'Kamyonun lastiği gümledi. Tamir için ₺50 öde veya 5 saniye bekle.', fine: 50, delayPenalty: 5000 },
+                { name: 'Evrak Eksikliği', desc: 'Sınırda durduruldun. Rüşvet olarak ₺150 ver veya 8 saniye bekle.', fine: 150, delayPenalty: 8000 },
+                { name: 'Motor Arızası', desc: 'Motor hararet yaptı. Çekiciye ₺300 ver veya 15 saniye bekle.', fine: 300, delayPenalty: 15000 }
+            ];
+
+            // State (In-Memory, V1 gereği yerel odaklı)
+            let state = {
+                playerName: 'Genç Tüccar',
+                money: 1000,
+                reputation: 0,
+                goodness: 0,
+                level: 1,
+                storageCapacity: 50,
+                deliverySpeedMs: 10000, // 10 saniye
+                inventory: {}, // { id: { qty, avgCost } }
+                prices: {}, // { id: currentPrice }
+                shipments: [], // { id, productId, type, qty, totalValue, startTime, duration, paused, crisis }
+                loans: [], // { id, amount, payback, totalDays, daysLeft, dailyInstallment }
+                missedPayments: 0,
+                bankrupt: false,
+                gameTime: { days: 1, hours: 8, minutes: 0 },
+                realTimeCounter: 0,
+                purchasedUpgrades: []
+            };
+
+            // DOM Elements
+            const els = {
+                moneyDisplay: document.getElementById('moneyDisplay'),
+                reputationDisplay: document.getElementById('reputationDisplay'),
+                goodnessDisplay: document.getElementById('goodnessDisplay'),
+                levelDisplay: document.getElementById('levelDisplay'),
+                storageDisplay: document.getElementById('storageDisplay'),
+                gameTimeDisplay: document.getElementById('gameTimeDisplay'),
+                newsTicker: document.getElementById('newsTicker'),
+                marketList: document.getElementById('marketList'),
+                inventoryList: document.getElementById('inventoryList'),
+                shipmentList: document.getElementById('shipmentList'),
+                filoBadge: document.getElementById('filoBadge'),
+                loanOffers: document.getElementById('loanOffers'),
+                activeLoansList: document.getElementById('activeLoansList'),
+                activeLoansContainer: document.getElementById('activeLoansContainer'),
+                upgradesList: document.getElementById('upgradesList'),
+                toastContainer: document.getElementById('toastContainer')
+            };
+
+            let gameInterval, marketInterval;
+
+            // --- CORE FUNCTIONS ---
+
+            function init() {
+                // İsim alma (Onboarding)
+                setTimeout(() => {
+                    if(!state.bankrupt && state.money === 1000 && Object.keys(state.inventory).length === 0) {
+                        showPrompt("Tüccar Simülasyonuna Hoş Geldin", "Adını ne koyalım?", "Tüccar", (name) => {
+                            if(name) state.playerName = name;
+                            document.getElementById('playerNameDisplay').innerText = state.playerName;
+                            showToast("Hoş geldin " + state.playerName, "success");
+                        });
+                    }
+                }, 500);
+
+                initPrices();
+                startLoops();
+                renderAll();
+                lucide.createIcons();
+            }
+
+            function startLoops() {
+                // Zaman Akışı (1 gerçek saniye = 10 oyun dakikası)
+                // 1 saat = 6 saniye. 1 gün = 144 saniye.
+                gameInterval = setInterval(() => {
+                    if (state.bankrupt) return;
+
+                    state.realTimeCounter++;
+                    state.gameTime.minutes += 10;
+
+                    if (state.gameTime.minutes >= 60) {
+                        state.gameTime.minutes = 0;
+                        state.gameTime.hours++;
+                    }
+
+                    if (state.gameTime.hours >= 24) {
+                        state.gameTime.hours = 0;
+                        state.gameTime.days++;
+                        onDayChange();
+                    }
+
+                    updateShipments();
+                    updateHeader();
+                }, 1000);
+
+                // Piyasa Döngüsü (Her 15 saniyede bir)
+                marketInterval = setInterval(() => {
+                    if (state.bankrupt) return;
+                    updatePrices();
+                    renderMarket();
+                    showToast("Piyasa fiyatları güncellendi!", "info");
+                }, 15000);
+            }
+
+            // --- TIME & ECONOMY ---
+
+            function onDayChange() {
+                // Günlük olaylar, Kredi taksitleri
+                els.newsTicker.innerText = `${state.gameTime.days}. Gün başladı. Piyasalar açılıyor... Kredi ödemelerini kontrol etmeyi unutma!`;
+                
+                if (state.loans.length > 0) {
+                    processLoans();
+                }
+            }
+
+            function processLoans() {
+                let totalInstallment = 0;
+                let activeCount = state.loans.length;
+
+                for (let i = state.loans.length - 1; i >= 0; i--) {
+                    let loan = state.loans[i];
+                    totalInstallment += loan.dailyInstallment;
+                    loan.daysLeft--;
+
+                    if (loan.daysLeft <= 0) {
+                        state.loans.splice(i, 1);
+                    }
+                }
+
+                if (totalInstallment > 0) {
+                    if (state.money >= totalInstallment) {
+                        state.money -= totalInstallment;
+                        showToast(`Kredi taksiti ödendi: ₺${Math.floor(totalInstallment)}`, "success");
+                    } else {
+                        // Gecikme
+                        state.missedPayments++;
+                        showModal("Kredi Gecikmesi!", `Bakiye yetersiz! ₺${Math.floor(totalInstallment)} ödenemedi. Toplam Gecikme: ${state.missedPayments}/2`, [
+                            { text: 'Anladım', class: 'bg-red-600 text-white', onClick: closeModal }
+                        ]);
+
+                        if (state.missedPayments >= 2) {
+                            triggerBankruptcy();
+                        }
+                    }
+                }
+                renderKasaba();
+                updateHeader();
+            }
+
+            function triggerBankruptcy() {
+                state.bankrupt = true;
+                clearInterval(gameInterval);
+                clearInterval(marketInterval);
+                showModal("İFLAS ETTİN!", "Kredi borçlarını ödeyemedin ve banka tüm varlıklarına haciz koydu. Ticari hayatın sona erdi.", [
+                    { text: 'Yeniden Başla', class: 'bg-indigo-600 text-white', onClick: resetGame }
+                ]);
+            }
+
+            function initPrices() {
+                PRODUCTS.forEach(p => {
+                    state.prices[p.id] = p.basePrice;
+                });
+            }
+
+            function updatePrices() {
+                PRODUCTS.forEach(p => {
+                    let current = state.prices[p.id];
+                    let changePercent = (Math.random() * (p.vol * 2)) - p.vol; // -vol to +vol
+                    let newPrice = current * (1 + changePercent);
+                    
+                    // Taban fiyatın %40'ından aşağı düşemez (GDD)
+                    let minAllowed = p.basePrice * 0.4;
+                    if (newPrice < minAllowed) newPrice = minAllowed;
+                    
+                    // Tavanı da biraz sınırlayalım (3x)
+                    if (newPrice > p.basePrice * 3) newPrice = p.basePrice * 3;
+
+                    state.prices[p.id] = Math.floor(newPrice);
+                });
+            }
+
+            function getCurrentStorageCount() {
+                let total = 0;
+                for (const key in state.inventory) {
+                    total += state.inventory[key].qty;
+                }
+                return total;
+            }
+
+            // --- ACTIONS ---
+
+            function buyProduct(productId, qty) {
+                if(state.bankrupt) return;
+                const product = PRODUCTS.find(p => p.id === productId);
+                const price = state.prices[productId];
+                const totalCost = price * qty;
+
+                if (state.money < totalCost) {
+                    showToast("Yetersiz Bakiye!", "error");
+                    // Nakit yetmezse kredi teklifi (GDD)
+                    if (state.loans.length === 0) {
+                        setTimeout(() => switchTab('kasaba'), 1000);
+                        showToast("Nakit sıkıntısı çekiyorsun. Kasabadan kredi alabilirsin.", "info");
+                    }
+                    return;
+                }
+
+                if (getCurrentStorageCount() + qty > state.storageCapacity) {
+                    showToast("Depo kapasitesi yetersiz!", "error");
+                    return;
+                }
+
+                // Anında para düşer, sevkiyat başlar
+                state.money -= totalCost;
+                
+                createShipment('buy', productId, qty, totalCost);
+                updateHeader();
+                renderMarket();
+                showToast(`Satın alma siparişi yola çıktı: ${qty}x ${product.name}`, "info");
+            }
+
+            function sellProduct(productId, qty) {
+                if(state.bankrupt) return;
+                const invItem = state.inventory[productId];
+                
+                if (!invItem || invItem.qty < qty) {
+                    showToast("Depoda yeterli ürün yok!", "error");
+                    return;
+                }
+
+                const product = PRODUCTS.find(p => p.id === productId);
+                const currentPrice = state.prices[productId];
+                const expectedRevenue = currentPrice * qty;
+
+                // Envanterden düş
+                invItem.qty -= qty;
+                if (invItem.qty === 0) delete state.inventory[productId];
+
+                // Sevkiyat başlat
+                createShipment('sell', productId, qty, expectedRevenue);
+                
+                updateHeader();
+                renderStorage();
+                showToast(`Satış sevkiyatı yola çıktı: ${qty}x ${product.name}`, "info");
+            }
+
+            // --- SHIPMENT & CRISIS ---
+
+            function createShipment(type, productId, qty, value) {
+                const sId = 'shp_' + Date.now() + Math.floor(Math.random()*1000);
+                
+                // Kriz ihtimali (%20)
+                let hasCrisis = Math.random() < 0.20;
+                let crisisData = null;
+                let crisisTriggerTime = null;
+
+                if (hasCrisis) {
+                    crisisData = CRISIS_EVENTS[Math.floor(Math.random() * CRISIS_EVENTS.length)];
+                    // Kriz, yolun %30'u ile %70'i arasında bir yerde patlak versin
+                    crisisTriggerTime = state.deliverySpeedMs * (0.3 + Math.random() * 0.4);
+                }
+
+                state.shipments.push({
+                    id: sId,
+                    type: type, // 'buy' or 'sell'
+                    productId: productId,
+                    qty: qty,
+                    value: value,
+                    duration: state.deliverySpeedMs,
+                    elapsed: 0,
+                    isPaused: false,
+                    crisis: crisisData,
+                    crisisTriggerAt: crisisTriggerTime,
+                    crisisResolved: !hasCrisis
+                });
+                renderFiloBadge();
+                if(document.getElementById('view-filo').classList.contains('hidden') === false) renderFilo();
+            }
+
+            function updateShipments() {
+                let changed = false;
+                for (let i = state.shipments.length - 1; i >= 0; i--) {
+                    let s = state.shipments[i];
+                    if (s.isPaused) continue;
+
+                    s.elapsed += 1000; // 1 real second added
+
+                    // Kriz Kontrolü
+                    if (!s.crisisResolved && s.elapsed >= s.crisisTriggerAt) {
+                        s.isPaused = true;
+                        changed = true;
+                        triggerCrisisEvent(s);
+                        continue;
+                    }
+
+                    // Tamamlanma Kontrolü
+                    if (s.elapsed >= s.duration) {
+                        resolveShipment(s);
+                        state.shipments.splice(i, 1);
+                        changed = true;
+                    }
+                }
+
+                if (changed) {
+                    renderFiloBadge();
+                    if(document.getElementById('view-filo').classList.contains('hidden') === false) renderFilo();
+                } else if(document.getElementById('view-filo').classList.contains('hidden') === false) {
+                    // Sadece progress barları güncelle
+                    updateFiloProgressBars();
+                }
+            }
+
+            function triggerCrisisEvent(shipment) {
+                const product = PRODUCTS.find(p => p.id === shipment.productId);
+                
+                showModal(
+                    `Kriz: ${shipment.crisis.name}`,
+                    `${product.name} sevkiyatında sorun çıktı! ${shipment.crisis.desc}`,
+                    [
+                        { 
+                            text: `Cezayı Öde (₺${shipment.crisis.fine})`, 
+                            class: 'bg-green-600 text-white', 
+                            onClick: () => {
+                                if (state.money >= shipment.crisis.fine) {
+                                    state.money -= shipment.crisis.fine;
+                                    shipment.crisisResolved = true;
+                                    shipment.isPaused = false;
+                                    closeModal();
+                                    updateHeader();
+                                    renderFilo();
+                                } else {
+                                    showToast("Yeterli paran yok!", "error");
+                                }
+                            }
+                        },
+                        { 
+                            text: 'Bekle (+Süre)', 
+                            class: 'bg-amber-500 text-white', 
+                            onClick: () => {
+                                shipment.duration += shipment.crisis.delayPenalty;
+                                shipment.crisisResolved = true;
+                                shipment.isPaused = false;
+                                closeModal();
+                                renderFilo();
+                            }
+                        }
+                    ]
+                );
+            }
+
+            function resolveShipment(shipment) {
+                const product = PRODUCTS.find(p => p.id === shipment.productId);
+
+                if (shipment.type === 'buy') {
+                    // Envantere ekle
+                    if (!state.inventory[shipment.productId]) {
+                        state.inventory[shipment.productId] = { qty: 0, avgCost: 0 };
+                    }
+                    let inv = state.inventory[shipment.productId];
+                    let totalOldCost = inv.qty * inv.avgCost;
+                    inv.qty += shipment.qty;
+                    inv.avgCost = (totalOldCost + shipment.value) / inv.qty;
+                    showToast(`${shipment.qty}x ${product.name} depoya ulaştı.`, "success");
+                } 
+                else if (shipment.type === 'sell') {
+                    // Parayı ve itibarı ver
+                    state.money += shipment.value;
+                    let repGain = Math.ceil(shipment.value / 100); // Her 100 kazancta 1 itibar
+                    addReputation(repGain);
+                    showToast(`Satış tamamlandı! +₺${Math.floor(shipment.value)}`, "success");
+                }
+                
+                updateHeader();
+                renderStorage();
+            }
+
+            function addReputation(amount) {
+                state.reputation += amount;
+                checkLevelUp();
+            }
+
+            function checkLevelUp() {
+                // Basit bir level mantığı: Seviye * 100 itibar gerekir
+                let needed = state.level * 100;
+                if (state.reputation >= needed) {
+                    state.level++;
+                    showModal("Seviye Atladın!", `Tebrikler! ${state.level}. Seviyeye ulaştın. Pazarda yeni ürünlerin kilidi açılmış olabilir.`, [
+                        { text: 'Süper', class: 'bg-indigo-600 text-white', onClick: closeModal }
+                    ]);
+                    renderMarket();
+                    updateHeader();
+                }
+            }
+
+            // --- KASABA ACTIONS ---
+
+            function takeLoan(loanId) {
+                if(state.bankrupt) return;
+                const loanDef = LOANS.find(l => l.id === loanId);
+                
+                if (state.loans.length >= 2) {
+                    showToast("Aynı anda en fazla 2 kredi alabilirsin.", "error");
+                    return;
+                }
+
+                showModal("Kredi Onayı", `${loanDef.name} Kredi alıyorsun.\nHemen Hesaba Geçecek: ₺${loanDef.amount}\nToplam Geri Ödeme: ₺${loanDef.payback}\nVade: ${loanDef.days} Gün`, [
+                    { text: 'İptal', class: 'bg-slate-300 text-slate-800', onClick: closeModal },
+                    { text: 'Krediyi Çek', class: 'bg-blue-600 text-white', onClick: () => {
+                        state.money += loanDef.amount;
+                        state.loans.push({
+                            id: 'loan_' + Date.now(),
+                            defId: loanDef.id,
+                            amount: loanDef.amount,
+                            payback: loanDef.payback,
+                            totalDays: loanDef.days,
+                            daysLeft: loanDef.days,
+                            dailyInstallment: loanDef.payback / loanDef.days
+                        });
+                        closeModal();
+                        updateHeader();
+                        renderKasaba();
+                        showToast("Kredi hesaba yattı!", "success");
+                    }}
+                ]);
+            }
+
+            function buyUpgrade(upgradeId) {
+                if(state.bankrupt) return;
+                const upg = UPGRADES.find(u => u.id === upgradeId);
+                
+                if (state.level < upg.level) {
+                    showToast(`Bu geliştirme için Seviye ${upg.level} olmalısın.`, "error");
+                    return;
+                }
+                
+                if (state.purchasedUpgrades.includes(upgradeId)) {
+                    showToast("Bunu zaten aldın.", "info");
+                    return;
+                }
+
+                if (state.money >= upg.cost) {
+                    state.money -= upg.cost;
+                    state.purchasedUpgrades.push(upgradeId);
+                    
+                    if (upg.type === 'storage') {
+                        state.storageCapacity += upg.value;
+                    } else if (upg.type === 'speed') {
+                        state.deliverySpeedMs = state.deliverySpeedMs * upg.value;
+                    }
+
+                    updateHeader();
+                    renderKasaba();
+                    showToast(`${upg.name} satın alındı!`, "success");
+                } else {
+                    showToast("Yeterli paran yok.", "error");
+                }
+            }
+
+            function donate(cost, rep, good, name) {
+                if(state.bankrupt) return;
+                if (state.money >= cost) {
+                    state.money -= cost;
+                    state.reputation += rep;
+                    state.goodness += good;
+                    updateHeader();
+                    checkLevelUp();
+                    showToast(`${name} yapıldı. Kasaba seni konuşuyor!`, "success");
+                } else {
+                    showToast("Bağış yapacak paran yok.", "error");
+                }
+            }
+
+
+            // --- RENDER FUNCTIONS ---
+
+            function updateHeader() {
+                els.moneyDisplay.innerText = `₺${Math.floor(state.money).toLocaleString()}`;
+                els.reputationDisplay.innerText = state.reputation;
+                els.goodnessDisplay.innerText = state.goodness;
+                els.levelDisplay.innerText = state.level;
+                els.storageDisplay.innerText = `${getCurrentStorageCount()}/${state.storageCapacity}`;
+                
+                let h = state.gameTime.hours.toString().padStart(2, '0');
+                let m = state.gameTime.minutes.toString().padStart(2, '0');
+                els.gameTimeDisplay.innerText = `${state.gameTime.days}. Gün - ${h}:${m}`;
+            }
+
+            function switchTab(tabId) {
+                document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+                document.getElementById(`view-${tabId}`).classList.remove('hidden');
+                
+                document.querySelectorAll('.nav-btn').forEach(el => {
+                    el.classList.remove('text-indigo-600');
+                    el.classList.add('text-slate-400');
+                });
+                
+                const activeBtn = document.getElementById(`tab-${tabId}`);
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('text-indigo-600');
+
+                if (tabId === 'pazar') renderMarket();
+                if (tabId === 'depo') renderStorage();
+                if (tabId === 'filo') renderFilo();
+                if (tabId === 'kasaba') renderKasaba();
+            }
+
+            function renderMarket() {
+                els.marketList.innerHTML = '';
+                PRODUCTS.forEach(p => {
+                    const price = state.prices[p.id];
+                    const isLocked = state.level < p.minLevel;
+                    const canAfford = state.money >= price * 10; // Örnek olarak 10'lu alım butonu koyacağız
+                    
+                    let bgClass = isLocked ? 'bg-slate-200 opacity-60 grayscale' : 'bg-white hover:bg-slate-50';
+                    
+                    let html = `
+                    <div class="${bgClass} rounded-xl shadow-sm border border-slate-200 p-3 flex items-center justify-between transition">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-slate-100 p-2 rounded-lg">
+                                <i data-lucide="${p.icon}" class="w-6 h-6 ${p.color}"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800">${p.name}</h4>
+                                <div class="text-xs text-slate-500">
+                                    ${isLocked ? `<span class="text-red-500"><i data-lucide="lock" class="w-3 h-3 inline"></i> Seviye ${p.minLevel} gerekli</span>` : `Taban: ₺${p.basePrice}`}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-black text-lg text-green-600 mb-1">₺${price}</div>
+                            ${!isLocked ? `
+                                <div class="flex gap-1">
+                                    <button onclick="app.buyProduct('${p.id}', 10)" class="bg-indigo-600 text-white text-[10px] font-bold py-1 px-2 rounded hover:bg-indigo-700 active:scale-95 transition">10 Al</button>
+                                    <button onclick="app.buyProduct('${p.id}', 50)" class="bg-indigo-800 text-white text-[10px] font-bold py-1 px-2 rounded hover:bg-indigo-900 active:scale-95 transition">50 Al</button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>`;
+                    
+                    els.marketList.insertAdjacentHTML('beforeend', html);
+                });
+                lucide.createIcons();
+            }
+
+            function renderStorage() {
+                els.inventoryList.innerHTML = '';
+                const keys = Object.keys(state.inventory);
+                
+                if (keys.length === 0) {
+                    els.inventoryList.innerHTML = `
+                        <div class="text-center text-slate-400 py-10 flex flex-col items-center">
+                            <i data-lucide="package-open" class="w-12 h-12 mb-2 opacity-50"></i>
+                            <p>Depo tamamen boş.</p>
+                        </div>`;
+                }
+
+                keys.forEach(key => {
+                    const item = state.inventory[key];
+                    const product = PRODUCTS.find(p => p.id === key);
+                    const currentPrice = state.prices[key];
+                    const profitMargin = ((currentPrice - item.avgCost) / item.avgCost) * 100;
+                    const profitClass = profitMargin >= 0 ? 'text-green-500' : 'text-red-500';
+                    const profitIcon = profitMargin >= 0 ? 'trending-up' : 'trending-down';
+
+                    let html = `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="bg-slate-100 p-2 rounded-lg relative">
+                                <i data-lucide="${product.icon}" class="w-6 h-6 ${product.color}"></i>
+                                <span class="absolute -top-2 -right-2 bg-slate-800 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">${item.qty}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800">${product.name}</h4>
+                                <div class="text-[10px] text-slate-500">Maliyet: ₺${item.avgCost.toFixed(1)}</div>
+                                <div class="text-[10px] font-bold ${profitClass} flex items-center gap-1">
+                                    <i data-lucide="${profitIcon}" class="w-3 h-3"></i> %${Math.abs(profitMargin).toFixed(1)} Kâr
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold text-sm text-slate-700 mb-1">Piyasa: ₺${currentPrice}</div>
+                            <div class="flex gap-1 justify-end">
+                                <button onclick="app.sellProduct('${key}', Math.min(10, ${item.qty}))" class="bg-emerald-500 text-white text-[10px] font-bold py-1 px-2 rounded hover:bg-emerald-600 active:scale-95 transition">Sat (Maks 10)</button>
+                                <button onclick="app.sellProduct('${key}', ${item.qty})" class="bg-emerald-700 text-white text-[10px] font-bold py-1 px-2 rounded hover:bg-emerald-800 active:scale-95 transition">Tümünü Sat</button>
+                            </div>
+                        </div>
+                    </div>`;
+                    els.inventoryList.insertAdjacentHTML('beforeend', html);
+                });
+                lucide.createIcons();
+            }
+
+            function renderFiloBadge() {
+                if (state.shipments.length > 0) {
+                    els.filoBadge.innerText = state.shipments.length;
+                    els.filoBadge.classList.remove('hidden');
+                } else {
+                    els.filoBadge.classList.add('hidden');
+                }
+            }
+
+            function renderFilo() {
+                els.shipmentList.innerHTML = '';
+                
+                if (state.shipments.length === 0) {
+                    els.shipmentList.innerHTML = `
+                        <div class="text-center text-slate-400 py-10 flex flex-col items-center">
+                            <i data-lucide="truck" class="w-12 h-12 mb-2 opacity-50"></i>
+                            <p>Yolda olan araç yok.</p>
+                        </div>`;
+                }
+
+                state.shipments.forEach(s => {
+                    const product = PRODUCTS.find(p => p.id === s.productId);
+                    const percent = Math.min(100, (s.elapsed / s.duration) * 100);
+                    const isBuy = s.type === 'buy';
+                    
+                    let statusHtml = '';
+                    if (s.isPaused) {
+                        statusHtml = `<span class="text-red-500 font-bold flex items-center gap-1 text-[10px] animate-pulse"><i data-lucide="alert-triangle" class="w-3 h-3"></i> KRİZ! İşlem Bekliyor</span>`;
+                    } else {
+                        statusHtml = `<span class="text-slate-500 text-[10px]">Yolda...</span>`;
+                    }
+
+                    let html = `
+                    <div class="bg-white rounded-xl shadow-sm border ${s.isPaused ? 'border-red-400 bg-red-50' : 'border-slate-200'} p-3 flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="${isBuy ? 'arrow-down-left' : 'arrow-up-right'}" class="w-4 h-4 ${isBuy ? 'text-blue-500' : 'text-emerald-500'}"></i>
+                                <span class="font-bold text-sm text-slate-800">${s.qty}x ${product.name} ${isBuy ? 'Alımı' : 'Satışı'}</span>
+                            </div>
+                            ${statusHtml}
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                            <div id="prog_${s.id}" class="h-2.5 rounded-full ${isBuy ? 'bg-blue-500' : 'bg-emerald-500'} progress-bar" style="width: ${percent}%"></div>
+                        </div>
+                    </div>`;
+                    els.shipmentList.insertAdjacentHTML('beforeend', html);
+                });
+                lucide.createIcons();
+            }
+
+            function updateFiloProgressBars() {
+                state.shipments.forEach(s => {
+                    let bar = document.getElementById(`prog_${s.id}`);
+                    if (bar && !s.isPaused) {
+                        const percent = Math.min(100, (s.elapsed / s.duration) * 100);
+                        bar.style.width = `${percent}%`;
+                    }
+                });
+            }
+
+            function renderKasaba() {
+                // Krediler
+                if (state.loans.length > 0) {
+                    els.activeLoansContainer.classList.remove('hidden');
+                    els.activeLoansList.innerHTML = '';
+                    state.loans.forEach(l => {
+                        let def = LOANS.find(d => d.id === l.defId);
+                        els.activeLoansList.innerHTML += `
+                            <li class="flex justify-between border-b border-slate-100 pb-1">
+                                <span>${def.name} (${l.daysLeft} gün kaldı)</span>
+                                <span class="font-bold text-red-500">-₺${Math.floor(l.dailyInstallment)}/gün</span>
+                            </li>
+                        `;
+                    });
+                } else {
+                    els.activeLoansContainer.classList.add('hidden');
+                }
+
+                els.loanOffers.innerHTML = '';
+                LOANS.forEach(l => {
+                    els.loanOffers.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                            <div>
+                                <div class="font-bold text-sm text-slate-800">${l.name}</div>
+                                <div class="text-[10px] text-slate-500">Miktar: ₺${l.amount} | Geri: ₺${l.payback} | ${l.days} Gün</div>
+                            </div>
+                            <button onclick="app.takeLoan('${l.id}')" class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold hover:bg-blue-200 transition">Çek</button>
+                        </div>
+                    `;
+                });
+
+                // Geliştirmeler
+                els.upgradesList.innerHTML = '';
+                UPGRADES.forEach(u => {
+                    const isBought = state.purchasedUpgrades.includes(u.id);
+                    const isLocked = state.level < u.level;
+                    
+                    let btnClass = isBought ? 'bg-green-100 text-green-700 cursor-default' : 
+                                   isLocked ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 
+                                   'bg-orange-100 text-orange-700 hover:bg-orange-200 transition';
+                    
+                    let btnText = isBought ? 'Alındı' : (isLocked ? `Lvl ${u.level}` : `₺${u.cost}`);
+
+                    els.upgradesList.innerHTML += `
+                        <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100 ${isBought ? 'opacity-60' : ''}">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="${u.type==='storage' ? 'box' : 'zap'}" class="w-4 h-4 text-slate-400"></i>
+                                <span class="font-bold text-sm text-slate-700">${u.name}</span>
+                            </div>
+                            <button ${isBought || isLocked ? 'disabled' : ''} onclick="app.buyUpgrade('${u.id}')" class="${btnClass} px-3 py-1 rounded text-xs font-bold">
+                                ${btnText}
+                            </button>
+                        </div>
+                    `;
+                });
+                lucide.createIcons();
+            }
+
+            function renderAll() {
+                updateHeader();
+                switchTab('pazar');
+            }
+
+            // --- UI HELPERS ---
+
+            function showModal(title, body, actions = []) {
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalBody').innerText = body;
+                
+                const actionContainer = document.getElementById('modalActions');
+                actionContainer.innerHTML = '';
+                
+                actions.forEach(act => {
+                    const btn = document.createElement('button');
+                    btn.className = `px-4 py-2 rounded-lg font-bold text-sm ${act.class}`;
+                    btn.innerText = act.text;
+                    btn.onclick = act.onClick;
+                    actionContainer.appendChild(btn);
+                });
+
+                const overlay = document.getElementById('modalOverlay');
+                overlay.classList.remove('hidden');
+                // trigger reflow
+                void overlay.offsetWidth;
+                overlay.classList.remove('opacity-0');
+                document.getElementById('modalContent').classList.remove('scale-95');
+            }
+
+            function closeModal() {
+                const overlay = document.getElementById('modalOverlay');
+                overlay.classList.add('opacity-0');
+                document.getElementById('modalContent').classList.add('scale-95');
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                }, 300);
+            }
+
+            function showPrompt(title, body, defaultText, callback) {
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalBody').innerHTML = `
+                    <p class="mb-3">${body}</p>
+                    <input type="text" id="promptInput" value="${defaultText}" class="w-full p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+                `;
+                
+                const actionContainer = document.getElementById('modalActions');
+                actionContainer.innerHTML = '';
+                
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-lg font-bold text-sm bg-indigo-600 text-white`;
+                btn.innerText = 'Başla';
+                btn.onclick = () => {
+                    const val = document.getElementById('promptInput').value.trim();
+                    callback(val);
+                    closeModal();
+                };
+                actionContainer.appendChild(btn);
+
+                const overlay = document.getElementById('modalOverlay');
+                overlay.classList.remove('hidden');
+                void overlay.offsetWidth;
+                overlay.classList.remove('opacity-0');
+                document.getElementById('modalContent').classList.remove('scale-95');
+            }
+
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                let bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-red-600' : 'bg-slate-800';
+                toast.className = `${bg} text-white px-4 py-2 rounded-full text-xs shadow-lg toast-enter font-medium flex items-center gap-2`;
+                
+                let icon = type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info';
+                toast.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4"></i> ${message}`;
+                
+                els.toastContainer.appendChild(toast);
+                lucide.createIcons();
+
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(100%)';
+                    toast.style.transition = 'all 0.3s ease-in';
+                    setTimeout(() => toast.remove(), 300);
+                }, 2500);
+            }
+
+            function resetGame() {
+                location.reload();
+            }
+
+            // Public API
+            return {
+                init, switchTab, buyProduct, sellProduct, takeLoan, buyUpgrade, donate, resetGame
+            };
+
+        })();
+
+        // Start App on Load
+        window.addEventListener('DOMContentLoaded', app.init);
+
+    </script>
+</body>
+</html>
