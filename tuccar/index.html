@@ -2,1123 +2,1964 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Tüccar Simülasyonu</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --accent-green: #198754; 
-            --accent-gold: #ffc107;  
-            --accent-blue: #0d6efd;  
-            --accent-danger: #dc3545;
-        }
-
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa; 
-            color: #212529;
-            margin: 0;
-            padding: 0;
-            padding-bottom: 80px; 
-            overflow-x: hidden;
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
-            touch-action: pan-y;
+            touch-action: pan-x pan-y;
         }
-        
-        input[type="text"], input[type="password"], input[type="number"] {
+        input[type="text"], input[type="range"] {
             -webkit-user-select: auto;
-            -moz-user-select: auto;
-            -ms-user-select: auto;
             user-select: auto;
         }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .app-card {
-            background-color: #ffffff;
-            border: 1px solid #dee2e6;
-            border-radius: 12px;
-            padding: 18px;
-            margin-bottom: 16px;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-            transition: background-color 0.3s ease;
+        @keyframes slideInUp {
+            from { transform: translateY(16px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
         }
+        .toast-enter { animation: slideInUp 0.25s ease-out forwards; }
 
-        .list-group-item {
-            display: flex;
-            flex-direction: column; 
-            padding: 14px 0;
-            border-color: #dee2e6;
+        @keyframes ticker-seamless {
+            0%   { transform: translateX(0);    }
+            100% { transform: translateX(-50%); }
         }
-
-        .top-header {
-            background-color: #ffffff;
-            border-bottom: 1px solid #dee2e6;
-            padding: 10px 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        .animate-ticker-slow {
+            display: flex; width: max-content;
+            animation: ticker-seamless 35s linear infinite;
+            will-change: transform;
         }
 
-        .news-ticker-wrapper {
-            background-color: var(--accent-danger);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            font-size: 0.85rem;
-            font-weight: 600;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to   { opacity: 1; transform: scale(1);    }
         }
-        .news-label-box {
-            background-color: inherit;
-            padding: 5px 15px;
-            z-index: 2;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.2);
-            white-space: nowrap;
+        .modal-enter { animation: fadeIn 0.18s ease-out forwards; }
+
+        .nav-btn { transition: color 0.2s, transform 0.1s; }
+        .nav-btn:active { transform: scale(0.9); }
+        .progress-bar { transition: width 1s linear; }
+
+        @keyframes pulse-red {
+            0%, 100% { background-color: #fef2f2; }
+            50%       { background-color: #fee2e2; }
         }
-        .news-marquee-box {
-            flex: 1;
-            overflow: hidden;
-            position: relative;
-            padding: 5px 0;
+        .crisis-pulse { animation: pulse-red 1.5s infinite; }
+
+        input[type=range] {
+            -webkit-appearance: none; appearance: none;
+            height: 6px; border-radius: 3px;
+            background: #e2e8f0; outline: none;
         }
-        .news-ticker-text {
-            display: inline-block;
-            white-space: nowrap;
-            padding-left: 100%;
-            animation: ticker 12s linear infinite;
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #4f46e5; cursor: pointer;
         }
-        @keyframes ticker {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
+        input[type=range]::-moz-range-thumb {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #4f46e5; cursor: pointer; border: none;
         }
 
-        .stat-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .stat-value {
-            font-size: 1.2rem;
-            font-weight: 800;
-            margin-top: 2px;
-        }
-
-        .text-money { color: var(--accent-green) !important; }
-        .text-fame { color: #d39e00 !important; } 
-        .text-goodwill { color: #d63384 !important; }
-
-        .bottom-nav {
-            background-color: #ffffff;
-            border-top: 1px solid #dee2e6;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-            padding: 10px 0;
-            z-index: 1030;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #6c757d;
-            text-decoration: none;
-            font-size: 0.8rem;
-            cursor: pointer;
-            transition: color 0.2s;
-            width: 25%;
-            font-weight: 600;
-        }
-        .nav-item i { font-size: 1.3rem; margin-bottom: 4px; }
-        .nav-item.active, .nav-item:hover { color: var(--accent-blue); }
-
-        .progress-container {
-            width: 100%;
-            background-color: #e9ecef;
-            border-radius: 10px;
-            height: 8px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background-color: var(--accent-blue);
-            width: 0%;
-            transition: width 0.1s linear;
-        }
-
-        .btn-custom { border-radius: 8px; font-weight: 600; padding: 8px 16px; }
-        
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 15px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 300px;
-        }
-        .custom-toast {
-            background-color: #fff;
-            border-left: 4px solid var(--accent-blue);
-            color: #212529;
-            padding: 12px 16px;
-            border-radius: 6px;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            font-size: 0.9rem;
-            font-weight: 600;
-            animation: slideIn 0.3s ease-out forwards;
-        }
-        .custom-toast.success { border-left-color: var(--accent-green); }
-        .custom-toast.warning { border-left-color: var(--accent-gold); }
-        .custom-toast.danger { border-left-color: var(--accent-danger); }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .app-container { max-width: 600px; margin: 0 auto; }
-        .market-price-up { color: var(--accent-danger); } 
-        .market-price-down { color: var(--accent-green); }
-
-        #login-screen {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #f8f9fa;
-        }
-
-        .stat-small {
-            font-size: 0.75rem;
-            color: #6c757d;
-        }
-        
-        /* Adet Girişi Kutuları İçin Daraltma */
-        .qty-input {
-            width: 70px;
-            text-align: center;
-            font-weight: bold;
+        .event-banner {
+            animation: slideInUp 0.4s ease-out forwards;
         }
     </style>
 </head>
-<body>
+<body class="bg-gray-900 text-gray-100 h-[100dvh] flex justify-center overflow-hidden">
 
-    <div id="toast-container"></div>
+<div id="app" class="w-full max-w-md h-full bg-slate-50 text-slate-900 flex flex-col relative shadow-2xl overflow-hidden mx-auto">
 
-    <!-- GİRİŞ EKRANI -->
-    <div id="login-screen">
-        <div class="app-card text-center shadow" style="width: 90%; max-width: 400px; border-top: 4px solid var(--accent-blue);">
-            <i class="fa-solid fa-truck-fast mb-3 text-primary" style="font-size: 3.5rem;"></i>
-            <h3 class="mb-2 fw-bold text-dark">Tüccar Simülasyonu</h3>
-            <p class="text-muted mb-4" style="font-size: 0.85rem;">Hızlı al, hızlı sat, büyümeye başla!</p>
-            
-            <input type="text" id="username" class="form-control mb-3" placeholder="Şirket veya Karakter Adı">
-            
-            <button class="btn btn-primary w-100 btn-custom mb-3" onclick="login()">Kontağı Çalıştır</button>
-            <p class="text-muted m-0" style="font-size: 0.75rem;">Oyun tarayıcınıza otomatik kaydedilir.</p>
+    <!-- HEADER -->
+    <header class="bg-indigo-700 text-white p-3 shadow-md z-20 shrink-0 select-none">
+        <div class="flex justify-between items-center mb-2">
+            <div>
+                <h1 class="font-bold text-lg leading-tight flex items-center gap-1">
+                    <span id="playerNameDisplay">Tüccar</span>
+                    <span id="prestigeBadge" class="hidden text-xs bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded-full font-black ml-1">★ PRESTİJ</span>
+                </h1>
+                <div class="text-xs text-indigo-200 flex items-center gap-1 mt-0.5 flex-wrap">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-red-300"></i>
+                    <span id="locationDisplay" class="font-bold text-red-200">Köy</span>
+                    <span class="opacity-50">|</span>
+                    <i data-lucide="clock" class="w-3 h-3"></i>
+                    <span id="gameTimeDisplay">1. Gün 08:00</span>
+                    <span id="pausedIndicator" class="hidden text-red-300 ml-1 animate-pulse font-bold text-[10px]">(DURAKLATILDI)</span>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="font-black text-xl text-green-400" id="moneyDisplay">₺1.000</div>
+                <div class="text-xs text-indigo-200">Depo: <span id="storageDisplay">0/50</span></div>
+            </div>
         </div>
+        <div class="flex justify-between items-center text-sm bg-indigo-800 rounded-lg p-2">
+            <div class="flex items-center gap-1" title="İtibar">
+                <i data-lucide="star" class="w-4 h-4 text-yellow-400"></i>
+                <span id="reputationDisplay">0</span>
+            </div>
+            <div class="flex items-center gap-1" title="İyilik">
+                <i data-lucide="heart" class="w-4 h-4 text-red-400"></i>
+                <span id="goodnessDisplay">0</span>
+            </div>
+            <div class="flex items-center gap-1 font-bold" title="Seviye">
+                <i data-lucide="trending-up" class="w-4 h-4 text-blue-400"></i>
+                Seviye <span id="levelDisplay">1</span>
+            </div>
+            <div class="flex items-center gap-1 text-xs text-indigo-300" title="Vergi Oranı">
+                <i data-lucide="receipt" class="w-3 h-3"></i>
+                <span id="taxRateDisplay">%0</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- GLOBAL EVENT BANNER -->
+    <div id="eventBanner" class="hidden bg-red-600 text-white text-xs font-bold px-3 py-2 flex items-center gap-2 z-20 shrink-0 event-banner">
+        <i data-lucide="zap" class="w-4 h-4 shrink-0"></i>
+        <span id="eventBannerText"></span>
+        <button onclick="document.getElementById('eventBanner').classList.add('hidden')" class="ml-auto shrink-0 opacity-70 hover:opacity-100">✕</button>
     </div>
 
-    <!-- OYUN EKRANI -->
-    <div id="game-screen" class="d-none">
-        
-        <!-- Üst Bar -->
-        <header class="top-header sticky-top">
-            <div class="app-container d-flex justify-content-between align-items-center">
-                <div class="stat-box">
-                    <span class="text-muted"><i class="fa-solid fa-wallet"></i> Kasa</span>
-                    <span class="stat-value text-money" id="ui-money">₺0</span>
+    <!-- MAIN -->
+    <main id="mainContent" class="flex-1 overflow-y-auto hide-scrollbar bg-slate-100 p-4 pb-36 relative z-0">
+
+        <!-- PAZAR -->
+        <div id="view-pazar" class="view-section">
+            <div class="flex justify-between items-end mb-2">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
+                    <i data-lucide="store" class="w-5 h-5"></i> Toptancı Pazarı
+                </h2>
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-500 mb-0.5">Yenilenmeye Kalan</p>
+                    <p class="text-xs font-bold text-indigo-600"><span id="marketTimerText">30</span> sn</p>
                 </div>
-                <div class="stat-box">
-                    <span class="text-muted"><i class="fa-solid fa-handshake"></i> İtibar (Sv.<span id="ui-level">1</span>)</span>
-                    <span class="stat-value text-fame" id="ui-fame">0</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-1.5 mb-4 overflow-hidden">
+                <div id="marketProgressBar" class="bg-indigo-500 h-1.5 progress-bar" style="width:100%"></div>
+            </div>
+            <div id="marketList" class="flex flex-col gap-3"></div>
+        </div>
+
+        <!-- DEPO -->
+        <div id="view-depo" class="view-section hidden">
+            <div class="flex justify-between items-end mb-2">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
+                    <i data-lucide="package" class="w-5 h-5"></i> Depom
+                </h2>
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-500 mb-0.5">Piyasa Yenilenmesi</p>
+                    <p class="text-xs font-bold text-indigo-600"><span id="marketTimerTextDepo">30</span> sn</p>
                 </div>
-                <div class="stat-box">
-                    <span class="text-muted"><i class="fa-solid fa-heart"></i> İyilik</span>
-                    <span class="stat-value text-goodwill" id="ui-goodwill">0</span>
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-1.5 mb-4 overflow-hidden">
+                <div id="marketProgressBarDepo" class="bg-indigo-500 h-1.5 progress-bar" style="width:100%"></div>
+            </div>
+            <!-- Bozulma uyarısı -->
+            <div id="spoilWarning" class="hidden bg-amber-50 border border-amber-300 rounded-xl p-3 mb-3 text-xs text-amber-800 flex items-start gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 mt-0.5 text-amber-500"></i>
+                <span>Bazı ürünler uzun süre bekliyor. Her geçen gün değerlerinin küçük bir kısmını kaybediyorlar. Satmayı düşün!</span>
+            </div>
+            <div id="inventoryList" class="flex flex-col gap-3"></div>
+        </div>
+
+        <!-- FİLO -->
+        <div id="view-filo" class="view-section hidden">
+            <div class="flex justify-between items-end mb-3">
+                <h2 class="text-lg font-bold flex items-center gap-2 text-slate-800">
+                    <i data-lucide="truck" class="w-5 h-5"></i> Aktif Sevkiyatlar
+                </h2>
+                <div class="bg-slate-200 px-2 py-1 rounded-lg text-xs font-bold text-slate-700">
+                    Araç: <span id="vehicleCountDisplay" class="text-indigo-600">0/1</span>
                 </div>
-                <button class="btn btn-light btn-sm shadow-sm" onclick="showStoryModal()" title="Hikaye ve Bilgi">
-                    <i class="fa-solid fa-circle-info text-primary"></i>
+            </div>
+            <div id="shipmentList" class="flex flex-col gap-3"></div>
+        </div>
+
+        <!-- MERKEZ -->
+        <div id="view-merkez" class="view-section hidden">
+            <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-slate-800">
+                <i data-lucide="building-2" class="w-5 h-5"></i>
+                <span id="merkezTitle">Merkez</span>
+            </h2>
+
+            <!-- Prestij / Şirketi Sat -->
+            <div id="prestigeContainer" class="hidden bg-gradient-to-r from-yellow-500 to-amber-600 rounded-xl shadow-lg p-4 mb-4 text-white relative overflow-hidden">
+                <i data-lucide="trophy" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-20"></i>
+                <h3 class="font-bold flex items-center gap-1 mb-1 relative z-10">
+                    <i data-lucide="star" class="w-4 h-4"></i> Şirketi Holdinge Sat!
+                </h3>
+                <p class="text-xs text-yellow-100 mb-3 relative z-10">İstanbul'da trilyoner oldun! Şirketini sat, kalıcı bonuslarla yeniden başla.</p>
+                <button onclick="app.triggerPrestige()" class="bg-white text-amber-700 px-4 py-2 rounded font-black text-sm hover:bg-yellow-50 active:scale-95 transition relative z-10">
+                    🏆 PRESTİJ YAP
                 </button>
             </div>
-        </header>
 
-        <!-- Kayan Haber Bandı -->
-        <div class="news-ticker-wrapper" id="news-wrapper">
-            <div class="news-label-box" id="news-label-box">
-                <i class="fa-solid fa-bolt me-1"></i> HABER:
+            <!-- Seyahat -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl shadow-lg p-4 mb-4 text-white relative overflow-hidden">
+                <i data-lucide="globe" class="absolute -right-4 -bottom-4 w-24 h-24 opacity-20"></i>
+                <h3 class="font-bold flex items-center gap-1 mb-1 relative z-10">
+                    <i data-lucide="map" class="w-4 h-4"></i> Seyahat / Bölge Değiştir
+                </h3>
+                <p class="text-[10px] text-blue-100 mb-3 relative z-10">Büyük şehirlere geç. Fiyatlar ve kârlar katlanarak artar!</p>
+                <div id="travelContainer" class="relative z-10"></div>
             </div>
-            <div class="news-marquee-box">
-                <span class="news-ticker-text" id="news-text">Piyasalar sakin seyrediyor. Alım satım için uygun zaman.</span>
+
+            <!-- Araç Filosu ve Sigorta -->
+            <div class="bg-white rounded-xl shadow p-4 mb-4 border border-slate-200">
+                <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-3">
+                    <i data-lucide="truck" class="w-4 h-4 text-blue-600"></i> Araç Filosu
+                </h3>
+                <div id="fleetStatusContainer" class="mb-3 space-y-2"></div>
+                <div id="insuranceContainer"></div>
+            </div>
+
+            <!-- Banka -->
+            <div class="bg-white rounded-xl shadow p-4 mb-4 border border-slate-200">
+                <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2">
+                    <i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i> Banka (Kredi Sistemi)
+                </h3>
+                <!-- Kredi özet -->
+                <div id="loanSummaryBox" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 mb-3 text-xs">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-red-700 flex items-center gap-1"><i data-lucide="alert-circle" class="w-3 h-3"></i> Aktif Kredi Durumu</span>
+                        <span id="loanMissedBadge" class="hidden bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full font-black"></span>
+                    </div>
+                    <ul id="activeLoansList" class="space-y-2"></ul>
+                    <div id="loanMissedWarning" class="hidden mt-2 text-red-700 font-bold flex items-center gap-1">
+                        <i data-lucide="alert-octagon" class="w-3 h-3"></i>
+                        <span id="loanMissedText"></span>
+                    </div>
+                </div>
+                <p class="text-xs text-slate-500 mb-3">Max 1 aktif kredi. <span class="font-bold text-red-500">2 gecikme = İflas!</span></p>
+                <div class="grid grid-cols-1 gap-2" id="loanOffers"></div>
+            </div>
+
+            <!-- Geliştirmeler -->
+            <div class="bg-white rounded-xl shadow p-4 mb-4 border border-slate-200">
+                <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2">
+                    <i data-lucide="hammer" class="w-4 h-4 text-orange-600"></i> Şirket Geliştirmeleri
+                </h3>
+                <div class="grid grid-cols-1 gap-2" id="upgradesList"></div>
+            </div>
+
+            <!-- Sosyal Sorumluluk -->
+            <div class="bg-white rounded-xl shadow p-4 border border-slate-200">
+                <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2">
+                    <i data-lucide="users" class="w-4 h-4 text-purple-600"></i> Sosyal Sorumluluk
+                </h3>
+                <p class="text-xs text-slate-500 mb-3">İyilik puanı vergi oranını ve kaza riskini düşürür. <span class="font-bold text-red-500">Günde 1 kez.</span></p>
+                <div id="donateContainer"></div>
             </div>
         </div>
 
-        <!-- İçerik Alanı -->
-        <main class="app-container p-3">
-            
-            <!-- 1. PAZAR SEKMESİ -->
-            <section id="tab-pazar">
-                <div class="d-flex justify-content-between align-items-end mb-2">
-                    <h5 class="m-0 fw-bold text-dark"><i class="fa-solid fa-store text-primary me-2"></i> Bölgesel Pazar</h5>
-                    <span class="badge bg-secondary" id="market-timer-text">Yenilenme: 15s</span>
-                </div>
-                <div class="progress-container mb-4" style="height: 6px;">
-                    <div class="progress-bar bg-primary" id="market-progress" style="width: 0%;"></div>
-                </div>
-
-                <div id="market-items-container">
-                    <!-- Ürünler JS ile buraya basılacak -->
-                </div>
-            </section>
-
-            <!-- 2. DEPO SEKMESİ -->
-            <section id="tab-depo" class="d-none">
-                <h5 class="mb-3 fw-bold text-dark"><i class="fa-solid fa-boxes-stacked text-primary me-2"></i> Operasyon Merkezi</h5>
-                
-                <div class="app-card">
-                    <div class="d-flex justify-content-between mb-2 fw-bold text-secondary">
-                        <span>Depo Doluluğu</span>
-                        <span id="ui-capacity-text">0 / 50</span>
-                    </div>
-                    <div class="progress-container mb-4">
-                        <div class="progress-bar bg-warning" id="ui-capacity-bar" style="width: 0%;"></div>
-                    </div>
-                    
-                    <h6 class="fw-bold text-dark mb-2 border-bottom pb-2">Envanter ve İstatistikler</h6>
-                    <ul class="list-group list-group-flush mb-4" id="inventory-list">
-                        <!-- Envanter JS ile basılacak -->
-                    </ul>
-
-                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Operasyonel Gelişimler</h6>
-                    
-                    <button id="btn-upg-cold" class="btn btn-outline-info w-100 mb-2 fw-bold text-start d-flex justify-content-between align-items-center" onclick="buyUpgrade('coldStorage')">
-                        <div>
-                            <i class="fa-solid fa-snowflake me-2"></i> Depoyu Genişlet <br>
-                            <small class="text-muted fw-normal stat-small">(+25 Kapasite)</small>
-                        </div>
-                        <span class="badge bg-info text-dark" id="cost-cold">₺1000</span>
-                    </button>
-                    
-                    <button id="btn-upg-tablet" class="btn btn-outline-primary w-100 mb-2 fw-bold text-start d-flex justify-content-between align-items-center" onclick="buyUpgrade('tablet')">
-                        <div>
-                            <i class="fa-solid fa-tablet-screen-button me-2"></i> Dijital Altyapı <br>
-                            <small class="text-muted fw-normal stat-small">(Prestij sağlar, seviyesi artar)</small>
-                        </div>
-                        <span class="badge bg-primary" id="cost-tablet">₺500</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- 3. FİLO (LOJİSTİK) SEKMESİ -->
-            <section id="tab-filo" class="d-none">
-                <h5 class="mb-3 fw-bold text-dark"><i class="fa-solid fa-route text-primary me-2"></i> Lojistik & Teslimat</h5>
-                
-                <div class="app-card mb-4 bg-light border-0">
-                    <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">Aktif Teslimatlar</h6>
-                    <div id="active-shipments">
-                        <p class="text-muted text-center py-4 m-0" id="no-shipment-msg">
-                            <i class="fa-solid fa-truck mb-2" style="font-size: 2rem; opacity: 0.3;"></i><br>
-                            Şu an yolda araç yok.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="app-card">
-                    <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Filo Geliştirmeleri</h6>
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <span class="fw-bold text-secondary">Mevcut Teslimat Süresi:</span>
-                        <span id="ui-speed-text" class="badge bg-primary fs-6">30sn</span>
-                    </div>
-                    
-                    <button id="btn-upg-engine" class="btn btn-outline-danger w-100 mb-2 fw-bold text-start d-flex justify-content-between align-items-center" onclick="buyUpgrade('engine')">
-                        <div>
-                            <i class="fa-solid fa-gauge-high me-2"></i> Motor Bakımı <br>
-                            <small class="text-muted fw-normal stat-small">(Teslimatı 2sn hızlandırır)</small>
-                        </div>
-                        <span class="badge bg-danger" id="cost-engine">₺800</span>
-                    </button>
-
-                    <button id="btn-upg-logo" class="btn btn-outline-warning w-100 fw-bold text-start text-dark d-flex justify-content-between align-items-center" onclick="buyUpgrade('logo')">
-                        <div>
-                            <i class="fa-solid fa-paint-roller me-2"></i> Araç Giydirme (Logo) <br>
-                            <small class="text-muted fw-normal stat-small">(Tanınırlığı artırır)</small>
-                        </div>
-                        <span class="badge bg-warning text-dark" id="cost-logo">₺1000</span>
-                    </button>
-                </div>
-            </section>
-
-            <!-- 4. KASABA & SİYASET SEKMESİ -->
-            <section id="tab-kasaba" class="d-none">
-                <h5 class="mb-3 fw-bold text-dark"><i class="fa-solid fa-landmark text-primary me-2"></i> Kasaba & Kariyer</h5>
-                
-                <div class="app-card">
-                    <h6 class="fw-bold text-dark mb-2">Lisans & Seviye İlerlemesi</h6>
-                    <p class="text-muted" style="font-size: 0.85rem;" id="level-desc-text">Belediye Başkanı, yeterli İtibara ulaşanlara yeni ürün pazarlarını açar.</p>
-                    
-                    <div class="d-flex justify-content-between mt-3 mb-1 fw-bold" style="font-size: 0.85rem;">
-                        <span class="text-secondary" id="level-target-label">Sonraki Seviye İtibar Hedefi</span>
-                        <span id="ui-quest-fame" class="text-fame">0 / 100</span>
-                    </div>
-                    <div class="progress-container mb-2">
-                        <div class="progress-bar bg-warning" id="ui-quest-bar" style="width: 0%;"></div>
-                    </div>
-                </div>
-
-                <div class="app-card border-danger border-opacity-25">
-                    <h6 class="fw-bold text-danger mb-3"><i class="fa-solid fa-hand-holding-heart me-2"></i> Sosyal Sorumluluk</h6>
-                    
-                    <button class="btn btn-danger w-100 mb-2 fw-bold text-start" onclick="doCharity('school')">
-                        <i class="fa-solid fa-school me-2"></i> Okula Bağış Yap (-₺300)<br>
-                        <span class="fw-normal text-white-50 stat-small">(+10 İtibar, +5 İyilik)</span>
-                    </button>
-                    
-                    <button class="btn btn-warning w-100 fw-bold text-start text-dark" onclick="doCharity('bakery')">
-                        <i class="fa-solid fa-bread-slice me-2"></i> Fırına Un Yardımı (-2 Un)<br>
-                        <span class="fw-normal text-black-50 stat-small">(+15 İtibar, +10 İyilik)</span>
-                    </button>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- Alt Navigasyon Menüsü -->
-        <nav class="bottom-nav fixed-bottom">
-            <div class="app-container d-flex justify-content-around w-100">
-                <div class="nav-item active" id="nav-pazar" onclick="switchTab('pazar', this)">
-                    <i class="fa-solid fa-store"></i>
-                    <span>Pazar</span>
-                </div>
-                <div class="nav-item" id="nav-depo" onclick="switchTab('depo', this)">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                    <span>Depo</span>
-                </div>
-                <div class="nav-item" id="nav-filo" onclick="switchTab('filo', this)">
-                    <i class="fa-solid fa-route"></i>
-                    <span>Filo</span>
-                </div>
-                <div class="nav-item" id="nav-kasaba" onclick="switchTab('kasaba', this)">
-                    <i class="fa-solid fa-landmark"></i>
-                    <span>Kasaba</span>
+        <!-- AYARLAR -->
+        <div id="view-ayarlar" class="view-section hidden">
+            <h2 class="text-lg font-bold mb-3 flex items-center gap-2 text-slate-800">
+                <i data-lucide="settings" class="w-5 h-5"></i> Ayarlar & Bilgi
+            </h2>
+            <div class="bg-white rounded-xl shadow p-4 mb-4 border border-slate-200">
+                <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-3 border-b pb-2">
+                    <i data-lucide="info" class="w-4 h-4 text-indigo-600"></i> Nasıl Oynanır?
+                </h3>
+                <div class="text-xs text-slate-600 space-y-2.5 leading-relaxed">
+                    <p><strong>Zaman:</strong> 1 gerçek saniye = 15 oyun dakikası. Piyasa her 30 saniyede yenilenir.</p>
+                    <p><strong>Araçlar:</strong> Her aktif sevkiyat bir aracı meşgul eder. Geliştirmelerden yeni araç alabilirsin.</p>
+                    <p><strong>Kaza:</strong> Yolda ek maliyet doğar. İlk kazadan sonra <strong>Sigorta</strong> teklif edilir.</p>
+                    <p><strong>Depo Bozulması:</strong> Ürünler çok uzun kalırsa günde küçük bir değer kaybı olur.</p>
+                    <p><strong>Vergi:</strong> Her satıştan vergi kesilir. İyilik puanı oranı düşürür.</p>
+                    <p><strong>Kredi:</strong> Her güne taksit yansır. 2 gecikme = iflas!</p>
+                    <p><strong>Küresel Olaylar:</strong> Belirli aralıklarla piyasayı sarsan haberler çıkar.</p>
+                    <p><strong>Prestij:</strong> İstanbul'da büyük servet biriktirince kalıcı bonuslarla yeniden başla.</p>
                 </div>
             </div>
+            <div class="bg-white rounded-xl shadow p-4 border border-slate-200">
+                <h3 class="font-bold flex items-center gap-1 text-slate-800 mb-2">
+                    <i data-lucide="trash-2" class="w-4 h-4 text-red-600"></i> Sistemi Sıfırla
+                </h3>
+                <button onclick="app.confirmReset()"
+                    class="w-full bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 p-3 rounded-lg text-sm font-bold flex justify-center items-center gap-2 transition active:scale-95">
+                    <i data-lucide="alert-octagon" class="w-4 h-4"></i> Her Şeyi Sil ve Başa Dön
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ALT BÖLÜM -->
+    <div class="absolute bottom-0 w-full z-20 flex flex-col pointer-events-none">
+        <!-- Piyasa Ticker -->
+        <div id="bottomTickerContainer" class="hidden bg-slate-900 text-white flex items-center border-t border-slate-700 pointer-events-auto w-full">
+            <div class="bg-indigo-600 font-bold text-[10px] px-2 py-1.5 shrink-0 flex items-center gap-1 uppercase tracking-wider shadow-[2px_0_5px_rgba(0,0,0,0.5)]">
+                <i data-lucide="activity" class="w-3 h-3"></i> Piyasa
+            </div>
+            <div class="overflow-hidden w-full py-1.5 text-[11px] flex">
+                <div id="bottomTickerContent" class="animate-ticker-slow font-mono whitespace-nowrap flex items-center"></div>
+            </div>
+        </div>
+        <!-- Navigasyon -->
+        <nav class="bg-white border-t border-slate-200 grid grid-cols-5 py-2 px-1 pb-safe w-full select-none pointer-events-auto shadow-lg">
+            <button onclick="app.switchTab('pazar')" id="tab-pazar" class="nav-btn flex flex-col items-center py-1 px-2 text-indigo-600">
+                <i data-lucide="store" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">Pazar</span>
+            </button>
+            <button onclick="app.switchTab('depo')" id="tab-depo" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-indigo-500">
+                <i data-lucide="package" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">Depo</span>
+            </button>
+            <button onclick="app.switchTab('filo')" id="tab-filo" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-indigo-500 relative">
+                <i data-lucide="truck" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">Filo</span>
+                <span id="filoBadge" class="absolute top-0 right-1 bg-red-500 text-white text-[8px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+            </button>
+            <button onclick="app.switchTab('merkez')" id="tab-merkez" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-indigo-500">
+                <i data-lucide="map-pin" class="w-6 h-6 mb-1"></i><span id="navMerkezText" class="text-[10px] font-bold">Merkez</span>
+            </button>
+            <button onclick="app.switchTab('ayarlar')" id="tab-ayarlar" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-indigo-500">
+                <i data-lucide="settings" class="w-6 h-6 mb-1"></i><span class="text-[10px] font-bold">Ayarlar</span>
+            </button>
         </nav>
-
     </div>
 
-    <!-- Hikaye Modal -->
-    <div class="modal fade" id="storyModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-primary text-white border-0">
-                    <h5 class="modal-title fw-bold">
-                        <i class="fa-solid fa-book-open me-2"></i> Ticaret Hayatına Hoşgeldin
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
-                </div>
-                <div class="modal-body bg-light">
-                    <div class="alert alert-secondary border-0 mb-3" style="font-family: monospace; font-size: 0.9rem;">
-                        "Eski bir kamyonet, biraz sermaye... Bakalım bu kasabada yükselebilecek misin?"
-                    </div>
-                    <ul class="list-unstyled text-dark" style="font-size: 0.9rem;">
-                        <li class="mb-2"><i class="fa-solid fa-angles-right text-primary me-2"></i> <strong>Hızlı Al-Sat:</strong> Fiyatlar 15 saniyede bir değişir. İstenilen adet girerek işlem yapılabilir.</li>
-                        <li class="mb-2"><i class="fa-solid fa-angles-right text-primary me-2"></i> <strong>Yol Krizleri:</strong> Araç yoldayken arıza/kaza yapabilir, ceza veya gecikme yaşanabilir.</li>
-                        <li class="mb-2"><i class="fa-solid fa-angles-right text-primary me-2"></i> <strong>10 Seviye:</strong> İtibar kazanarak yeni malların (Çip, Altın, Uzay Teknolojisi) kilidini aç!</li>
-                    </ul>
-                </div>
-                <div class="modal-footer border-0 bg-light d-flex justify-content-between">
-                    <button type="button" class="btn btn-outline-danger btn-sm fw-bold" onclick="resetGame()">Oyunu Sıfırla</button>
-                    <button type="button" class="btn btn-primary fw-bold px-4" data-bs-dismiss="modal">Hadi Başlayalım!</button>
-                </div>
-            </div>
+    <!-- MODAL -->
+    <div id="modalOverlay" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center hidden">
+        <div id="modalContent" class="bg-white rounded-2xl p-5 w-11/12 max-w-sm shadow-2xl modal-enter">
+            <h3 id="modalTitle" class="text-xl font-bold text-slate-800 mb-2"></h3>
+            <div id="modalBody" class="text-sm text-slate-600 mb-5 leading-relaxed whitespace-pre-line"></div>
+            <div id="modalActions" class="flex gap-3 justify-end flex-wrap"></div>
         </div>
     </div>
 
-    <!-- Seviye Atlama Modal -->
-    <div class="modal fade" id="mayorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-warning shadow-lg" style="border-width: 3px;">
-                <div class="modal-header bg-warning border-0">
-                    <h5 class="modal-title fw-bold text-dark">
-                        <i class="fa-solid fa-certificate me-2"></i> Belediye Başkanı
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
-                </div>
-                <div class="modal-body text-center py-4 bg-light">
-                    <i class="fa-solid fa-city mb-3 text-warning" style="font-size: 4rem;"></i>
-                    <h4 class="fw-bold text-dark mb-3">Tebrikler! Seviye Atladın.</h4>
-                    <p class="text-secondary" id="mayor-text" style="font-size: 0.95rem;">
-                        "Ticaretteki başarın dilden dile dolaşıyor. Sana yeni pazar rotalarını açıyorum."
-                    </p>
-                    <div class="alert alert-success mt-3 fw-bold border-0">
-                        Pazara daha kârlı yeni ürünler eklendi!
-                    </div>
-                </div>
-                <div class="modal-footer border-0 bg-light">
-                    <button type="button" class="btn btn-warning w-100 fw-bold py-2 text-dark" data-bs-dismiss="modal">Pazara Geri Dön</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- TOAST -->
+    <div id="toastContainer" class="absolute bottom-28 left-0 w-full flex flex-col items-center gap-2 pointer-events-none z-40 px-4"></div>
+</div>
 
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const app = (() => {
+'use strict';
 
-    <!-- Oyun Mantığı & PWA Kurulumu -->
-    <script>
-        // --- PWA (Progressive Web App) Dinamik Entegrasyonu ---
-        const pwaIconBase64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNTEyIj48cGF0aCBkPSJNNDggMEMyMS41IDAgMCAyMS41IDAgNDhWMzY4YzAgMjYuNSAyMS41IDQ4IDQ4IDQ4SDY0YzAgNTMgNDMgOTYgOTYgOTZzOTYtNDMgOTYtOTZIMzg0YzAgNTMgNDMgOTYgOTYgOTZzOTYtNDMgOTYtOTZoMzJjMTcuNyAwIDMyLTE0LjMgMzItMzJzLTE0LjMtMzItMzJWMjg4IDI1NiAyMzcuM2MwLTE3LTYuNy0zMy4zLTE4LjctNDUuM0w1MTIgMTE0LjdjLTEyLTEyLTI4LjMtMTguNy00NS4zLTE4LjdINDE2VjQ4YzAtMjYuNS0yMS41LTQ4LTQ4LTQ4SDQ4ek00MTYgMTYwaDUwLjdMNTQ0IDIzNy4zVjI1Nkg0MTZWMTYwek0xMTIgNDE2YTQ4IDQ4IDAgMSAxIDk2IDAgNDggNDggMCAxIDEgLTk2IDB6bTM2OC00OGE0OCA0OCAwIDEgMSAwIDk2 NDggNDggMCAxIDEgMC05NnoiIGZpbGw9IiMwZDZlZmQiLz48L3N2Zz4=";
-        const pwaManifest = {
-            "name": "Tüccar",
-            "short_name": "Tüccar",
-            "start_url": "./",
-            "display": "standalone",
-            "background_color": "#f8f9fa",
-            "theme_color": "#0d6efd",
-            "icons": [{"src": pwaIconBase64, "sizes": "512x512", "type": "image/svg+xml"}]
-        };
-        const manifestBlob = new Blob([JSON.stringify(pwaManifest)], {type: 'application/json'});
-        const manifestUrl = URL.createObjectURL(manifestBlob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = manifestUrl;
-        document.head.appendChild(link);
+// ═══════════════════════════════════════════════════════════════
+//  VERİ
+// ═══════════════════════════════════════════════════════════════
 
-        const swCode = `
-            self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
-            self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-            self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(()=>new Response('Çevrimdışı (Tüccar Simülasyonu)'))));
-        `;
-        const swBlob = new Blob([swCode], {type: 'application/javascript'});
-        const swUrl = URL.createObjectURL(swBlob);
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(swUrl).catch(err => console.log('SW Error:', err));
+const LOCATIONS = [
+    { id:'koy',      name:'Başlangıç Köyü', shortName:'Köy',      minLevel:1,  fee:0,        mult:1   },
+    { id:'kasaba',   name:'Büyük Kasaba',   shortName:'Kasaba',   minLevel:5,  fee:15000,    mult:2.5 },
+    { id:'sehir',    name:'Gelişen Şehir',  shortName:'Şehir',    minLevel:10, fee:75000,    mult:5   },
+    { id:'izmir',    name:'İzmir',          shortName:'İzmir',    minLevel:15, fee:300000,   mult:10  },
+    { id:'ankara',   name:'Ankara',         shortName:'Ankara',   minLevel:22, fee:1200000,  mult:20  },
+    { id:'istanbul', name:'İstanbul',       shortName:'İstanbul', minLevel:30, fee:6000000,  mult:45  }
+];
+
+// Araç tipleri — minLoc üzerindeki ürünler bu aracı zorunlu kılar
+const VEHICLE_TYPES = [
+    { id:'kamyon',  name:'Kamyon',        icon:'truck',        baseCost:5000,   costMult:2.5, capacity:1, desc:'Standart araç'              },
+    { id:'tanker',  name:'Tanker',        icon:'fuel',         baseCost:80000,  costMult:3,   capacity:1, desc:'Petrol taşıma zorunlu'      },
+    { id:'zirhli',  name:'Zırhlı Araç',   icon:'shield',       baseCost:400000, costMult:3.5, capacity:1, desc:'Uranyum/Elmas taşıma zorunlu'}
+];
+
+// Ürünler — requiredVehicle: o ürünü taşımak için gereken araç tipi
+const PRODUCTS = [
+    { id:'su',      name:'Su',      basePrice:10,    vol:0.15, minLoc:0, maxLoc:1,  icon:'droplet',   color:'text-blue-500',   requiredVehicle:'kamyon'  },
+    { id:'bugday',  name:'Buğday',  basePrice:30,    vol:0.18, minLoc:0, maxLoc:2,  icon:'wheat',     color:'text-yellow-600', requiredVehicle:'kamyon'  },
+    { id:'odun',    name:'Odun',    basePrice:80,    vol:0.22, minLoc:0, maxLoc:3,  icon:'tree-pine', color:'text-emerald-700',requiredVehicle:'kamyon'  },
+    { id:'kumas',   name:'Kumaş',   basePrice:200,   vol:0.25, minLoc:1, maxLoc:99, icon:'scissors',  color:'text-pink-500',   requiredVehicle:'kamyon'  },
+    { id:'demir',   name:'Demir',   basePrice:600,   vol:0.28, minLoc:1, maxLoc:99, icon:'anvil',     color:'text-gray-600',   requiredVehicle:'kamyon'  },
+    { id:'altin',   name:'Altın',   basePrice:1800,  vol:0.30, minLoc:2, maxLoc:99, icon:'coins',     color:'text-yellow-400', requiredVehicle:'kamyon'  },
+    { id:'elmas',   name:'Elmas',   basePrice:6000,  vol:0.30, minLoc:3, maxLoc:99, icon:'gem',       color:'text-cyan-400',   requiredVehicle:'zirhli'  },
+    { id:'petrol',  name:'Petrol',  basePrice:15000, vol:0.28, minLoc:4, maxLoc:99, icon:'fuel',      color:'text-slate-800',  requiredVehicle:'tanker'  },
+    { id:'uranyum', name:'Uranyum', basePrice:60000, vol:0.28, minLoc:5, maxLoc:99, icon:'radiation', color:'text-green-500',  requiredVehicle:'zirhli'  }
+];
+
+// Kriz: artık sadece ek maliyet doğuruyor (crash kaldırıldı)
+const CRISIS_EVENTS = [
+    { name:'Rüşvet Talebi',    desc:'Gümrükte durduruldun. Evrak eksik!',               baseFine:80,  delayPenalty:0    },
+    { name:'Motor Arızası',    desc:'Motor hararet yaptı. Çekici çağırıldı.',            baseFine:200, delayPenalty:6000 },
+    { name:'Yol Kapandı',      desc:'Heyelan nedeniyle alternatif güzergah kullanıldı.', baseFine:50,  delayPenalty:8000 },
+    { name:'Vergi Denetimi',   desc:'Ani vergi denetimi. Ek belge ücreti ödendi.',       baseFine:150, delayPenalty:0    }
+];
+
+// Küresel olaylar
+const GLOBAL_EVENTS = [
+    { id:'drought',   name:'Büyük Kuraklık!',          desc:'Su kaynakları kurudu. Su ve Buğday fiyatları fırladı!',        products:['su','bugday'],  mult:2.5 },
+    { id:'forest',    name:'Orman Yangınları!',          desc:'Ormanlar yanıyor. Odun arzı durdu, fiyatlar tavan yaptı.',    products:['odun'],         mult:3.0 },
+    { id:'war',       name:'Savaş Söylentileri!',        desc:'Bölgede çatışma riski. Demir ve Uranyum karaborsada.',        products:['demir','uranyum'], mult:2.8 },
+    { id:'goldRush',  name:'Altın Hücresi Keşfedildi!', desc:'Yeni maden yatağı! Altın fiyatları çöktü.',                  products:['altin'],        mult:0.4 },
+    { id:'oilCrisis', name:'Petrol Krizi!',              desc:'Petrol üretimi durdu. Petrol fiyatları 3 katına çıktı.',      products:['petrol'],       mult:3.2 },
+    { id:'diamondExport', name:'Elmas İhracat Yasağı!', desc:'Hükümet elmas ihracatını yasakladı. Talep patladı.',          products:['elmas'],        mult:2.0 },
+    { id:'harvest',   name:'Bereketli Hasat!',           desc:'Rekor buğday hasadı. Buğday fiyatları düştü.',               products:['bugday'],       mult:0.5 },
+    { id:'trade',     name:'Ticaret Anlaşması İptal!',   desc:'Büyük ticaret anlaşması çöktü. Kumaş fiyatları yükseldi.',   products:['kumas'],        mult:2.2 }
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  DURUM
+// ═══════════════════════════════════════════════════════════════
+
+const MARKET_INTERVAL_S = 30; // saniye (gerçek zaman)
+const GAME_MINS_PER_SEC = 15; // 1 gerçek sn = 15 oyun dakikası
+const PRESTIGE_THRESHOLD = 5_000_000; // İstanbul'da bu parayı geçince prestij
+
+const defaultState = {
+    version: 5,
+    playerName: 'Genç Tüccar',
+    prestigeCount: 0,
+    prestigeBonus: 0, // kalıcı vergi indirimi (oran, 0.02 gibi)
+    tutorialStep: 0,
+    isTimeStopped: false,
+    pendingMissedPaymentAlert: false,
+    money: 1000,
+    reputation: 0,
+    goodness: 0,
+    level: 1,
+    locationIndex: 0,
+    storageCapacity: 50,
+    // Araç envanteri: { kamyon: 1, tanker: 0, zirhli: 0 }
+    vehicleFleet: { kamyon: 1, tanker: 0, zirhli: 0 },
+    vehicleUpgradeCounts: { kamyon: 0, tanker: 0, zirhli: 0 },
+    hasInsurance: false,
+    insuranceUsed: false,  // sigortanın bu dönem kullanılıp kullanılmadığı
+    donationsToday: 0,
+    inventory: {},   // { productId: { qty, avgCost, daysStored } }
+    prices: {}, prevPrices: {}, minPrices: {}, maxPrices: {}, stagnation: {},
+    activeEvent: null,       // { eventId, turnsLeft }
+    nextEventInDays: 2,
+    marketCountdown: MARKET_INTERVAL_S,
+    shipments: [],
+    loans: [],
+    missedPayments: 0,
+    bankrupt: false,
+    gameTime: { days: 1, hours: 8, minutes: 0 },
+    lastTickTimestamp: null,  // delta time için
+    storageUpgradeCount: 0
+};
+
+let state = JSON.parse(JSON.stringify(defaultState));
+let modalQueue = [];
+let isModalActive = false;
+let gameInterval = null;
+let currentTab = 'pazar';
+
+// ═══════════════════════════════════════════════════════════════
+//  ELEMENT REFERANSları
+// ═══════════════════════════════════════════════════════════════
+
+const els = {
+    playerNameDisplay:    document.getElementById('playerNameDisplay'),
+    prestigeBadge:        document.getElementById('prestigeBadge'),
+    locationDisplay:      document.getElementById('locationDisplay'),
+    navMerkezText:        document.getElementById('navMerkezText'),
+    merkezTitle:          document.getElementById('merkezTitle'),
+    moneyDisplay:         document.getElementById('moneyDisplay'),
+    reputationDisplay:    document.getElementById('reputationDisplay'),
+    goodnessDisplay:      document.getElementById('goodnessDisplay'),
+    levelDisplay:         document.getElementById('levelDisplay'),
+    taxRateDisplay:       document.getElementById('taxRateDisplay'),
+    storageDisplay:       document.getElementById('storageDisplay'),
+    gameTimeDisplay:      document.getElementById('gameTimeDisplay'),
+    pausedIndicator:      document.getElementById('pausedIndicator'),
+    vehicleCountDisplay:  document.getElementById('vehicleCountDisplay'),
+    marketList:           document.getElementById('marketList'),
+    inventoryList:        document.getElementById('inventoryList'),
+    spoilWarning:         document.getElementById('spoilWarning'),
+    shipmentList:         document.getElementById('shipmentList'),
+    filoBadge:            document.getElementById('filoBadge'),
+    loanOffers:           document.getElementById('loanOffers'),
+    activeLoansList:      document.getElementById('activeLoansList'),
+    loanSummaryBox:       document.getElementById('loanSummaryBox'),
+    loanMissedBadge:      document.getElementById('loanMissedBadge'),
+    loanMissedWarning:    document.getElementById('loanMissedWarning'),
+    loanMissedText:       document.getElementById('loanMissedText'),
+    upgradesList:         document.getElementById('upgradesList'),
+    toastContainer:       document.getElementById('toastContainer'),
+    marketTimerText:      document.getElementById('marketTimerText'),
+    marketProgressBar:    document.getElementById('marketProgressBar'),
+    marketTimerTextDepo:  document.getElementById('marketTimerTextDepo'),
+    marketProgressBarDepo:document.getElementById('marketProgressBarDepo'),
+    bottomTickerContent:  document.getElementById('bottomTickerContent'),
+    bottomTickerContainer:document.getElementById('bottomTickerContainer'),
+    travelContainer:      document.getElementById('travelContainer'),
+    donateContainer:      document.getElementById('donateContainer'),
+    eventBanner:          document.getElementById('eventBanner'),
+    eventBannerText:      document.getElementById('eventBannerText'),
+    prestigeContainer:    document.getElementById('prestigeContainer'),
+    fleetStatusContainer: document.getElementById('fleetStatusContainer'),
+    insuranceContainer:   document.getElementById('insuranceContainer')
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  SES
+// ═══════════════════════════════════════════════════════════════
+
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function getAudioCtx() {
+    if (!audioCtx) {
+        try { audioCtx = new AudioCtx(); } catch(e) { return null; }
+    }
+    return audioCtx;
+}
+
+function playSell() {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.setValueAtTime(880, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.07);
+    g.gain.setValueAtTime(0.25, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    o.start(); o.stop(ctx.currentTime + 0.3);
+}
+
+function playBuy() {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle';
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.setValueAtTime(440, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(550, ctx.currentTime + 0.08);
+    g.gain.setValueAtTime(0.18, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    o.start(); o.stop(ctx.currentTime + 0.25);
+}
+
+function playCrisis() {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    [0, 0.15, 0.30].forEach(delay => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sawtooth';
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.setValueAtTime(200, ctx.currentTime + delay);
+        g.gain.setValueAtTime(0.15, ctx.currentTime + delay);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.12);
+        o.start(ctx.currentTime + delay);
+        o.stop(ctx.currentTime + delay + 0.12);
+    });
+}
+
+function playLevelUp() {
+    const ctx = getAudioCtx(); if (!ctx) return;
+    [523, 659, 784, 1047].forEach((freq, i) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.18, ctx.currentTime + i * 0.09);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.09 + 0.25);
+        o.start(ctx.currentTime + i * 0.09);
+        o.stop(ctx.currentTime + i * 0.09 + 0.25);
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  KAYIT / YÜKLEME
+// ═══════════════════════════════════════════════════════════════
+
+function saveGame() {
+    try {
+        state.lastTickTimestamp = Date.now();
+        localStorage.setItem('tuccar_v5', JSON.stringify(state));
+    } catch(e) {}
+}
+
+function loadGame() {
+    try {
+        const saved = localStorage.getItem('tuccar_v5');
+        if (!saved) return;
+        const parsed = JSON.parse(saved);
+        if (parsed.version === 5) {
+            state = Object.assign(JSON.parse(JSON.stringify(defaultState)), parsed);
+        } else {
+            localStorage.removeItem('tuccar_v5');
+        }
+    } catch(e) {
+        localStorage.removeItem('tuccar_v5');
+    }
+}
+
+function confirmReset() {
+    queueModal('Emin Misin?', 'Tüm oyun verilerin silinecek. Bu işlem geri alınamaz.', [
+        { text:'İptal',         class:'bg-slate-200 text-slate-800', onClick: closeModal },
+        { text:'Evet, Sıfırla', class:'bg-red-600 text-white',
+          onClick: () => { clearInterval(gameInterval); localStorage.removeItem('tuccar_v5'); location.reload(); } }
+    ]);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BAŞLATMA
+// ═══════════════════════════════════════════════���═══════════════
+
+function init() {
+    loadGame();
+    els.playerNameDisplay.textContent = state.playerName;
+    if (Object.keys(state.prices).length === 0) initPrices();
+    applyDeltaTime();   // sekme kapalıyken geçen süreyi uygula
+    startLoop();
+    renderAll();
+    handlePendingModals();
+    updateMarketTimerUI();
+    updateBottomTicker();
+    lucide.createIcons();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DELTA TIME (sekme kapalıyken geçen süre)
+// ═══════════════════════════════════════════════════════════════
+
+function applyDeltaTime() {
+    if (!state.lastTickTimestamp || state.bankrupt || state.isTimeStopped) return;
+    const now      = Date.now();
+    const elapsed  = now - state.lastTickTimestamp;     // ms
+    if (elapsed < 2000) return;                          // 2 sn'den az geçmişse es geç
+
+    const secondsPassed = Math.floor(elapsed / 1000);
+    // Her saniyeyi simüle et (max 300 sn = 5 dk irl)
+    const ticks = Math.min(secondsPassed, 300);
+    for (let i = 0; i < ticks; i++) {
+        simulateTick(1000);
+    }
+    state.lastTickTimestamp = now;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ANA DÖNGÜ
+// ═══════════════════════════════════════════════════════════════
+
+function startLoop() {
+    if (gameInterval) clearInterval(gameInterval);
+    state.lastTickTimestamp = Date.now();
+    gameInterval = setInterval(() => {
+        if (state.bankrupt || state.isTimeStopped) return;
+        simulateTick(1000);
+        updateHeader();
+        saveGame();
+    }, 1000);
+}
+
+function simulateTick(deltaMs) {
+    const deltaSeconds = deltaMs / 1000;
+
+    // Oyun saati
+    state.gameTime.minutes += GAME_MINS_PER_SEC * deltaSeconds;
+    while (state.gameTime.minutes >= 60) {
+        state.gameTime.minutes -= 60;
+        state.gameTime.hours++;
+    }
+    while (state.gameTime.hours >= 24) {
+        state.gameTime.hours -= 24;
+        state.gameTime.days++;
+        onDayChange();
+    }
+
+    // Piyasa sayacı
+    state.marketCountdown -= deltaSeconds;
+    if (state.marketCountdown <= 0) {
+        if (state.tutorialStep >= 5) updatePrices();
+        state.marketCountdown = MARKET_INTERVAL_S;
+        if (currentTab === 'pazar') renderMarket();
+        if (currentTab === 'depo')  renderStorage();
+    }
+    updateMarketTimerUI();
+
+    // Sevkiyatlar
+    updateShipments(deltaMs);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GÜN DEĞİŞİMİ
+// ═══════════════════════════════════════════════════════════════
+
+function onDayChange() {
+    state.donationsToday = 0;
+
+    // Depo bozulması: her ürün için daysStored++ ve belli eşiği geçince değer kaybı
+    let hasSpoil = false;
+    for (const key in state.inventory) {
+        const item = state.inventory[key];
+        item.daysStored = (item.daysStored || 0) + 1;
+        if (item.daysStored >= 3) {
+            // Her gün %2 ortalama maliyet artışı (zarar)
+            const loss = item.avgCost * 0.02;
+            item.avgCost = Math.max(1, item.avgCost + loss);
+            hasSpoil = true;
+        }
+    }
+    if (hasSpoil && currentTab === 'depo') {
+        renderStorage();
+        els.spoilWarning.classList.remove('hidden');
+    }
+
+    // Küresel olay sayacı
+    if (state.activeEvent) {
+        state.activeEvent.turnsLeft--;
+        if (state.activeEvent.turnsLeft <= 0) {
+            state.activeEvent = null;
+            updatePrices(); // fiyatları normalize et
+            showToast('Piyasa normale döndü.', 'info');
+            els.eventBanner.classList.add('hidden');
+            if (currentTab === 'pazar') renderMarket();
+        }
+    } else {
+        state.nextEventInDays--;
+        if (state.nextEventInDays <= 0) triggerGlobalEvent();
+    }
+
+    if (state.loans.length > 0) processLoans();
+    if (currentTab === 'merkez') renderMerkez();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  KREDİ
+// ═══════════════════════════════════════════════════════════════
+
+function processLoans() {
+    let totalInstallment = 0;
+    for (let i = state.loans.length - 1; i >= 0; i--) {
+        const loan = state.loans[i];
+        totalInstallment += loan.dailyInstallment;
+        loan.daysLeft--;
+        if (loan.daysLeft <= 0) state.loans.splice(i, 1);
+    }
+    if (totalInstallment <= 0) return;
+
+    if (state.money >= totalInstallment) {
+        state.money = Math.round(state.money - totalInstallment);
+        showToast(`Kredi taksiti ödendi: ₺${fmt(totalInstallment)}`, 'success');
+    } else {
+        state.missedPayments++;
+        state.pendingMissedPaymentAlert = true;
+        saveGame();
+        showMissedPaymentModal();
+    }
+}
+
+function showMissedPaymentModal() {
+    state.isTimeStopped = true;
+    updateHeader();
+    const remaining = 2 - state.missedPayments;
+    queueModal(
+        '⚠️ Kredi Gecikmesi!',
+        `Bakiyen yetersiz! Taksitler ödenemedi.\n\nGeçerli Gecikme: <strong class="text-red-600">${state.missedPayments} / 2</strong>\n${remaining > 0 ? `<span class="text-amber-600">Dikkat: ${remaining} gecikme hakkın kaldı!</span>` : ''}`,
+        [{ text:'Anladım', class:'bg-red-600 text-white', onClick: () => {
+            state.pendingMissedPaymentAlert = false;
+            state.isTimeStopped = false;
+            closeModal(); updateHeader(); updateMarketTimerUI();
+            if (state.missedPayments >= 2) triggerBankruptcy(); else saveGame();
+        }}]
+    );
+}
+
+function triggerBankruptcy() {
+    state.bankrupt = true; state.isTimeStopped = true; saveGame();
+    queueModal('💸 İFLAS ETTİN!', 'Borçlarını ödeyemedin ve tüm varlıklarına haciz kondu.', [
+        { text:'Yeniden Başla', class:'bg-indigo-600 text-white',
+          onClick: () => { clearInterval(gameInterval); localStorage.removeItem('tuccar_v5'); location.reload(); } }
+    ]);
+}
+
+function takeLoan(loanMult, days, basePaybackMult) {
+    if (state.bankrupt || state.isTimeStopped) return;
+    if (state.loans.length >= 1) { showToast('Aynı anda en fazla 1 kredi.', 'error'); return; }
+
+    const locObj  = LOCATIONS[state.locationIndex];
+    const amount  = Math.round(1000 * loanMult * locObj.mult);
+    const payback = Math.round(amount * basePaybackMult);
+    const daily   = Math.round(payback / days);
+
+    state.isTimeStopped = true;
+    queueModal('🏦 Kredi Onayı',
+        `Hesaba Geçecek: <strong>₺${fmt(amount)}</strong>\nGeri Ödeme: <strong class="text-red-600">₺${fmt(payback)}</strong>\nGünlük Taksit: <strong class="text-red-600">₺${fmt(daily)}</strong>\nVade: ${days} Gün`,
+        [
+            { text:'İptal', class:'bg-slate-200 text-slate-800',
+              onClick: () => { state.isTimeStopped = false; closeModal(); } },
+            { text:'Krediyi Çek', class:'bg-blue-600 text-white', onClick: () => {
+                state.money = Math.round(state.money + amount);
+                state.loans.push({ id:'loan_'+Date.now(), amount, payback, totalDays:days, daysLeft:days, dailyInstallment:daily });
+                state.isTimeStopped = false;
+                closeModal(); updateHeader(); renderMerkez(); saveGame();
+                showToast('Kredi hesaba yattı!', 'success');
+            }}
+        ]
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FİYATLAR
+// ═══════════════════════════════════════════════════════════════
+
+function getActiveProducts() {
+    return PRODUCTS.filter(p => state.locationIndex >= p.minLoc && state.locationIndex <= p.maxLoc);
+}
+
+function initPrices() {
+    PRODUCTS.forEach(p => {
+        const base = Math.round(p.basePrice * LOCATIONS[state.locationIndex].mult);
+        state.prices[p.id]     = base;
+        state.prevPrices[p.id] = base;
+        state.minPrices[p.id]  = base;
+        state.maxPrices[p.id]  = base;
+        state.stagnation[p.id] = 0;
+    });
+}
+
+function updatePrices() {
+    getActiveProducts().forEach(p => {
+        const locMult = LOCATIONS[state.locationIndex].mult;
+        const base    = Math.round(p.basePrice * locMult);
+        const current = state.prices[p.id] || base;
+        state.prevPrices[p.id] = current;
+
+        // Aktif küresel olay etkisi
+        let eventMult = 1;
+        if (state.activeEvent) {
+            const ev = GLOBAL_EVENTS.find(e => e.id === state.activeEvent.eventId);
+            if (ev && ev.products.includes(p.id)) eventMult = ev.mult;
         }
 
-        // --- OYUN AYARLARI ---
-        const GAME_SPEED = 15; 
-        const levelsThresh = [0, 100, 300, 700, 1500, 3000, 6000, 12000, 25000, 50000];
-        const maxLevel = levelsThresh.length;
+        const isSpike = Math.random() < 0.10;
+        const chgPct  = isSpike
+            ? (Math.random() * 0.5) - 0.25
+            : (Math.random() * p.vol * 3.5) - (p.vol * 1.75);
 
-        const productsCatalog = {
-            un:         { id: 'un',         name: 'Un',              basePrice: 20,      volatility: 5,     icon: 'fa-wheat-awn',    minLevel: 1 },
-            tekstil:    { id: 'tekstil',    name: 'Tekstil',         basePrice: 80,      volatility: 15,    icon: 'fa-shirt',        minLevel: 1 },
-            elektronik: { id: 'elektronik', name: 'Elektronik',      basePrice: 350,     volatility: 80,    icon: 'fa-microchip',    minLevel: 2 },
-            mucevher:   { id: 'mucevher',   name: 'Mücevher',        basePrice: 1500,    volatility: 300,   icon: 'fa-gem',          minLevel: 2 },
-            otomotiv:   { id: 'otomotiv',   name: 'Otomotiv',        basePrice: 4000,    volatility: 800,   icon: 'fa-car',          minLevel: 3 },
-            petrol:     { id: 'petrol',     name: 'Petrol',          basePrice: 10000,   volatility: 2500,  icon: 'fa-oil-can',      minLevel: 4 },
-            kimya:      { id: 'kimya',      name: 'Kimya',           basePrice: 25000,   volatility: 5000,  icon: 'fa-flask',        minLevel: 5 },
-            altin:      { id: 'altin',      name: 'Altın',           basePrice: 60000,   volatility: 12000, icon: 'fa-coins',        minLevel: 6 },
-            cip:        { id: 'cip',        name: 'Çip',             basePrice: 150000,  volatility: 35000, icon: 'fa-memory',       minLevel: 7 },
-            sanat:      { id: 'sanat',      name: 'Sanat',           basePrice: 400000,  volatility: 90000, icon: 'fa-palette',      minLevel: 8 },
-            nadir:      { id: 'nadir',      name: 'Nadir Element',   basePrice: 1000000, volatility: 250000,icon: 'fa-cube',         minLevel: 9 },
-            uzay:       { id: 'uzay',       name: 'Uzay Teknoloji',  basePrice: 3000000, volatility: 800000,icon: 'fa-rocket',       minLevel: 10 }
-        };
+        let change = Math.max(current, base * 0.8) * chgPct;
+        if (Math.abs(change) > 0 && Math.abs(change) < 1) change = change > 0 ? 1 : -1;
 
-        const marketEvents = [
-            { text: "Kuraklık vurdu! Un fiyatları hızla yükseliyor!", effectItem: 'un', effectMultiplier: 1.8 },
-            { text: "Tekstil fabrikasında yangın! Kumaş karaborsaya düştü.", effectItem: 'tekstil', effectMultiplier: 1.6 },
-            { text: "Hasat bereketli geçti. Un fiyatlarında düşüş var.", effectItem: 'un', effectMultiplier: 0.6 },
-            { text: "Tekstil ithalatı durdu. Yerli kumaş değerlendi.", effectItem: 'tekstil', effectMultiplier: 1.5 },
-            { text: "Çip krizi derinleşiyor! Elektronik üretimi durma noktasında.", effectItem: 'elektronik', effectMultiplier: 1.9 },
-            { text: "Yeni altın madeni bulundu, fiyatlar hızla düşüşte.", effectItem: 'altin', effectMultiplier: 0.7 },
-            { text: "Uzay madenciliği başladı! Uzay Teknolojisi hisseleri fırladı.", effectItem: 'uzay', effectMultiplier: 2.5 }
-        ];
+        let newPrice = Math.round((current + change) * eventMult);
+        const minP   = Math.max(1, Math.round(base * 0.25));
+        const maxP   = Math.round(base * 4.0);   // max çarpan azaltıldı (5→4)
 
-        // Dinamik Krizler (Kaza, Arıza Listesi)
-        const shipmentCrisesList = [
-            { text: "Lastik Patladı", cost: 150, delay: 3000 },
-            { text: "Polis Çevirmesi", cost: 400, delay: 5000 },
-            { text: "Motor Arızası", cost: 800, delay: 7000 },
-            { text: "Hafif Maddi Kaza", cost: 1500, delay: 10000 }
-        ];
+        if (newPrice <= minP) newPrice = minP + Math.floor(Math.random() * base * 0.3) + 1;
+        else if (newPrice >= maxP) newPrice = maxP - Math.floor(Math.random() * base * 0.5) - 1;
 
-        let state = {
-            username: "",
-            isLoggedIn: false,
-            hasSeenStory: false,
-            money: 1000, 
-            reputation: 0,
-            goodwill: 0,
-            level: 1,
-            warehouseCap: 20, 
-            deliverySpeedMs: 30000, // Teslimat süresi 30 saniyeden başlar
-            inventory: {},
-            stats: {},
-            currentPrices: {},
-            prevPrices: {}, 
-            minPrices: {},
-            maxPrices: {}, 
-            activeShipments: [],
-            upgrades: { tablet: 0, coldStorage: 0, engine: 0, logo: 0 }, 
-            activeEventIndex: -1,
-            marketTimer: 0
-        };
-
-        function initProductData() {
-            for (let key in productsCatalog) {
-                if(state.inventory[key] === undefined) state.inventory[key] = 0;
-                if(state.stats[key] === undefined) state.stats[key] = { avgCost: 0, boughtAmount: 0, soldAmount: 0 };
-                if(state.currentPrices[key] === undefined) state.currentPrices[key] = productsCatalog[key].basePrice;
-                if(state.prevPrices[key] === undefined) state.prevPrices[key] = productsCatalog[key].basePrice;
-                if(state.minPrices[key] === undefined) state.minPrices[key] = productsCatalog[key].basePrice;
-                if(state.maxPrices[key] === undefined) state.maxPrices[key] = productsCatalog[key].basePrice;
+        if (newPrice === current) {
+            state.stagnation[p.id] = (state.stagnation[p.id] || 0) + 1;
+            if (state.stagnation[p.id] >= 2) {
+                const dir = current <= minP ? 1 : (Math.random() > 0.4 ? 1 : -1);
+                newPrice  = current + dir;
+                state.stagnation[p.id] = 0;
             }
+        } else state.stagnation[p.id] = 0;
+
+        newPrice = Math.max(1, newPrice);
+        state.prices[p.id] = newPrice;
+        if (newPrice < (state.minPrices[p.id] || Infinity)) state.minPrices[p.id] = newPrice;
+        if (newPrice > (state.maxPrices[p.id] || 0))        state.maxPrices[p.id] = newPrice;
+    });
+    updateBottomTicker();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  KÜRESEL OLAYLAR
+// ═══════════════════════════════════════════════════════════════
+
+function triggerGlobalEvent() {
+    const ev = GLOBAL_EVENTS[Math.floor(Math.random() * GLOBAL_EVENTS.length)];
+    state.activeEvent    = { eventId: ev.id, turnsLeft: Math.floor(Math.random() * 3) + 2 }; // 2-4 gün
+    state.nextEventInDays = Math.floor(Math.random() * 2) + 2; // sonraki: 2-3 gün
+
+    // Fiyatları hemen uygula
+    updatePrices();
+    if (currentTab === 'pazar') renderMarket();
+
+    // Banner göster
+    els.eventBannerText.textContent = `📰 ${ev.name} — ${ev.desc}`;
+    els.eventBanner.classList.remove('hidden');
+    playCrisis();
+
+    showToast(`📰 ${ev.name}`, 'info');
+    saveGame();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TICKER
+// ═══════════════════════════════════════════════════════════════
+
+function updateBottomTicker() {
+    if (!els.bottomTickerContent) return;
+    let inner = '';
+    getActiveProducts().forEach(p => {
+        const price = state.prices[p.id] || p.basePrice;
+        const prev  = state.prevPrices[p.id] || p.basePrice;
+        const arrow = price > prev ? '<span class="text-green-400">▲</span>'
+                    : price < prev ? '<span class="text-red-400">▼</span>'
+                    : '<span class="text-slate-500">─</span>';
+        inner += `<span class="mx-4"><span class="text-slate-400">${p.name}:</span> <span class="text-white font-bold">₺${fmt(price)}</span> ${arrow}</span>`;
+    });
+    const block = `<div class="flex items-center shrink-0 pr-8">${inner}</div>`;
+    els.bottomTickerContent.innerHTML = block + block;
+}
+
+function updateMarketTimerUI() {
+    const pct = (state.marketCountdown / MARKET_INTERVAL_S) * 100;
+    const secDisp = Math.ceil(state.marketCountdown);
+    els.marketTimerText.textContent       = secDisp;
+    els.marketProgressBar.style.width     = pct + '%';
+    els.marketTimerTextDepo.textContent   = secDisp;
+    els.marketProgressBarDepo.style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  YARDIMCI
+// ═══════════════════════════════════════════════════════════════
+
+function fmt(n) { return Math.round(n).toLocaleString('tr-TR'); }
+
+function getCurrentStorageCount() {
+    return Object.values(state.inventory).reduce((s, i) => s + i.qty, 0);
+}
+
+function getTaxRate() {
+    if (state.tutorialStep < 5) return 0;
+    let rate = 0.05 + (state.level * 0.004) - (state.goodness * 0.001) - state.prestigeBonus;
+    return Math.min(0.30, Math.max(0.01, rate));
+}
+
+// Belirli bir ürün için doğru araç var mı?
+function hasVehicleFor(productId) {
+    const p = PRODUCTS.find(x => x.id === productId);
+    if (!p) return false;
+    const needed = p.requiredVehicle;
+    // Toplam araç - aktif sevkiyat sayısı = boşta araç
+    const total  = state.vehicleFleet[needed] || 0;
+    const busy   = state.shipments.filter(s => {
+        const sp = PRODUCTS.find(x => x.id === s.productId);
+        return sp && sp.requiredVehicle === needed;
+    }).length;
+    return (total - busy) > 0;
+}
+
+function totalFreeVehicles() {
+    let free = 0;
+    for (const vType of VEHICLE_TYPES) {
+        const total = state.vehicleFleet[vType.id] || 0;
+        const busy  = state.shipments.filter(s => {
+            const sp = PRODUCTS.find(x => x.id === s.productId);
+            return sp && sp.requiredVehicle === vType.id;
+        }).length;
+        free += Math.max(0, total - busy);
+    }
+    return free;
+}
+
+function showToast(msg, type = 'info') {
+    const colors = { success:'bg-emerald-600 text-white', error:'bg-red-600 text-white', info:'bg-slate-700 text-white' };
+    const el = document.createElement('div');
+    el.className = `toast-enter px-4 py-2 rounded-xl shadow-xl text-sm font-semibold ${colors[type]||colors.info} max-w-xs text-center`;
+    el.textContent = msg;
+    els.toastContainer.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ALIM / SATIM
+// ═══════════════════════════════════════════════════════════════
+
+function buyProduct(productId, qty) {
+    if (state.bankrupt || state.isTimeStopped) return;
+
+    if (state.tutorialStep === 1) {
+        if (productId !== 'su') { showToast('Öğretici: Önce Su satın al!', 'error'); return; }
+    } else if (state.tutorialStep > 1 && state.tutorialStep < 5) {
+        showToast('Öğreticinin bitmesini bekle.', 'info'); return;
+    }
+
+    if (!hasVehicleFor(productId)) {
+        const p = PRODUCTS.find(x => x.id === productId);
+        const vt = VEHICLE_TYPES.find(v => v.id === p.requiredVehicle);
+        showToast(`Bu ürün için boşta ${vt.name} gerekli!`, 'error'); return;
+    }
+
+    const price     = state.prices[productId];
+    const totalCost = Math.round(price * qty);
+
+    if (state.money < totalCost) { showToast('Yetersiz bakiye!', 'error'); return; }
+
+    // Depo kontrolü: sadece BEKLEYEN (yolda olmayan) stok sayılır
+    const currentStock = getCurrentStorageCount();
+    if (currentStock + qty > state.storageCapacity) {
+        showToast(`Depo dolu! (${currentStock}/${state.storageCapacity})`, 'error'); return;
+    }
+
+    state.money = Math.round(state.money - totalCost);
+    if (state.tutorialStep === 1) state.tutorialStep = 2;
+
+    createShipment('buy', productId, qty, totalCost);
+    playBuy();
+    updateHeader();
+    if (currentTab === 'pazar') renderMarket();
+    saveGame();
+
+    if (state.tutorialStep === 2) {
+        queueModal('Rehber (2/4)',
+            'Harika! Siparişin yola çıktı.\n\nAlt menüden Filo\'ya bakabilir veya aracın gelmesini bekleyebilirsin.',
+            [{ text:'Tamam', class:'bg-indigo-600 text-white', onClick: closeModal }]);
+    }
+}
+
+function sellProduct(productId, qty) {
+    if (state.bankrupt || state.isTimeStopped) return;
+
+    if (state.tutorialStep < 3) { showToast('Önce öğretici adımlarını tamamla.', 'info'); return; }
+    if (state.tutorialStep === 3 && productId !== 'su') { showToast('Öğretici: Suyu satmalısın!', 'error'); return; }
+    if (state.tutorialStep === 4) { showToast('Satışın yolda, aracın gelmesini bekle.', 'info'); return; }
+
+    if (!hasVehicleFor(productId)) {
+        const p = PRODUCTS.find(x => x.id === productId);
+        const vt = VEHICLE_TYPES.find(v => v.id === p.requiredVehicle);
+        showToast(`Bu ürün için boşta ${vt.name} gerekli!`, 'error'); return;
+    }
+
+    const invItem = state.inventory[productId];
+    if (!invItem || invItem.qty < qty) { showToast('Depoda yeterli ürün yok!', 'error'); return; }
+
+    invItem.qty -= qty;
+    if (invItem.qty === 0) delete state.inventory[productId];
+
+    if (state.tutorialStep === 3) state.tutorialStep = 4;
+
+    createShipment('sell', productId, qty, Math.round(state.prices[productId] * qty));
+    updateHeader();
+    renderStorage();
+    saveGame();
+
+    if (state.tutorialStep === 4) {
+        queueModal('Rehber (4/4)',
+            'Mükemmel! Satış sevkiyatı yola çıktı.\n\nAraç hedefe ulaştığında kârın hesabına yatacak.',
+            [{ text:'Tamam', class:'bg-indigo-600 text-white', onClick: closeModal }]);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEVKİYAT
+// ═══════════════════════════════════════════════════════════════
+
+function createShipment(type, productId, qty, value) {
+    const locObj = LOCATIONS[state.locationIndex];
+    let crisisData = null, crisisTriggerAt = null, hasCrisis = false;
+
+    if (state.tutorialStep >= 5) {
+        let chance = 0.10 - (state.goodness * 0.0005);
+        chance = Math.max(0.02, chance);
+        hasCrisis = Math.random() < chance;
+    }
+
+    if (hasCrisis) {
+        const ev = CRISIS_EVENTS[Math.floor(Math.random() * CRISIS_EVENTS.length)];
+        crisisData = { ...ev, fineAmount: Math.round(ev.baseFine * locObj.mult * state.level) };
+        crisisTriggerAt = state.deliverySpeedMs * (0.3 + Math.random() * 0.4);
+    }
+
+    // Teslimat süresi: araç tipine göre farklı
+    const p   = PRODUCTS.find(x => x.id === productId);
+    const vt  = VEHICLE_TYPES.find(v => v.id === p.requiredVehicle);
+    // Zırhlı araç daha yavaş
+    const speedMultiplier = vt.id === 'zirhli' ? 1.6 : vt.id === 'tanker' ? 1.3 : 1.0;
+    const duration = Math.round((state.deliverySpeedMs || 10000) * speedMultiplier);
+
+    state.shipments.push({
+        id: 'shp_' + Date.now() + '_' + Math.random().toString(36).slice(2),
+        type, productId, qty, value,
+        duration, elapsed: 0,
+        isCrisisPending: false,
+        crisis: crisisData,
+        crisisTriggerAt,
+        crisisResolved: !hasCrisis
+    });
+
+    renderFiloBadge();
+    if (currentTab === 'filo') renderFilo();
+}
+
+function updateShipments(deltaMs) {
+    let changed = false;
+
+    for (let i = state.shipments.length - 1; i >= 0; i--) {
+        const s = state.shipments[i];
+        if (s.isCrisisPending) continue;
+
+        s.elapsed += deltaMs;
+
+        if (!s.crisisResolved && s.crisisTriggerAt !== null && s.elapsed >= s.crisisTriggerAt) {
+            s.isCrisisPending    = true;
+            state.isTimeStopped  = true;
+            saveGame();
+            playCrisis();
+            triggerCrisisEvent(s);
+            return; // sadece bu kriz çözülene kadar dur; DİĞER araçlar bloklanmaz
         }
 
-        window.onload = () => {
-            loadData();
-            if (state.isLoggedIn) showGame();
-        };
-
-        function loadData() {
-            const saved = localStorage.getItem('merchantSimulationDataV6');
-            if (saved) {
-                state = { ...state, ...JSON.parse(saved) };
-                initProductData();
-            }
+        if (s.elapsed >= s.duration) {
+            resolveShipment(s);
+            state.shipments.splice(i, 1);
+            changed = true;
         }
+    }
 
-        function saveData() {
-            localStorage.setItem('merchantSimulationDataV6', JSON.stringify(state));
-            updateUI();
+    if (changed) {
+        renderFiloBadge();
+        if (currentTab === 'filo') renderFilo();
+    } else if (currentTab === 'filo') {
+        updateFiloProgressBars();
+    }
+}
+
+function triggerCrisisEvent(shipment) {
+    // Sadece o aracı durdur, diğer araçlar devam eder
+    state.isTimeStopped = true;
+    updateHeader();
+    const product = PRODUCTS.find(p => p.id === shipment.productId);
+    const locObj  = LOCATIONS[state.locationIndex];
+
+    // Sigortalıysa ve henüz kullanılmadıysa otomatik koru
+    if (state.hasInsurance && !state.insuranceUsed) {
+        state.insuranceUsed = true;
+        shipment.crisisResolved  = true;
+        shipment.isCrisisPending = false;
+        state.isTimeStopped      = false;
+        saveGame();
+        updateHeader(); updateMarketTimerUI();
+        if (currentTab === 'filo') renderFilo();
+        showToast(`🛡️ Sigorta devreye girdi! Kriz atlatıldı.`, 'success');
+        // Yeni sigorta teklif et
+        queueModal('🛡️ Sigorta Kullanıldı!',
+            `${product.name} sevkiyatındaki kriz sigortanla karşılandı!\n\nBir sonraki kriz için yeni sigorta almak ister misin?`,
+            [
+                { text:'Hayır', class:'bg-slate-200 text-slate-800', onClick: closeModal },
+                { text:'Sigorta Al', class:'bg-blue-600 text-white', onClick: () => { closeModal(); buyInsurance(); } }
+            ]
+        );
+        return;
+    }
+
+    // Kaza yok, sadece ek maliyet
+    const fine = shipment.crisis.fineAmount;
+    queueModal(
+        `⚠️ Kriz: ${shipment.crisis.name}`,
+        `<strong>${product.name}</strong> sevkiyatında sorun çıktı!\n${shipment.crisis.desc}\n\nEk Maliyet: <strong class="text-red-600">₺${fmt(fine)}</strong>`,
+        [
+            { text:`Öde (₺${fmt(fine)})`, class:'bg-green-600 text-white', onClick: () => {
+                if (state.money < fine) { showToast('Yeterli paran yok!', 'error'); return; }
+                state.money = Math.round(state.money - fine);
+                shipment.crisisResolved = true; shipment.isCrisisPending = false;
+                state.isTimeStopped = false;
+                closeModal(); updateHeader(); updateMarketTimerUI();
+                if (currentTab === 'filo') renderFilo(); saveGame();
+                // İlk kazadan sonra sigorta teklif et
+                if (!state.hasInsurance) offerInsurance(locObj);
+            }},
+            { text:`Bekle (+${Math.round(shipment.crisis.delayPenalty/1000)}sn)`, class:'bg-amber-500 text-white', onClick: () => {
+                shipment.duration      += shipment.crisis.delayPenalty;
+                shipment.crisisResolved = true; shipment.isCrisisPending = false;
+                state.isTimeStopped = false;
+                closeModal(); updateHeader(); updateMarketTimerUI();
+                if (currentTab === 'filo') renderFilo(); saveGame();
+                if (!state.hasInsurance) offerInsurance(locObj);
+            }}
+        ]
+    );
+}
+
+function offerInsurance(locObj) {
+    const cost = Math.round(500 * locObj.mult);
+    queueModal('🛡️ Sigorta Teklifi',
+        `İlk kazanı atlattın!\n\nAraç sigortası satın alarak bir sonraki kazayı <strong>ücretsiz</strong> atlayabilirsin.\n\nSigorta Bedeli: <strong>₺${fmt(cost)}</strong>`,
+        [
+            { text:'Hayır', class:'bg-slate-200 text-slate-800', onClick: closeModal },
+            { text:`Sigorta Al (₺${fmt(cost)})`, class:'bg-blue-600 text-white', onClick: () => {
+                closeModal(); buyInsurance();
+            }}
+        ]
+    );
+}
+
+function buyInsurance() {
+    const locObj = LOCATIONS[state.locationIndex];
+    const cost   = Math.round(500 * locObj.mult);
+    if (state.money < cost) { showToast('Sigorta için yeterli paran yok!', 'error'); return; }
+    state.money        = Math.round(state.money - cost);
+    state.hasInsurance = true;
+    state.insuranceUsed= false;
+    updateHeader(); saveGame(); renderMerkez();
+    showToast('🛡️ Araç sigortası aktif!', 'success');
+}
+
+function resolveShipment(shipment) {
+    const product = PRODUCTS.find(p => p.id === shipment.productId);
+
+    if (shipment.type === 'buy') {
+        if (!state.inventory[shipment.productId]) {
+            state.inventory[shipment.productId] = { qty: 0, avgCost: 0, daysStored: 0 };
         }
+        const inv          = state.inventory[shipment.productId];
+        const oldTotal     = inv.qty * inv.avgCost;
+        inv.qty           += shipment.qty;
+        inv.avgCost        = (oldTotal + shipment.value) / inv.qty;
+        inv.daysStored     = inv.daysStored || 0;
+        showToast(`${shipment.qty}x ${product.name} depoya ulaştı! ✓`, 'success');
 
-        function resetGame() {
-            if(confirm("Tüm ilerlemeniz, şirket verileriniz ve birikiminiz silinecek. Emin misiniz?")) {
-                localStorage.removeItem('merchantSimulationDataV6');
-                location.reload();
-            }
-        }
-
-        function login() {
-            const userInp = document.getElementById('username').value.trim();
-            if (userInp === "") { showToast("Lütfen bir isim girin.", "warning"); return; }
-
-            if (state.username !== "" && state.username !== userInp) {
-                localStorage.removeItem('merchantSimulationDataV6');
-                state.money = 1000; state.reputation = 0; state.goodwill = 0; state.level = 1; 
-                state.warehouseCap = 20; state.deliverySpeedMs = 30000;
-                state.inventory = {}; state.stats = {}; state.currentPrices = {}; state.prevPrices={}; state.minPrices={}; state.maxPrices={};
-                state.activeShipments = []; state.upgrades = { tablet: 0, coldStorage: 0, engine: 0, logo: 0 };
-                state.hasSeenStory = false; state.marketTimer = 0;
-            }
-
-            state.username = userInp;
-            state.isLoggedIn = true;
-            initProductData();
-            saveData();
-            showGame();
-        }
-
-        function showGame() {
-            document.getElementById('login-screen').classList.add('d-none');
-            document.getElementById('game-screen').classList.remove('d-none');
-            
-            if (!state.hasSeenStory) {
-                showStoryModal();
-                state.hasSeenStory = true;
-                saveData();
-            }
-
-            updateUI();
-            startMarketLoop();
-            startShipmentLoop(); // Sevkiyatların sürekli kontrolü (Kriz vs)
-        }
-
-        function showStoryModal() {
-            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('storyModal'));
-            modal.show();
-        }
-
-        // --- ARAYÜZ (UI) ---
-        function updateUI() {
-            document.getElementById('ui-money').innerText = `₺${Math.floor(state.money).toLocaleString('tr-TR')}`;
-            document.getElementById('ui-fame').innerText = state.reputation;
-            document.getElementById('ui-level').innerText = state.level;
-            document.getElementById('ui-goodwill').innerText = state.goodwill;
-
-            let currentLoad = Object.values(state.inventory).reduce((a, b) => a + b, 0);
-            document.getElementById('ui-capacity-text').innerText = `${currentLoad} / ${state.warehouseCap}`;
-            document.getElementById('ui-capacity-bar').style.width = `${Math.min((currentLoad / state.warehouseCap) * 100, 100)}%`;
-            
-            document.getElementById('ui-speed-text').innerText = `${(state.deliverySpeedMs / 1000).toFixed(1)}sn`;
-
-            let nextThresh = state.level < maxLevel ? levelsThresh[state.level] : "MAX";
-            document.getElementById('ui-quest-fame').innerText = state.level < maxLevel ? `${state.reputation} / ${nextThresh}` : "Maksimum Seviye";
-            
-            if(state.level < maxLevel) {
-                let prevThresh = levelsThresh[state.level - 1];
-                let progress = ((state.reputation - prevThresh) / (nextThresh - prevThresh)) * 100;
-                document.getElementById('ui-quest-bar').style.width = `${Math.min(progress, 100)}%`;
-            } else {
-                document.getElementById('ui-quest-bar').style.width = "100%";
-                document.getElementById('level-target-label').innerText = "Tüm lisanslar alındı.";
-            }
-
+        if (state.tutorialStep === 2) {
+            state.tutorialStep = 3;
+            state.prices['su'] = Math.round(15 * LOCATIONS[state.locationIndex].mult / LOCATIONS[0].mult);
             renderMarket();
-            renderWarehouse();
-            updateUpgradeCostsUI();
-            
-            document.getElementById('no-shipment-msg').style.display = state.activeShipments.length === 0 ? 'block' : 'none';
+            queueModal('Rehber (3/4)',
+                'Sular depoya indi!\n\nSu fiyatı yükseldi! Depo sekmesinden sularını sat.',
+                [{ text:'Depoya Git', class:'bg-emerald-600 text-white', onClick: () => { switchTab('depo'); closeModal(); } }]);
         }
 
-        function switchTab(tabId, el) {
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            if(el) el.classList.add('active');
+    } else {
+        const taxRate    = getTaxRate();
+        const taxAmount  = Math.round(shipment.value * taxRate);
+        const netRevenue = Math.round(shipment.value - taxAmount);
 
-            const tabs = ['pazar', 'depo', 'filo', 'kasaba'];
-            tabs.forEach(t => document.getElementById(`tab-${t}`).classList.add('d-none'));
-            document.getElementById(`tab-${tabId}`).classList.remove('d-none');
+        state.money = Math.round(state.money + netRevenue);
+        addReputation(Math.ceil(netRevenue / 100));
+        playSell();
 
-            if(tabId === 'pazar') renderMarket();
-            if(tabId === 'depo') renderWarehouse();
+        if (taxAmount > 0) {
+            showToast(`Satış: +₺${fmt(netRevenue)} (Vergi: -₺${fmt(taxAmount)})`, 'success');
+        } else {
+            showToast(`Satış tamamlandı! +₺${fmt(netRevenue)}`, 'success');
         }
 
-        // --- PAZAR YERİ MANTIĞI ---
-        let marketLoopInterval;
-        function startMarketLoop() {
-            if(marketLoopInterval) clearInterval(marketLoopInterval);
-            
-            marketLoopInterval = setInterval(() => {
-                state.marketTimer++;
-                let progress = (state.marketTimer / GAME_SPEED) * 100;
-                document.getElementById('market-progress').style.width = `${progress}%`;
-
-                if (state.marketTimer >= GAME_SPEED) {
-                    state.marketTimer = 0;
-                    generateRandomEvent(); 
-                    updateMarketPrices();
-                }
-            }, 1000); 
+        if (state.tutorialStep === 4) {
+            state.tutorialStep = 5;
+            queueModal('🎉 Tebrikler!',
+                'Ticaretin temel kuralını öğrendin: Ucuza al, pahalıya sat!\n\nArtık vergi, kriz ve dalgalanan piyasalar aktif. Başarılar!',
+                [{ text:'Maceraya Başla', class:'bg-indigo-600 text-white', onClick: closeModal }]);
         }
+    }
 
-        function generateRandomEvent() {
-            if(Math.random() < 0.25) {
-                const randIndex = Math.floor(Math.random() * marketEvents.length);
-                state.activeEventIndex = randIndex;
-                const event = marketEvents[randIndex];
-                
-                document.getElementById('news-text').innerText = event.text;
-                document.getElementById('news-label-box').classList.add('bg-danger');
-                document.getElementById('news-wrapper').style.backgroundColor = event.effectMultiplier > 1 ? "var(--accent-danger)" : "var(--accent-green)";
-            } else {
-                state.activeEventIndex = -1;
-                document.getElementById('news-text').innerText = "Piyasalar sakin. Alım satım için uygun zaman.";
-                document.getElementById('news-label-box').classList.remove('bg-danger');
-                document.getElementById('news-wrapper').style.backgroundColor = "#6c757d";
+    updateHeader();
+    if (currentTab === 'depo') renderStorage();
+    checkPrestige();
+}
+
+function addReputation(amount) {
+    state.reputation += amount;
+    const needed = state.level * 120; // biraz daha uzun süre gerektirir
+    if (state.reputation >= needed) {
+        state.level++;
+        playLevelUp();
+        showToast(`🎉 ${state.level}. Seviyeye Ulaştın!`, 'success');
+        if (currentTab === 'pazar')  renderMarket();
+        if (currentTab === 'merkez') renderMerkez();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PRESTİJ
+// ═══════════════════════════════════════════════════════════════
+
+function checkPrestige() {
+    if (state.locationIndex === LOCATIONS.length - 1 && state.money >= PRESTIGE_THRESHOLD) {
+        els.prestigeContainer.classList.remove('hidden');
+    }
+}
+
+function triggerPrestige() {
+    if (state.bankrupt || state.isTimeStopped) return;
+    queueModal('🏆 PRESTİJ!',
+        `Tebrikler! Şirketini bir holdinge satıyorsun.\n\nKalıcı Bonus: <strong class="text-green-600">+%${((state.prestigeCount + 1) * 2)} kalıcı vergi indirimi</strong>\n\nYeni oyuna başlıyorsun ama bu bonuslar seninle kalıyor!`,
+        [
+            { text:'İptal', class:'bg-slate-200 text-slate-800', onClick: closeModal },
+            { text:'🏆 Sat ve Başla!', class:'bg-yellow-500 text-white', onClick: () => {
+                state.prestigeCount++;
+                state.prestigeBonus = state.prestigeCount * 0.02;
+                // Sıfırla ama prestige bilgilerini koru
+                const pCount  = state.prestigeCount;
+                const pBonus  = state.prestigeBonus;
+                const pName   = state.playerName;
+                clearInterval(gameInterval);
+                state = JSON.parse(JSON.stringify(defaultState));
+                state.prestigeCount = pCount;
+                state.prestigeBonus = pBonus;
+                state.playerName    = pName;
+                state.tutorialStep  = 5; // öğretici tekrar gösterme
+                state.version       = 5;
+                localStorage.setItem('tuccar_v5', JSON.stringify(state));
+                location.reload();
+            }}
+        ]
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEYAHAT
+// ═══════════════════════════════════════════════════════════════
+
+function travelToNextLocation() {
+    if (state.bankrupt || state.isTimeStopped) return;
+    const nextLoc = LOCATIONS[state.locationIndex + 1];
+    if (!nextLoc) { showToast('Zaten en büyük şehirdesin!', 'info'); return; }
+    if (state.level < nextLoc.minLevel) { showToast(`Seviye ${nextLoc.minLevel} gerekli!`, 'error'); return; }
+    if (state.money < nextLoc.fee) { showToast(`Seyahat için ₺${fmt(nextLoc.fee)} gerekli!`, 'error'); return; }
+
+    state.isTimeStopped = true;
+    queueModal('✈️ Taşınıyorsun!',
+        `<strong>${nextLoc.name}</strong> bölgesine taşınıyorsun.\nTüm pazar dinamikleri değişecek.\n\nBedel: <strong class="text-red-600">₺${fmt(nextLoc.fee)}</strong>`,
+        [
+            { text:'İptal', class:'bg-slate-200 text-slate-800', onClick: () => { state.isTimeStopped = false; closeModal(); } },
+            { text:'Taşın', class:'bg-indigo-600 text-white', onClick: () => {
+                state.money = Math.round(state.money - nextLoc.fee);
+                state.locationIndex++;
+                state.gameTime = { days: 1, hours: 8, minutes: 0 };
+                state.isTimeStopped = false;
+                initPrices();
+                closeModal(); updateHeader(); renderAll(); saveGame();
+                showToast(`${nextLoc.name} bölgesine ulaştın! 🎊`, 'success');
+            }}
+        ]
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GELİŞTİRMELER
+// ═══════════════════════════════════════════════════════════════
+
+function buySystemUpgrade(type) {
+    if (state.bankrupt || state.isTimeStopped) return;
+
+    if (type === 'storage') {
+        const cost = Math.round(1000 * Math.pow(1.5, state.storageUpgradeCount));
+        if (state.money < cost) { showToast('Yetersiz bakiye!', 'error'); return; }
+        state.money = Math.round(state.money - cost);
+        state.storageCapacity += 20;
+        state.storageUpgradeCount++;
+        showToast(`Depo genişletildi! Kapasite: ${state.storageCapacity}`, 'success');
+    } else {
+        // Araç alımı: tip gönderiliyor
+        const vt   = VEHICLE_TYPES.find(v => v.id === type);
+        if (!vt) return;
+        const cnt  = state.vehicleUpgradeCounts[type] || 0;
+        const cost = Math.round(vt.baseCost * Math.pow(vt.costMult, cnt));
+        if (state.money < cost) { showToast('Yetersiz bakiye!', 'error'); return; }
+        state.money = Math.round(state.money - cost);
+        state.vehicleFleet[type]          = (state.vehicleFleet[type] || 0) + 1;
+        state.vehicleUpgradeCounts[type]  = cnt + 1;
+        showToast(`${vt.name} alındı! Filo: ${state.vehicleFleet[type]} araç`, 'success');
+    }
+    updateHeader(); renderMerkez(); saveGame();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  BAĞIŞ
+// ═══════════════════════════════════════════════════════════════
+
+function donate() {
+    if (state.bankrupt || state.isTimeStopped) return;
+    if (state.donationsToday >= 1) { showToast('Bugün zaten bağış yaptın.', 'error'); return; }
+
+    const locObj   = LOCATIONS[state.locationIndex];
+    const cost     = Math.round(100 * state.level * locObj.mult);
+    const repGain  = 5 + state.level;
+    const goodGain = 10 + Math.floor(state.level / 2);
+
+    if (state.money < cost) { showToast(`Bağış için ₺${fmt(cost)} gerekiyor.`, 'error'); return; }
+
+    state.money          = Math.round(state.money - cost);
+    state.reputation    += repGain;
+    state.goodness      += goodGain;
+    state.donationsToday++;
+
+    updateHeader(); addReputation(0); saveGame(); renderMerkez();
+    showToast(`💚 Halka yardım ettin! +${repGain} İtibar, +${goodGain} İyilik`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════════════
+
+function queueModal(title, body, actions = []) {
+    modalQueue.push({ title, body, actions });
+    processModalQueue();
+}
+
+function processModalQueue() {
+    if (isModalActive || modalQueue.length === 0) return;
+    isModalActive = true;
+    const m = modalQueue[0];
+
+    document.getElementById('modalTitle').textContent = m.title;
+    document.getElementById('modalBody').innerHTML    = m.body;
+
+    const actContainer = document.getElementById('modalActions');
+    actContainer.innerHTML = '';
+    m.actions.forEach(act => {
+        const btn = document.createElement('button');
+        btn.className = `px-4 py-2 rounded-lg font-bold text-sm ${act.class} flex-1 text-center shadow active:scale-95 transition`;
+        btn.textContent = act.text;
+        btn.onclick     = () => { if (act.onClick) act.onClick(); };
+        actContainer.appendChild(btn);
+    });
+
+    document.getElementById('modalOverlay').classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('modalOverlay').classList.add('hidden');
+    modalQueue.shift();
+    isModalActive = false;
+    processModalQueue();
+}
+
+function showPrompt(title, body, defaultText, callback) {
+    queueModal(title,
+        `<p class="mb-3">${body}</p><input type="text" id="promptInput" value="${defaultText}" maxlength="20" class="w-full p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500 text-slate-900">`,
+        [{ text:'Başla', class:'bg-indigo-600 text-white', onClick: () => {
+            const val = (document.getElementById('promptInput').value || '').trim() || defaultText;
+            closeModal();
+            setTimeout(() => callback(val), 80);
+        }}]
+    );
+}
+
+function handlePendingModals() {
+    if (state.bankrupt) { triggerBankruptcy(); return; }
+
+    if (state.tutorialStep === 0) {
+        state.isTimeStopped = true;
+        showPrompt('Simülasyona Hoş Geldin', 'Şirketine / Kendine ne isim vermek istersin?', 'Tüccar', (name) => {
+            state.playerName = name;
+            state.tutorialStep = 1;
+            state.prices['su'] = 4;
+            state.isTimeStopped = false;
+            els.playerNameDisplay.textContent = state.playerName;
+            saveGame(); updateHeader(); updateMarketTimerUI(); renderMarket();
+            queueModal('Rehber (1/4)',
+                'Pazara hoş geldin!\n\nŞu an Su fiyatı çok uygun (₺4). Hemen 10 adet Su satın al.',
+                [{ text:'Anladım', class:'bg-indigo-600 text-white', onClick: closeModal }]);
+        });
+        return;
+    }
+
+    if (state.pendingMissedPaymentAlert) { showMissedPaymentModal(); return; }
+    const pendingCrisis = state.shipments.find(s => s.isCrisisPending);
+    if (pendingCrisis) { triggerCrisisEvent(pendingCrisis); return; }
+    state.isTimeStopped = false;
+    updateHeader();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HEADER
+// ═══════════════════════════════════════════════════════════════
+
+function updateHeader() {
+    const locObj = LOCATIONS[state.locationIndex] || LOCATIONS[0];
+
+    els.playerNameDisplay.textContent  = state.playerName;
+    els.locationDisplay.textContent    = locObj.name;
+    els.navMerkezText.textContent      = locObj.shortName;
+    els.merkezTitle.textContent        = `${locObj.name} Merkezi`;
+    els.moneyDisplay.textContent       = `₺${fmt(state.money)}`;
+    els.reputationDisplay.textContent  = state.reputation;
+    els.goodnessDisplay.textContent    = state.goodness;
+    els.levelDisplay.textContent       = state.level;
+    els.storageDisplay.textContent     = `${getCurrentStorageCount()}/${state.storageCapacity}`;
+
+    const total = VEHICLE_TYPES.reduce((s, v) => s + (state.vehicleFleet[v.id] || 0), 0);
+    const busy  = state.shipments.length;
+    els.vehicleCountDisplay.textContent = `${busy}/${total}`;
+
+    const taxRate = getTaxRate();
+    els.taxRateDisplay.textContent = `%${(taxRate * 100).toFixed(1)}`;
+
+    const h = String(Math.floor(state.gameTime.hours)).padStart(2, '0');
+    const m = String(Math.floor(state.gameTime.minutes)).padStart(2, '0');
+    els.gameTimeDisplay.textContent = `${state.gameTime.days}. Gün ${h}:${m}`;
+
+    if (state.isTimeStopped && !state.bankrupt) els.pausedIndicator.classList.remove('hidden');
+    else els.pausedIndicator.classList.add('hidden');
+
+    if (state.prestigeCount > 0) els.prestigeBadge.classList.remove('hidden');
+    else els.prestigeBadge.classList.add('hidden');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SEKME
+// ═══════════════════════════════════════════════════════════════
+
+function switchTab(tabId) {
+    currentTab = tabId;
+
+    document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+    document.querySelectorAll('.nav-btn').forEach(el => {
+        el.classList.remove('text-indigo-600'); el.classList.add('text-slate-400');
+    });
+    const activeBtn = document.getElementById(`tab-${tabId}`);
+    if (activeBtn) { activeBtn.classList.remove('text-slate-400'); activeBtn.classList.add('text-indigo-600'); }
+
+    if (tabId === 'pazar') els.bottomTickerContainer.classList.add('hidden');
+    else els.bottomTickerContainer.classList.remove('hidden');
+
+    if (tabId === 'pazar')  renderMarket();
+    if (tabId === 'depo')   renderStorage();
+    if (tabId === 'filo')   renderFilo();
+    if (tabId === 'merkez') renderMerkez();
+
+    setTimeout(() => lucide.createIcons(), 30);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER: PAZAR
+// ═══════════════════════════════════════════════════════════════
+
+function renderMarket() {
+    els.marketList.innerHTML = '';
+    const prods = getActiveProducts();
+    const frag  = document.createDocumentFragment();
+
+    prods.forEach(p => {
+        const price     = state.prices[p.id]    || p.basePrice;
+        const prevPrice = state.prevPrices[p.id] || p.basePrice;
+        const minPrice  = state.minPrices[p.id]  || price;
+        const maxPrice  = state.maxPrices[p.id]  || price;
+        const vt        = VEHICLE_TYPES.find(v => v.id === p.requiredVehicle);
+        const freeVeh   = hasVehicleFor(p.id);
+        const ownVeh    = (state.vehicleFleet[p.requiredVehicle] || 0) > 0;
+
+        let trendIcon = 'minus', trendColor = 'text-slate-400', trendBg = 'bg-slate-100 text-slate-500';
+        if (price > prevPrice) { trendIcon = 'trending-up';   trendColor = 'text-green-600'; trendBg = 'bg-green-100 text-green-700'; }
+        else if (price < prevPrice) { trendIcon = 'trending-down'; trendColor = 'text-red-500';   trendBg = 'bg-red-100 text-red-700';   }
+
+        const stock10  = getCurrentStorageCount() + 10 <= state.storageCapacity;
+        const stock50  = getCurrentStorageCount() + 50 <= state.storageCapacity;
+        const afford10 = state.money >= price * 10;
+        const afford50 = state.money >= price * 50;
+
+        const can10 = freeVeh && stock10 && afford10;
+        const can50 = freeVeh && stock50 && afford50;
+
+        // Aktif olay varsa vurgu
+        let eventTag = '';
+        if (state.activeEvent) {
+            const ev = GLOBAL_EVENTS.find(e => e.id === state.activeEvent.eventId);
+            if (ev && ev.products.includes(p.id)) {
+                const isUp = ev.mult >= 1;
+                eventTag = `<span class="inline-block ml-1 text-[9px] font-black px-1 py-0.5 rounded ${isUp ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-700'}">
+                    ${isUp ? '🔥 KRİZ' : '📉 DÜŞÜK'}
+                </span>`;
             }
         }
 
-        function updateMarketPrices() {
-            for (let key in productsCatalog) {
-                const prod = productsCatalog[key];
-                const change = (Math.random() * (prod.volatility * 2.2)) - prod.volatility;
-                let newPrice = prod.basePrice + change;
-                
-                if(state.activeEventIndex !== -1 && marketEvents[state.activeEventIndex].effectItem === key) {
-                    newPrice = newPrice * marketEvents[state.activeEventIndex].effectMultiplier;
-                }
-
-                let minAllowed = prod.basePrice * 0.4;
-                if (newPrice < minAllowed) newPrice = minAllowed + Math.floor(Math.random() * 5); 
-                
-                state.prevPrices[key] = state.currentPrices[key];
-                let finalPrice = Math.floor(newPrice);
-                state.currentPrices[key] = finalPrice;
-
-                if(finalPrice < state.minPrices[key]) state.minPrices[key] = finalPrice;
-                if(finalPrice > state.maxPrices[key]) state.maxPrices[key] = finalPrice;
-            }
-            saveData(); 
-        }
-
-        function renderMarket() {
-            const container = document.getElementById('market-items-container');
-            container.innerHTML = "";
-
-            for (let key in productsCatalog) {
-                const prod = productsCatalog[key];
-                if (state.level < prod.minLevel) continue;
-
-                const price = state.currentPrices[key];
-                const prevPrice = state.prevPrices[key];
-                
-                let priceColorClass = "text-dark";
-                let arrowHtml = "";
-
-                if (price > prevPrice) {
-                    priceColorClass = "market-price-up";
-                    arrowHtml = `<i class="fa-solid fa-arrow-up text-danger ms-1"></i>`;
-                } else if (price < prevPrice) {
-                    priceColorClass = "market-price-down";
-                    arrowHtml = `<i class="fa-solid fa-arrow-down text-success ms-1"></i>`;
-                } else {
-                    arrowHtml = `<i class="fa-solid fa-minus text-secondary ms-1" style="font-size:0.7rem;"></i>`;
-                }
-
-                let minP = state.minPrices[key];
-                let maxP = state.maxPrices[key];
-
-                const card = document.createElement('div');
-                card.className = "app-card mb-2 p-3";
-                card.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                        <div class="bg-light p-2 rounded-circle me-3 border text-center" style="width: 45px; height: 45px; display:flex; align-items:center; justify-content:center; flex-shrink: 0;">
-                            <i class="fa-solid ${prod.icon} text-primary" style="font-size: 1.2rem;"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <h6 class="m-0 fw-bold text-truncate">${prod.name}</h6>
-                            <div class="d-flex align-items-center">
-                                <span class="${priceColorClass} fw-bold fs-6">₺${price.toLocaleString('tr-TR')}</span>
-                                ${arrowHtml}
-                            </div>
-                            <div class="stat-small mt-1 d-flex gap-2">
-                                <span title="Tarihi En Düşük">Min: ₺${minP}</span> 
-                                <span title="Tarihi En Yüksek">Max: ₺${maxP}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end align-items-center mt-2 pt-2 border-top border-light">
-                        <input type="number" id="buy_qty_${key}" value="1" min="1" class="form-control form-control-sm qty-input me-2">
-                        <button class="btn btn-success btn-sm btn-custom px-4" onclick="buyItem('${key}')">Al</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            }
-        }
-
-        function buyItem(itemId) {
-            const qtyInput = document.getElementById('buy_qty_' + itemId);
-            let qty = parseInt(qtyInput.value);
-            if(isNaN(qty) || qty < 1) qty = 1;
-
-            const price = state.currentPrices[itemId];
-            const totalPrice = price * qty;
-            const currentLoad = Object.values(state.inventory).reduce((a, b) => a + b, 0);
-            
-            if (state.money < totalPrice) { showToast(`Bütçe yetersiz! (${qty} Adet: ₺${totalPrice.toLocaleString()})`, "danger"); return; }
-            if (currentLoad + qty > state.warehouseCap) { showToast(`Depo dolu! (Boş alan: ${state.warehouseCap - currentLoad})`, "warning"); return; }
-
-            let oldAmt = state.inventory[itemId];
-            let oldAvg = state.stats[itemId].avgCost;
-            let newAvg = ((oldAvg * oldAmt) + totalPrice) / (oldAmt + qty);
-
-            state.money -= totalPrice;
-            state.inventory[itemId] += qty;
-            state.stats[itemId].avgCost = newAvg;
-            state.stats[itemId].boughtAmount += qty;
-            
-            qtyInput.value = 1; // Başarılı alımdan sonra 1'e sıfırla
-            saveData();
-            showToast(`${qty} Adet ${productsCatalog[itemId].name} alındı.`, "success");
-        }
-
-        // --- DEPO, OPERASYON ---
-        function renderWarehouse() {
-            const list = document.getElementById('inventory-list');
-            list.innerHTML = "";
-
-            let hasItems = false;
-            for (let key in state.inventory) {
-                if (state.inventory[key] > 0) {
-                    hasItems = true;
-                    const prod = productsCatalog[key];
-                    const amount = state.inventory[key];
-                    const currentMarketPrice = state.currentPrices[key];
-                    const stat = state.stats[key];
-
-                    const li = document.createElement('li');
-                    li.className = "list-group-item";
-                    li.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="fw-bold text-dark">
-                                <i class="fa-solid ${prod.icon} text-primary me-2"></i> ${prod.name}
-                            </div>
-                            <span class="badge bg-secondary fs-6">${amount} Adet Var</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center mt-1 pt-2 border-top border-light">
-                            <div class="stat-small">
-                                <div>Ort: <strong class="text-dark">₺${Math.floor(stat.avgCost).toLocaleString('tr-TR')}</strong></div>
-                                <div>Al: ${stat.boughtAmount} | Sat: ${stat.soldAmount}</div>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <input type="number" id="sell_qty_${key}" value="${amount}" min="1" max="${amount}" class="form-control form-control-sm qty-input me-2">
-                                <button class="btn btn-sm btn-primary fw-bold px-3 py-1" onclick="startShipment('${key}', ${currentMarketPrice})">
-                                    Gönder <i class="fa-solid fa-truck-fast"></i>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    list.appendChild(li);
-                }
-            }
-
-            if (!hasItems) {
-                list.innerHTML = `<li class="list-group-item text-muted text-center border-0 bg-transparent py-4">Depo tamamen boş. Piyasadan ürün alın.</li>`;
-            }
-        }
-
-        function getUpgradeCost(type) {
-            let base = 0;
-            if(type === 'tablet') base = 500;
-            if(type === 'coldStorage') base = 1000;
-            if(type === 'engine') base = 800;
-            if(type === 'logo') base = 1000;
-            let lvl = state.upgrades[type];
-            return Math.floor(base * Math.pow(1.5, lvl)); 
-        }
-
-        function updateUpgradeCostsUI() {
-            document.getElementById('cost-tablet').innerText = `₺${getUpgradeCost('tablet').toLocaleString('tr-TR')}`;
-            document.getElementById('cost-cold').innerText = `₺${getUpgradeCost('coldStorage').toLocaleString('tr-TR')}`;
-            document.getElementById('cost-engine').innerText = `₺${getUpgradeCost('engine').toLocaleString('tr-TR')}`;
-            document.getElementById('cost-logo').innerText = `₺${getUpgradeCost('logo').toLocaleString('tr-TR')}`;
-        }
-
-        function buyUpgrade(type) {
-            let cost = getUpgradeCost(type);
-
-            if (state.money < cost) { showToast("Bakiye yetersiz!", "danger"); return; }
-
-            state.money -= cost;
-            state.upgrades[type]++; 
-
-            if(type === 'tablet') state.reputation += 10;
-            if(type === 'coldStorage') { state.warehouseCap += 25; state.reputation += 5; }
-            if(type === 'engine') { state.deliverySpeedMs = Math.max(4000, state.deliverySpeedMs - 2000); }
-            if(type === 'logo') state.reputation += 15;
-
-            showToast("Geliştirme satın alındı!", "success");
-            checkLevelUp();
-            saveData();
-        }
-
-        function doCharity(type) {
-            if(type === 'school') {
-                if(state.money >= 300) {
-                    state.money -= 300; state.reputation += 10; state.goodwill += 5;
-                    showToast("Okula bağış yapıldı!", "success");
-                } else showToast("Paran yetersiz.", "warning");
-            } else if(type === 'bakery') {
-                if(state.inventory['un'] >= 2) {
-                    state.inventory['un'] -= 2; state.reputation += 15; state.goodwill += 10;
-                    showToast("Fırına un verdin!", "success");
-                } else showToast("Depoda 2 adet Un yok.", "warning");
-            }
-            checkLevelUp();
-            saveData();
-        }
-
-        // --- SEVKİYAT VE KRİZ (DİNAMİK) MANTIĞI ---
-        let shipmentLoopInterval;
-        
-        function startShipment(itemId, sellPrice) {
-            const qtyInput = document.getElementById('sell_qty_' + itemId);
-            let qty = parseInt(qtyInput.value);
-            if(isNaN(qty) || qty < 1) qty = 1;
-            if(qty > state.inventory[itemId]) qty = state.inventory[itemId];
-
-            if (qty <= 0) return;
-
-            state.inventory[itemId] -= qty;
-            state.stats[itemId].soldAmount += qty;
-            
-            const totalEarn = sellPrice * qty;
-
-            // Kriz İhtimali (%25)
-            let crisis = null;
-            if(Math.random() < 0.25) {
-                crisis = shipmentCrisesList[Math.floor(Math.random() * shipmentCrisesList.length)];
-            }
-
-            const shipment = {
-                id: "ship_" + Date.now() + Math.floor(Math.random()*100),
-                itemId: itemId,
-                qty: qty,
-                sellPrice: totalEarn,
-                startTime: Date.now(),
-                duration: state.deliverySpeedMs,
-                crisis: crisis,
-                crisisTriggered: false
-            };
-
-            state.activeShipments.push(shipment);
-            saveData(); 
-            document.getElementById('nav-filo').click(); 
-            createShipmentCardUI(shipment);
-        }
-
-        // Ekran ilk açıldığında yoldaki araçları çizer
-        function createShipmentCardUI(shipment) {
-            document.getElementById('no-shipment-msg').style.display = 'none';
-            const activeShipmentsDiv = document.getElementById('active-shipments');
-            const prod = productsCatalog[shipment.itemId];
-
-            const shipCard = document.createElement('div');
-            shipCard.className = "app-card mb-2 p-3 shadow-sm border-0 bg-white";
-            shipCard.id = shipment.id;
-            
-            // Eğer daha önceden (sayfa yenilenmeden) kriz tetiklendiyse kırmızı göster
-            if(shipment.crisisTriggered) {
-                shipCard.classList.add('border-danger', 'bg-danger', 'bg-opacity-10');
-            }
-
-            let titleHtml = `<i class="fa-solid fa-truck-fast text-primary me-2"></i> ${prod.name} (${shipment.qty}x)`;
-            if(shipment.crisisTriggered) {
-                titleHtml = `<i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> ${prod.name} (ARIZA)`;
-            }
-
-            shipCard.innerHTML = `
-                <div class="d-flex justify-content-between mb-2 fw-bold" style="font-size: 0.9rem;">
-                    <span class="text-dark ship-title">${titleHtml}</span>
-                    <span class="text-success">+₺${shipment.sellPrice.toLocaleString('tr-TR')}</span>
+        const div = document.createElement('div');
+        div.className = `bg-white rounded-xl shadow-sm border border-slate-200 p-3 flex items-center justify-between transition`;
+        div.innerHTML = `
+            <div class="flex items-center gap-3 w-3/5">
+                <div class="bg-slate-100 p-2 rounded-lg shrink-0">
+                    <i data-lucide="${p.icon}" class="w-5 h-5 ${p.color}"></i>
                 </div>
-                <div class="progress-container" style="height: 8px;">
-                    <div class="progress-bar ${shipment.crisisTriggered ? 'bg-danger' : 'bg-primary'} progress-bar-striped progress-bar-animated" id="bar_${shipment.id}" style="width: 0%;"></div>
+                <div class="truncate">
+                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1 flex-wrap">
+                        ${p.name}${eventTag}
+                    </h4>
+                    <div class="text-[10px] text-slate-500 flex items-center gap-1 flex-wrap">
+                        Min:₺${fmt(minPrice)} | Max:₺${fmt(maxPrice)}
+                    </div>
+                    <div class="text-[10px] flex items-center gap-1 mt-0.5 ${ownVeh ? (freeVeh ? 'text-emerald-600' : 'text-amber-600') : 'text-red-500'} font-medium">
+                        <i data-lucide="${vt.icon}" class="w-3 h-3"></i>
+                        ${ownVeh ? (freeVeh ? vt.name + ' hazır' : vt.name + ' meşgul') : vt.name + ' gerekli'}
+                    </div>
                 </div>
-            `;
-            activeShipmentsDiv.appendChild(shipCard);
-            
-            updateProgressBarCSS(shipment);
-        }
+            </div>
+            <div class="text-right shrink-0">
+                <div class="font-black text-base ${trendColor} mb-1 flex items-center justify-end gap-1">
+                    ${price !== prevPrice ? `<span class="${trendBg} rounded-full p-0.5"><i data-lucide="${trendIcon}" class="w-3 h-3"></i></span>` : ''}
+                    ₺${fmt(price)}
+                </div>
+                <div class="flex gap-1 justify-end">
+                    <button onclick="app.buyProduct('${p.id}', 10)"
+                        ${!can10 ? 'disabled' : ''}
+                        class="${!can10 ? 'opacity-35 cursor-not-allowed' : 'hover:bg-indigo-700 active:scale-95'} bg-indigo-600 text-white text-[10px] font-bold py-1 px-2 rounded transition shadow">
+                        10 Al
+                    </button>
+                    <button onclick="app.buyProduct('${p.id}', 50)"
+                        ${!can50 ? 'disabled' : ''}
+                        class="${!can50 ? 'opacity-35 cursor-not-allowed' : 'hover:bg-indigo-900 active:scale-95'} bg-indigo-800 text-white text-[10px] font-bold py-1 px-2 rounded transition shadow">
+                        50 Al
+                    </button>
+                </div>
+            </div>`;
+        frag.appendChild(div);
+    });
 
-        // Progress barın CSS transition özelliğini dinamik olarak ayarlar
-        function updateProgressBarCSS(shipment) {
-            const bar = document.getElementById(`bar_${shipment.id}`);
-            if(!bar) return;
-            
-            const now = Date.now();
-            const remaining = (shipment.startTime + shipment.duration) - now;
-            
-            if(remaining > 0) {
-                const percentDone = ((shipment.duration - remaining) / shipment.duration) * 100;
-                bar.style.transition = 'none';
-                bar.style.width = `${percentDone}%`;
-                
-                setTimeout(() => {
-                    bar.style.transition = `width ${remaining}ms linear`;
-                    bar.style.width = "100%";
-                }, 50);
-            }
-        }
+    els.marketList.appendChild(frag);
+    lucide.createIcons();
+}
 
-        // Sevkiyatların sürekli kontrolü (Tamamlanma & Kriz Tetiklenmesi)
-        function startShipmentLoop() {
-            if(shipmentLoopInterval) clearInterval(shipmentLoopInterval);
-            
-            // Mevcutleri UI'a bas
-            document.getElementById('active-shipments').innerHTML = '<p class="text-muted text-center py-4 m-0" id="no-shipment-msg"><i class="fa-solid fa-truck mb-2" style="font-size: 2rem; opacity: 0.3;"></i><br>Şu an yolda araç yok.</p>';
-            state.activeShipments.forEach(s => createShipmentCardUI(s));
+// ═══════════════════════════════════════════════════════════════
+//  RENDER: DEPO
+// ═══════════════════════════════════════════════════════════════
 
-            shipmentLoopInterval = setInterval(() => {
-                const now = Date.now();
-                let needsSave = false;
-                let completed = [];
+function renderStorage() {
+    els.inventoryList.innerHTML = '';
+    const keys = Object.keys(state.inventory);
 
-                state.activeShipments.forEach(shipment => {
-                    // Kriz Kontrolü (Sürenin yarısına gelindiğinde tetiklenir)
-                    if (shipment.crisis && !shipment.crisisTriggered) {
-                        const elapsed = now - shipment.startTime;
-                        if (elapsed >= shipment.duration / 2) {
-                            shipment.crisisTriggered = true;
-                            state.money -= shipment.crisis.cost; // Ceza ödenir
-                            shipment.duration += shipment.crisis.delay; // Süre uzar
-                            needsSave = true;
+    let hasSpoiling = false;
 
-                            showToast(`🚨 ARAÇ YOLDA KALDI: ${shipment.crisis.text}! (-₺${shipment.crisis.cost})`, "danger");
+    if (keys.length === 0) {
+        els.inventoryList.innerHTML = `
+            <div class="text-center text-slate-400 py-10 flex flex-col items-center">
+                <i data-lucide="package-open" class="w-12 h-12 mb-2 opacity-50"></i>
+                <p>Depo tamamen boş.</p>
+            </div>`;
+        els.spoilWarning.classList.add('hidden');
+        lucide.createIcons(); return;
+    }
 
-                            // UI'ı kırmızıya boyat
-                            const card = document.getElementById(shipment.id);
-                            if(card) {
-                                card.classList.add('border-danger', 'bg-danger', 'bg-opacity-10');
-                                const title = card.querySelector('.ship-title');
-                                if(title) title.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> ${productsCatalog[shipment.itemId].name} (ARIZA)`;
-                                
-                                const bar = document.getElementById(`bar_${shipment.id}`);
-                                if(bar) bar.classList.replace('bg-primary', 'bg-danger');
-                                
-                                updateProgressBarCSS(shipment);
-                            }
-                        }
-                    }
+    const taxRate = getTaxRate();
+    const frag    = document.createDocumentFragment();
 
-                    // Bitiş Kontrolü
-                    if (now >= shipment.startTime + shipment.duration) {
-                        completed.push(shipment);
-                    }
-                });
+    keys.forEach(key => {
+        const item    = state.inventory[key];
+        const product = PRODUCTS.find(p => p.id === key);
+        if (!product) return;
 
-                if (completed.length > 0) {
-                    completed.forEach(s => completeShipmentReward(s, true));
-                    needsSave = true;
-                } 
-                
-                if (needsSave) {
-                    saveData();
+        const currentPrice = state.prices[key]    || product.basePrice;
+        const prevPrice    = state.prevPrices[key] || product.basePrice;
+        const profitMargin = ((currentPrice - item.avgCost) / item.avgCost) * 100;
+        const profitClass  = profitMargin >= 0 ? 'text-green-600' : 'text-red-500';
+        const profitIcon   = profitMargin >= 0 ? 'trending-up' : 'trending-down';
+
+        let trendIcon = 'minus', trendColor = 'text-slate-400', trendBg = 'bg-slate-100 text-slate-500';
+        if (currentPrice > prevPrice) { trendIcon = 'trending-up';   trendColor = 'text-green-600'; trendBg = 'bg-green-100 text-green-700'; }
+        else if (currentPrice < prevPrice) { trendIcon = 'trending-down'; trendColor = 'text-red-500';   trendBg = 'bg-red-100 text-red-700';   }
+
+        const freeVeh  = hasVehicleFor(key);
+        const sellQty  = Math.min(10, item.qty);
+        const isSpoiling = (item.daysStored || 0) >= 3;
+        if (isSpoiling) hasSpoiling = true;
+
+        const div = document.createElement('div');
+        div.className = `bg-white rounded-xl shadow-sm border ${isSpoiling ? 'border-amber-300' : 'border-slate-200'} p-3 flex items-center justify-between`;
+        div.innerHTML = `
+            <div class="flex items-center gap-3">
+                <div class="bg-slate-100 p-2 rounded-lg relative shrink-0">
+                    <i data-lucide="${product.icon}" class="w-5 h-5 ${product.color}"></i>
+                    <span class="absolute -top-2 -right-2 bg-slate-800 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">${item.qty}</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1">
+                        ${product.name}
+                        ${isSpoiling ? '<span class="text-[9px] bg-amber-100 text-amber-700 px-1 py-0.5 rounded font-black">⏳ BOZULUYOR</span>' : ''}
+                    </h4>
+                    <div class="text-[10px] text-slate-500">
+                        Maliyet: ₺${item.avgCost.toFixed(1)} | Vergi: %${(taxRate * 100).toFixed(1)}
+                        ${isSpoiling ? `<span class="text-amber-600"> | ${item.daysStored} gün bekliyor</span>` : ''}
+                    </div>
+                    <div class="text-[10px] font-bold ${profitClass} flex items-center gap-1 mt-0.5">
+                        <i data-lucide="${profitIcon}" class="w-3 h-3"></i>
+                        ${profitMargin >= 0 ? '+' : ''}${profitMargin.toFixed(1)}%
+                    </div>
+                </div>
+            </div>
+            <div class="text-right shrink-0">
+                <div class="font-bold text-sm ${trendColor} mb-1 flex items-center justify-end gap-1">
+                    ${currentPrice !== prevPrice ? `<span class="${trendBg} rounded-full p-0.5"><i data-lucide="${trendIcon}" class="w-3 h-3"></i></span>` : ''}
+                    ₺${fmt(currentPrice)}
+                </div>
+                <div class="flex gap-1 justify-end">
+                    <button onclick="app.sellProduct('${key}', ${sellQty})"
+                        ${!freeVeh ? 'disabled' : ''}
+                        class="${!freeVeh ? 'opacity-35 cursor-not-allowed' : 'hover:bg-emerald-600 active:scale-95'} bg-emerald-500 text-white text-[10px] font-bold py-1 px-2 rounded transition">
+                        Sat (${sellQty})
+                    </button>
+                    <button onclick="app.sellProduct('${key}', ${item.qty})"
+                        ${!freeVeh ? 'disabled' : ''}
+                        class="${!freeVeh ? 'opacity-35 cursor-not-allowed' : 'hover:bg-emerald-800 active:scale-95'} bg-emerald-700 text-white text-[10px] font-bold py-1 px-2 rounded transition">
+                        Tümü (${item.qty})
+                    </button>
+                </div>
+            </div>`;
+        frag.appendChild(div);
+    });
+
+    els.inventoryList.appendChild(frag);
+    if (hasSpoiling) els.spoilWarning.classList.remove('hidden');
+    else els.spoilWarning.classList.add('hidden');
+    lucide.createIcons();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER: FİLO
+// ═══════════════════════════════════════════════════════════════
+
+function renderFiloBadge() {
+    const count = state.shipments.length;
+    els.filoBadge.textContent = count;
+    count > 0 ? els.filoBadge.classList.remove('hidden') : els.filoBadge.classList.add('hidden');
+    const total = VEHICLE_TYPES.reduce((s, v) => s + (state.vehicleFleet[v.id] || 0), 0);
+    els.vehicleCountDisplay.textContent = `${count}/${total}`;
+}
+
+function renderFilo() {
+    els.shipmentList.innerHTML = '';
+
+    if (state.shipments.length === 0) {
+        els.shipmentList.innerHTML = `
+            <div class="text-center text-slate-400 py-10 flex flex-col items-center">
+                <i data-lucide="truck" class="w-12 h-12 mb-2 opacity-50"></i>
+                <p>Yolda olan araç yok.</p>
+            </div>`;
+        lucide.createIcons(); return;
+    }
+
+    const frag = document.createDocumentFragment();
+    state.shipments.forEach(s => {
+        const product = PRODUCTS.find(p => p.id === s.productId);
+        const vt      = product ? VEHICLE_TYPES.find(v => v.id === product.requiredVehicle) : null;
+        const pct     = Math.min(100, (s.elapsed / s.duration) * 100);
+        const isBuy   = s.type === 'buy';
+
+        const div = document.createElement('div');
+        div.className = `bg-white rounded-xl shadow-sm border ${s.isCrisisPending ? 'border-red-400 crisis-pulse' : 'border-slate-200'} p-3 flex flex-col gap-2`;
+        div.innerHTML = `
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="${isBuy ? 'arrow-down-left' : 'arrow-up-right'}"
+                       class="w-4 h-4 ${isBuy ? 'text-blue-500' : 'text-emerald-500'}"></i>
+                    <span class="font-bold text-sm text-slate-800">
+                        ${s.qty}x ${product ? product.name : '?'} ${isBuy ? 'Alımı' : 'Satışı'}
+                    </span>
+                    ${vt ? `<span class="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
+                        <i data-lucide="${vt.icon}" class="w-3 h-3"></i>${vt.name}
+                    </span>` : ''}
+                </div>
+                ${s.isCrisisPending
+                    ? `<span class="text-red-500 font-bold flex items-center gap-1 text-[10px] animate-pulse">
+                           <i data-lucide="alert-triangle" class="w-3 h-3"></i> KRİZ!
+                       </span>`
+                    : `<span class="text-slate-400 text-[10px]">${Math.round(pct)}%</span>`
                 }
-            }, 500);
+            </div>
+            <div class="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                <div id="prog_${s.id}"
+                     class="h-2 rounded-full ${isBuy ? 'bg-blue-500' : 'bg-emerald-500'} progress-bar"
+                     style="width:${pct}%"></div>
+            </div>`;
+        frag.appendChild(div);
+    });
+
+    els.shipmentList.appendChild(frag);
+    lucide.createIcons();
+}
+
+function updateFiloProgressBars() {
+    state.shipments.forEach(s => {
+        const bar = document.getElementById(`prog_${s.id}`);
+        if (bar && !s.isCrisisPending) bar.style.width = `${Math.min(100, (s.elapsed / s.duration) * 100)}%`;
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER: MERKEZ
+// ═══════════════════════════════════════════════════════════════
+
+function renderMerkez() {
+    const locObj  = LOCATIONS[state.locationIndex];
+    const nextLoc = LOCATIONS[state.locationIndex + 1];
+
+    // Prestij butonu
+    checkPrestige();
+
+    // Seyahat
+    els.travelContainer.innerHTML = nextLoc
+        ? `<div class="bg-white/10 p-3 rounded-lg flex items-center justify-between gap-3">
+               <div>
+                   <div class="font-bold text-sm">→ ${nextLoc.name}</div>
+                   <div class="text-xs text-blue-200">Seviye ${nextLoc.minLevel} | ₺${fmt(nextLoc.fee)}</div>
+               </div>
+               <button onclick="app.travelToNextLocation()"
+                   class="bg-white text-indigo-700 px-3 py-1.5 rounded font-bold text-xs hover:bg-slate-100 active:scale-95 transition shrink-0">
+                   Taşın
+               </button>
+           </div>`
+        : `<div class="text-sm font-bold text-amber-300">🏆 Zirvedesin! En büyük şehirdesin.</div>`;
+
+    // Araç filosu durumu
+    els.fleetStatusContainer.innerHTML = VEHICLE_TYPES.map(vt => {
+        const total = state.vehicleFleet[vt.id] || 0;
+        const busy  = state.shipments.filter(s => {
+            const sp = PRODUCTS.find(x => x.id === s.productId);
+            return sp && sp.requiredVehicle === vt.id;
+        }).length;
+        const free  = total - busy;
+        return `
+            <div class="flex items-center justify-between text-xs bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="${vt.icon}" class="w-4 h-4 text-slate-500"></i>
+                    <span class="font-semibold text-slate-700">${vt.name}</span>
+                    <span class="text-slate-400">${vt.desc}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="${free > 0 ? 'text-green-600' : 'text-red-500'} font-bold">${free} boşta</span>
+                    <span class="text-slate-400">/ ${total} toplam</span>
+                </div>
+            </div>`;
+    }).join('');
+
+    // Sigorta
+    const insCost = Math.round(500 * locObj.mult);
+    els.insuranceContainer.innerHTML = state.hasInsurance
+        ? `<div class="flex items-center gap-2 text-xs bg-green-50 border border-green-200 rounded-lg px-3 py-2 mt-2">
+               <i data-lucide="shield-check" class="w-4 h-4 text-green-600"></i>
+               <span class="font-semibold text-green-700">Araç Sigortası Aktif</span>
+               ${state.insuranceUsed ? '<span class="ml-auto text-amber-600 font-bold">Kullanıldı — Yenile!</span>' : '<span class="ml-auto text-green-500">Hazır</span>'}
+               ${state.insuranceUsed ? `<button onclick="app.buyInsurance()" class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold hover:bg-blue-200 active:scale-95 transition">₺${fmt(insCost)}</button>` : ''}
+           </div>`
+        : `<button onclick="app.buyInsurance()"
+               class="mt-2 w-full flex justify-between items-center bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 p-2 rounded-lg text-xs font-semibold transition active:scale-95">
+               <span class="flex items-center gap-1"><i data-lucide="shield" class="w-3 h-3"></i> Araç Sigortası Al</span>
+               <span class="font-bold">₺${fmt(insCost)}</span>
+           </button>`;
+
+    // Aktif kredi detayı
+    if (state.loans.length > 0 || state.missedPayments > 0) {
+        els.loanSummaryBox.classList.remove('hidden');
+        els.activeLoansList.innerHTML = state.loans.map(l => {
+            const paidDays  = l.totalDays - l.daysLeft;
+            const paidTotal = Math.round(paidDays * l.dailyInstallment);
+            const pct       = Math.round((paidDays / l.totalDays) * 100);
+            return `<li class="bg-white border border-red-100 rounded-lg p-2 space-y-1">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-slate-700">Kredi</span>
+                    <span class="font-black text-red-600">-₺${fmt(l.dailyInstallment)}/gün</span>
+                </div>
+                <div class="flex justify-between text-slate-500">
+                    <span>Kalan: ${l.daysLeft} gün</span>
+                    <span>Ödenen: ₺${fmt(paidTotal)} / ₺${fmt(l.payback)}</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-blue-500 h-1.5 rounded-full" style="width:${pct}%"></div>
+                </div>
+            </li>`;
+        }).join('');
+
+        if (state.missedPayments > 0) {
+            els.loanMissedBadge.classList.remove('hidden');
+            els.loanMissedBadge.textContent = `${state.missedPayments}/2 gecikme`;
+            els.loanMissedWarning.classList.remove('hidden');
+            els.loanMissedText.textContent = `${state.missedPayments} gecikme var! ${2 - state.missedPayments} hakkın kaldı.`;
+        } else {
+            els.loanMissedBadge.classList.add('hidden');
+            els.loanMissedWarning.classList.add('hidden');
         }
+    } else {
+        els.loanSummaryBox.classList.add('hidden');
+    }
 
-        function completeShipmentReward(shipment, updateUINow) {
-            if (!state.activeShipments.some(s => s.id === shipment.id)) return;
+    // Kredi teklifleri
+    const loanDefs = [
+        { m:1,  d:5,  p:1.2, n:'Kısa Vadeli'  },
+        { m:5,  d:8,  p:1.3, n:'Orta Vadeli'  },
+        { m:20, d:12, p:1.4, n:'Uzun Vadeli'  }
+    ];
+    els.loanOffers.innerHTML = loanDefs.map(l => {
+        const amount  = Math.round(1000 * l.m * locObj.mult);
+        const payback = Math.round(amount * l.p);
+        const daily   = Math.round(payback / l.d);
+        const canTake = state.loans.length < 1;
+        return `<div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+            <div>
+                <div class="font-bold text-sm text-slate-800">${l.n}</div>
+                <div class="text-[10px] text-slate-500">
+                    ₺${fmt(amount)} → ₺${fmt(payback)} | ${l.d} Gün | ₺${fmt(daily)}/gün
+                </div>
+            </div>
+            <button onclick="app.takeLoan(${l.m}, ${l.d}, ${l.p})"
+                ${!canTake ? 'disabled' : ''}
+                class="${!canTake ? 'opacity-35 cursor-not-allowed' : 'hover:bg-blue-200 active:scale-95'} bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold transition">
+                Çek
+            </button>
+        </div>`;
+    }).join('');
 
-            state.money += shipment.sellPrice;
-            state.reputation += 3 * shipment.qty; // Adet kadar itibar bonusu
-            
-            checkLevelUp(updateUINow);
-            state.activeShipments = state.activeShipments.filter(s => s.id !== shipment.id);
-            
-            if (updateUINow) {
-                if(document.getElementById(shipment.id)) document.getElementById(shipment.id).remove();
-                showToast(`Teslimat tamam! ₺${shipment.sellPrice.toLocaleString('tr-TR')} kazanıldı.`, "success");
-            }
-        }
+    // Geliştirmeler
+    const depoCost = Math.round(1000 * Math.pow(1.5, state.storageUpgradeCount));
+    let upgradesHtml = `
+        <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+            <div class="flex items-center gap-2">
+                <i data-lucide="box" class="w-4 h-4 text-slate-400"></i>
+                <div>
+                    <div class="font-bold text-sm text-slate-700">Depo Genişlet</div>
+                    <div class="text-[10px] text-slate-400">+20 kapasite (Mevcut: ${state.storageCapacity})</div>
+                </div>
+            </div>
+            <button onclick="app.buySystemUpgrade('storage')"
+                ${state.money < depoCost ? 'disabled' : ''}
+                class="${state.money < depoCost ? 'opacity-35 cursor-not-allowed' : 'hover:bg-orange-200 active:scale-95'} bg-orange-100 text-orange-700 px-3 py-1 rounded text-xs font-bold transition">
+                ₺${fmt(depoCost)}
+            </button>
+        </div>`;
 
-        function checkLevelUp(updateUINow = true) {
-            if (state.level >= maxLevel) return; 
+    VEHICLE_TYPES.forEach(vt => {
+        const cnt  = state.vehicleUpgradeCounts[vt.id] || 0;
+        const cost = Math.round(vt.baseCost * Math.pow(vt.costMult, cnt));
+        const canBuy = state.money >= cost;
+        const cur  = state.vehicleFleet[vt.id] || 0;
+        upgradesHtml += `
+            <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="${vt.icon}" class="w-4 h-4 text-slate-400"></i>
+                    <div>
+                        <div class="font-bold text-sm text-slate-700">${vt.name} Al</div>
+                        <div class="text-[10px] text-slate-400">${vt.desc} (Mevcut: ${cur})</div>
+                    </div>
+                </div>
+                <button onclick="app.buySystemUpgrade('${vt.id}')"
+                    ${!canBuy ? 'disabled' : ''}
+                    class="${!canBuy ? 'opacity-35 cursor-not-allowed' : 'hover:bg-orange-200 active:scale-95'} bg-orange-100 text-orange-700 px-3 py-1 rounded text-xs font-bold transition">
+                    ₺${fmt(cost)}
+                </button>
+            </div>`;
+    });
+    els.upgradesList.innerHTML = upgradesHtml;
 
-            let nextThresh = levelsThresh[state.level];
-            if (state.reputation >= nextThresh) {
-                state.level++;
-                if(updateUINow) {
-                    const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('mayorModal'));
-                    modal.show();
-                }
-                checkLevelUp(false);
-            }
-        }
+    // Bağış
+    const donateCost = Math.round(100 * state.level * locObj.mult);
+    const isDonated  = state.donationsToday >= 1;
+    els.donateContainer.innerHTML = `
+        <button onclick="app.donate()" ${isDonated ? 'disabled' : ''}
+            class="${isDonated ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200 active:scale-95'} border p-3 rounded-lg text-sm font-semibold flex justify-between items-center transition w-full">
+            <span>Halka Bağış Yap (₺${fmt(donateCost)})</span>
+            <span class="text-xs font-bold">${isDonated ? '✓ Bugün Yapıldı' : '+İtibar +İyilik'}</span>
+        </button>`;
 
-        function showToast(message, type = "success") {
-            const container = document.getElementById('toast-container');
-            if(container.children.length >= 3) {
-                container.removeChild(container.firstChild);
-            }
+    lucide.createIcons();
+}
 
-            const toast = document.createElement('div');
-            toast.className = `custom-toast ${type}`;
-            let icon = type === "success" ? "fa-circle-check" : (type === "danger" ? "fa-triangle-exclamation" : "fa-info-circle");
-            toast.innerHTML = `<i class="fa-solid ${icon} me-2"></i> ${message}`;
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                if(toast.parentElement) {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => { if(toast.parentElement) toast.remove(); }, 300);
-                }
-            }, 2500);
-        }
-    </script>
+// ═══════════════════════════════════════════════════════════════
+//  renderAll
+// ═══════════════════════════════════════════════════════════════
+
+function renderAll() {
+    updateHeader();
+    switchTab('pazar');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PUBLIC API
+// ═══════════════════════════════════════════════════════════════
+
+return {
+    init,
+    switchTab,
+    buyProduct,
+    sellProduct,
+    takeLoan,
+    buySystemUpgrade,
+    donate,
+    confirmReset,
+    travelToNextLocation,
+    triggerPrestige,
+    buyInsurance
+};
+
+})();
+
+window.addEventListener('DOMContentLoaded', app.init);
+</script>
 </body>
 </html>
