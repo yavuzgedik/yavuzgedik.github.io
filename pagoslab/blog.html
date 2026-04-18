@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PagosLab Blog | Laboratuvar Dünyasından Haberler</title>
+    
+    <!-- Favicon (Yeni Logonuz) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 227.25 335.249988'%3E%3Cpath fill='%2300ab84' d='M88.503906 31.683594L88.503906 143.046875L78.429688 147.316406C64.207031 152.574219 52.59375 162.078125 44.675781 174.199219C36.207031 185.808594 31.996094 200.101562 31.996094 215.351562C31.996094 236 39.90625 254.421875 53.132812 267.648438C66.847656 280.816406 84.78125 289.273438 105.359375 289.273438C125.457031 289.273438 143.871094 280.804688 157.097656 267.648438C170.8125 254.421875 178.722656 236 178.722656 215.351562C178.722656 200.101562 173.964844 185.808594 166.042969 174.199219C158.136719 162.078125 146.015625 152.574219 132.292969 147.316406L122.21875 143.046875L122.21875 31.683594ZM67.367188 224.402344C76.871094 224.402344 84.792969 232.308594 84.792969 241.757812C84.792969 251.28125 76.882812 258.703125 67.367188 258.703125C57.839844 258.703125 49.933594 251.28125 49.933594 241.757812C49.933594 232.308594 57.839844 224.402344 67.367188 224.402344ZM99.074219 254.980469C103.765625 254.980469 108.03125 258.703125 108.03125 263.949219C108.03125 268.695312 103.765625 272.417969 99.074219 272.417969C94.316406 272.417969 90.039062 268.695312 90.039062 263.949219C90.039062 258.691406 94.308594 254.980469 99.074219 254.980469ZM153.945312 31.683594L153.945312 122.472656C169.21875 130.378906 182.441406 142.011719 191.96875 156.773438C203.578125 173.152344 210.453125 193.730469 210.453125 215.363281C210.453125 244.410156 198.273438 270.800781 179.300781 289.84375C160.269531 308.835938 134.425781 320.445312 105.378906 320.445312C76.335938 320.445312 49.941406 308.835938 30.96875 289.84375C11.929688 270.800781 0.296875 244.410156 0.296875 215.363281C0.296875 193.738281 7.160156 173.71875 18.28125 156.773438L18.28125 156.285156C28.296875 142.011719 41.523438 130.378906 56.792969 122.472656L56.792969 31.683594L36.214844 31.683594L36.214844 0.0351562L174.53125 0.0351562L174.53125 31.683594Z'/%3E%3C/svg%3E" type="image/svg+xml">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00ab84',
+                        primaryHover: '#009371',
+                        secondary: '#30496d',
+                        neutralBg: '#F8FAFC',
+                        neutralText: '#475569',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(0, 171, 132, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .navbar-scrolled {
+            background-color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Satır sınırlama özelliği (Tailwind line-clamp alternatifi) */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;  
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-neutralBg text-neutralText antialiased flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white shadow-sm py-3">
+        <div class="container mx-auto px-4 md:px-8 flex justify-between items-center relative">
+            <!-- Logo (Yeni SVG Logo) -->
+            <a href="rev.html" class="text-2xl font-bold text-secondary flex items-center gap-2 transition-colors">
+                <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 fill-white" viewBox="0 0 227.25 335.249988">
+                        <path d="M88.503906 31.683594L88.503906 143.046875L78.429688 147.316406C64.207031 152.574219 52.59375 162.078125 44.675781 174.199219C36.207031 185.808594 31.996094 200.101562 31.996094 215.351562C31.996094 236 39.90625 254.421875 53.132812 267.648438C66.847656 280.816406 84.78125 289.273438 105.359375 289.273438C125.457031 289.273438 143.871094 280.804688 157.097656 267.648438C170.8125 254.421875 178.722656 236 178.722656 215.351562C178.722656 200.101562 173.964844 185.808594 166.042969 174.199219C158.136719 162.078125 146.015625 152.574219 132.292969 147.316406L122.21875 143.046875L122.21875 31.683594ZM67.367188 224.402344C76.871094 224.402344 84.792969 232.308594 84.792969 241.757812C84.792969 251.28125 76.882812 258.703125 67.367188 258.703125C57.839844 258.703125 49.933594 251.28125 49.933594 241.757812C49.933594 232.308594 57.839844 224.402344 67.367188 224.402344ZM99.074219 254.980469C103.765625 254.980469 108.03125 258.703125 108.03125 263.949219C108.03125 268.695312 103.765625 272.417969 99.074219 272.417969C94.316406 272.417969 90.039062 268.695312 90.039062 263.949219C90.039062 258.691406 94.308594 254.980469 99.074219 254.980469ZM153.945312 31.683594L153.945312 122.472656C169.21875 130.378906 182.441406 142.011719 191.96875 156.773438C203.578125 173.152344 210.453125 193.730469 210.453125 215.363281C210.453125 244.410156 198.273438 270.800781 179.300781 289.84375C160.269531 308.835938 134.425781 320.445312 105.378906 320.445312C76.335938 320.445312 49.941406 308.835938 30.96875 289.84375C11.929688 270.800781 0.296875 244.410156 0.296875 215.363281C0.296875 193.738281 7.160156 173.71875 18.28125 156.773438L18.28125 156.285156C28.296875 142.011719 41.523438 130.378906 56.792969 122.472656L56.792969 31.683594L36.214844 31.683594L36.214844 0.0351562L174.53125 0.0351562L174.53125 31.683594Z"/>
+                    </svg>
+                </div>
+                PagosLab
+            </a>
+            
+            <!-- Masaüstü Menü (Ana Sayfayla Aynı Hizalama) -->
+            <nav class="hidden md:flex items-center gap-8 font-medium text-secondary">
+                <a href="rev.html#ozellikler" class="hover:text-primary transition">Özellikler</a>
+                <a href="rev.html#cozumler" class="hover:text-primary transition">Çözümler</a>
+                <a href="blog.html" class="text-primary transition">Blog</a>
+                <a href="rev.html#uzman" class="hover:text-primary transition">Uzmana Danış</a>
+            </nav>
+            
+            <!-- Aksiyon Butonları & Dashboard Girişi -->
+            <div class="hidden md:flex items-center gap-5">
+                <a href="#" class="text-secondary font-medium hover:text-primary transition">Portal</a>
+                <div class="h-5 w-px bg-gray-300"></div> <!-- Dikey Ayraç -->
+                <a href="rev.html#kayit" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-semibold shadow-glow transition transform hover:-translate-y-0.5">Ücretsiz Dene</a>
+            </div>
+
+            <!-- Mobil Menü İkonu -->
+            <button id="mobileMenuBtn" class="md:hidden text-secondary p-2 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+
+        <!-- Mobil Menü Container -->
+        <div id="mobileMenu" class="hidden md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 flex-col py-4 px-6 gap-4">
+            <a href="rev.html#ozellikler" class="text-secondary font-medium hover:text-primary transition block">Özellikler</a>
+            <a href="rev.html#cozumler" class="text-secondary font-medium hover:text-primary transition block">Çözümler</a>
+            <a href="blog.html" class="text-primary font-medium transition block">Blog</a>
+            <a href="rev.html#uzman" class="text-secondary font-medium hover:text-primary transition block">Uzmana Danış</a>
+            <hr class="border-gray-100">
+            <a href="#" class="text-secondary font-medium hover:text-primary transition">Portal</a>
+            <a href="rev.html#kayit" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-semibold text-center transition">Ücretsiz Dene</a>
+        </div>
+    </header>
+
+    <!-- Blog Header (Hero) -->
+    <section class="pt-32 pb-12 bg-white border-b border-gray-100">
+        <div class="container mx-auto px-4 md:px-8 text-center max-w-3xl">
+            <h1 class="text-4xl md:text-5xl font-bold text-secondary mb-4">PagosLab Blog</h1>
+            <p class="text-lg text-neutralText">Laboratuvar bilgi yönetim sistemleri (LIMS), gıda güvenliği, kalite kontrol standartları ve dijital dönüşüm hakkında en güncel içerikler.</p>
+        </div>
+    </section>
+
+    <!-- Blog Liste Grid -->
+    <main class="flex-grow py-16 container mx-auto px-4 md:px-8">
+        
+        <!-- Kategoriler (Filtreleme Arayüzü Simülasyonu) -->
+        <div class="flex flex-wrap justify-center gap-3 mb-12">
+            <button class="px-5 py-2 bg-primary text-white rounded-full text-sm font-semibold shadow-md transition">Tümü</button>
+            <button class="px-5 py-2 bg-white text-secondary hover:bg-gray-50 border border-gray-200 rounded-full text-sm font-medium transition">Dijital Dönüşüm</button>
+            <button class="px-5 py-2 bg-white text-secondary hover:bg-gray-50 border border-gray-200 rounded-full text-sm font-medium transition">Kalite Yönetimi</button>
+            <button class="px-5 py-2 bg-white text-secondary hover:bg-gray-50 border border-gray-200 rounded-full text-sm font-medium transition">Sektörel</button>
+            <button class="px-5 py-2 bg-white text-secondary hover:bg-gray-50 border border-gray-200 rounded-full text-sm font-medium transition">Ürün Güncellemeleri</button>
+        </div>
+
+        <!-- Kartlar -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            <!-- Kart 1 -->
+            <article class="bg-white rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col cursor-pointer" onclick="window.location.href='blog-detail.html'">
+                <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=800" alt="Gıda Laboratuvarı" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="text-primary font-bold text-xs tracking-wider uppercase mb-3 block">Dijital Dönüşüm</span>
+                    <h3 class="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition line-clamp-2">LIMS Seçerken Dikkat Edilmesi Gereken 5 Kritik Kriter</h3>
+                    <p class="text-neutralText text-sm leading-relaxed mb-4 line-clamp-2 flex-grow">Gıda laboratuvarları için doğru yazılımı seçmek zor olabilir. Bulut tabanlı mimari, entegrasyon kapasitesi ve kullanıcı dostu arayüz neden çok önemli?</p>
+                    <div class="flex items-center text-xs text-gray-400 font-medium pt-4 border-t border-gray-100 mt-auto">
+                        <span>18 Nisan 2026</span>
+                        <span class="mx-2">•</span>
+                        <span>5 dk okuma</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Kart 2 -->
+            <article class="bg-white rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col cursor-pointer" onclick="window.location.href='blog-detail.html'">
+                <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <img src="https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=800" alt="Kalite Yönetimi" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="text-primary font-bold text-xs tracking-wider uppercase mb-3 block">Kalite Yönetimi</span>
+                    <h3 class="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition line-clamp-2">ISO 17025 Akreditasyon Sürecinde Yazılımın Rolü</h3>
+                    <p class="text-neutralText text-sm leading-relaxed mb-4 line-clamp-2 flex-grow">Akreditasyon denetimlerinde dokümantasyon hatalarını sıfıra indirmek ve süreçleri standartlaştırmak için dijital izlenebilirliğin önemi.</p>
+                    <div class="flex items-center text-xs text-gray-400 font-medium pt-4 border-t border-gray-100 mt-auto">
+                        <span>12 Nisan 2026</span>
+                        <span class="mx-2">•</span>
+                        <span>4 dk okuma</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Kart 3 -->
+            <article class="bg-white rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col cursor-pointer" onclick="window.location.href='blog-detail.html'">
+                <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" alt="Veri Analizi" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="text-primary font-bold text-xs tracking-wider uppercase mb-3 block">Ürün Güncellemeleri</span>
+                    <h3 class="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition line-clamp-2">PagosLab'a Yeni Eklenen Özel Analiz İstatistikleri</h3>
+                    <p class="text-neutralText text-sm leading-relaxed mb-4 line-clamp-2 flex-grow">Gelişmiş veri görselleştirme özellikleri artık yayında. Cihaz, analiz ve personel bazlı detaylı raporları tek tıkla nasıl alabileceğinizi öğrenin.</p>
+                    <div class="flex items-center text-xs text-gray-400 font-medium pt-4 border-t border-gray-100 mt-auto">
+                        <span>5 Nisan 2026</span>
+                        <span class="mx-2">•</span>
+                        <span>3 dk okuma</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Kart 4 -->
+            <article class="bg-white rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col cursor-pointer" onclick="window.location.href='blog-detail.html'">
+                <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <img src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=800" alt="Laboratuvar Numune" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="text-primary font-bold text-xs tracking-wider uppercase mb-3 block">İpuçları</span>
+                    <h3 class="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition line-clamp-2">Numune Kabul Sürecinde Yapılan En Sık 3 Hata</h3>
+                    <p class="text-neutralText text-sm leading-relaxed mb-4 line-clamp-2 flex-grow">Laboratuvarda işlerin aksamasına neden olan numune kabul hatalarını çoklu-seri numune kaydı teknolojisi ile nasıl çözebilirsiniz?</p>
+                    <div class="flex items-center text-xs text-gray-400 font-medium pt-4 border-t border-gray-100 mt-auto">
+                        <span>28 Mart 2026</span>
+                        <span class="mx-2">•</span>
+                        <span>6 dk okuma</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Kart 5 -->
+            <article class="bg-white rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col cursor-pointer" onclick="window.location.href='blog-detail.html'">
+                <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <img src="https://images.unsplash.com/photo-1614935151651-0bea6508ab6b?auto=format&fit=crop&q=80&w=800" alt="Gıda Testi" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="text-primary font-bold text-xs tracking-wider uppercase mb-3 block">Sektörel</span>
+                    <h3 class="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition line-clamp-2">Gıda Mikrobiyolojisinde Yeni Nesil Hızlı Analiz Yöntemleri</h3>
+                    <p class="text-neutralText text-sm leading-relaxed mb-4 line-clamp-2 flex-grow">Geleneksel kültür sayım yöntemlerine alternatif olarak gelişen moleküler yöntemler ve bu sonuçların yazılıma hızlı entegrasyonu.</p>
+                    <div class="flex items-center text-xs text-gray-400 font-medium pt-4 border-t border-gray-100 mt-auto">
+                        <span>15 Mart 2026</span>
+                        <span class="mx-2">•</span>
+                        <span>7 dk okuma</span>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Kart 6 -->
+            <article class="bg-white rounded-2xl shadow-soft hover:shadow-lg transition-all duration-300 overflow-hidden group border border-gray-100 flex flex-col cursor-pointer" onclick="window.location.href='blog-detail.html'">
+                <div class="relative h-56 overflow-hidden bg-gray-200">
+                    <img src="https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&q=80&w=800" alt="Ofis Bilgisayar" class="w-full h-full object-cover transform group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-6 flex flex-col flex-grow">
+                    <span class="text-primary font-bold text-xs tracking-wider uppercase mb-3 block">Ürün Güncellemeleri</span>
+                    <h3 class="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition line-clamp-2">Yakında Geliyor: PagosLab E-İmza Entegrasyonu</h3>
+                    <p class="text-neutralText text-sm leading-relaxed mb-4 line-clamp-2 flex-grow">Resmi laboratuvar analiz raporlarınızı tek tuşla, tamamen yasal bir şekilde sistem üzerinden elektronik imza ile nasıl imzalayacaksınız?</p>
+                    <div class="flex items-center text-xs text-gray-400 font-medium pt-4 border-t border-gray-100 mt-auto">
+                        <span>2 Mart 2026</span>
+                        <span class="mx-2">•</span>
+                        <span>4 dk okuma</span>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-16 flex justify-center items-center gap-2">
+            <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200 text-gray-400 hover:text-secondary hover:border-gray-300 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <button class="w-10 h-10 rounded-lg flex items-center justify-center bg-primary text-white font-semibold shadow-md">1</button>
+            <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200 text-secondary hover:bg-gray-50 transition">2</button>
+            <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200 text-secondary hover:bg-gray-50 transition">3</button>
+            <span class="px-2 text-gray-400">...</span>
+            <button class="w-10 h-10 rounded-lg flex items-center justify-center border border-gray-200 text-gray-400 hover:text-secondary hover:border-gray-300 transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 py-8 border-t border-gray-200 mt-auto">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2026 PagosLab. Tüm hakları saklıdır.
+        </div>
+    </footer>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        // Mobil Menü Aç/Kapat Mantığı
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+            
+            // Menü açıldığında her zaman navbar arkaplanının beyaz olmasını sağla
+            if (mobileMenu.classList.contains('flex')) {
+                navbar.classList.add('shadow-md');
+            } else if (window.scrollY <= 20) {
+                navbar.classList.remove('shadow-md');
+            }
+        });
+
+        // Basit Navbar Scroll Efekti (Zaten beyaza yakın olduğu için shadow ile belirginleştirilir)
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.remove('shadow-sm');
+            } else {
+                // Ancak mobil menü açıksa shadow kalmaya devam etsin
+                if (!mobileMenu.classList.contains('flex')) {
+                    navbar.classList.remove('shadow-md');
+                    navbar.classList.add('shadow-sm');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
