@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIMS Seçerken Dikkat Edilmesi Gereken 5 Kritik Kriter | PagosLab Blog</title>
+    
+    <!-- Favicon (Yeni Logonuz) -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 227.25 335.249988'%3E%3Cpath fill='%2300ab84' d='M88.503906 31.683594L88.503906 143.046875L78.429688 147.316406C64.207031 152.574219 52.59375 162.078125 44.675781 174.199219C36.207031 185.808594 31.996094 200.101562 31.996094 215.351562C31.996094 236 39.90625 254.421875 53.132812 267.648438C66.847656 280.816406 84.78125 289.273438 105.359375 289.273438C125.457031 289.273438 143.871094 280.804688 157.097656 267.648438C170.8125 254.421875 178.722656 236 178.722656 215.351562C178.722656 200.101562 173.964844 185.808594 166.042969 174.199219C158.136719 162.078125 146.015625 152.574219 132.292969 147.316406L122.21875 143.046875L122.21875 31.683594ZM67.367188 224.402344C76.871094 224.402344 84.792969 232.308594 84.792969 241.757812C84.792969 251.28125 76.882812 258.703125 67.367188 258.703125C57.839844 258.703125 49.933594 251.28125 49.933594 241.757812C49.933594 232.308594 57.839844 224.402344 67.367188 224.402344ZM99.074219 254.980469C103.765625 254.980469 108.03125 258.703125 108.03125 263.949219C108.03125 268.695312 103.765625 272.417969 99.074219 272.417969C94.316406 272.417969 90.039062 268.695312 90.039062 263.949219C90.039062 258.691406 94.308594 254.980469 99.074219 254.980469ZM153.945312 31.683594L153.945312 122.472656C169.21875 130.378906 182.441406 142.011719 191.96875 156.773438C203.578125 173.152344 210.453125 193.730469 210.453125 215.363281C210.453125 244.410156 198.273438 270.800781 179.300781 289.84375C160.269531 308.835938 134.425781 320.445312 105.378906 320.445312C76.335938 320.445312 49.941406 308.835938 30.96875 289.84375C11.929688 270.800781 0.296875 244.410156 0.296875 215.363281C0.296875 193.738281 7.160156 173.71875 18.28125 156.773438L18.28125 156.285156C28.296875 142.011719 41.523438 130.378906 56.792969 122.472656L56.792969 31.683594L36.214844 31.683594L36.214844 0.0351562L174.53125 0.0351562L174.53125 31.683594Z'/%3E%3C/svg%3E" type="image/svg+xml">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#00ab84',
+                        primaryHover: '#009371',
+                        secondary: '#30496d',
+                        neutralBg: '#F8FAFC',
+                        neutralText: '#475569',
+                        bodyText: '#334155',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 15px rgba(0, 171, 132, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        .navbar-scrolled {
+            background-color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Makale İçi Tipografi Stilleri */
+        .article-content h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #30496d;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        
+        .article-content h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #30496d;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .article-content p {
+            font-size: 1.125rem;
+            line-height: 1.8;
+            color: #334155;
+            margin-bottom: 1.5rem;
+        }
+
+        .article-content ul {
+            list-style-type: disc;
+            padding-left: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
+            color: #334155;
+            line-height: 1.8;
+        }
+
+        .article-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .article-content strong {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid #00ab84;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #475569;
+            margin: 2rem 0;
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="bg-white text-neutralText antialiased flex flex-col min-h-screen">
+
+    <!-- Navbar -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white shadow-sm py-3">
+        <div class="container mx-auto px-4 md:px-8 flex justify-between items-center relative">
+            <!-- Logo (Yeni SVG Logo) -->
+            <a href="rev.html" class="text-2xl font-bold text-secondary flex items-center gap-2 transition-colors">
+                <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 fill-white" viewBox="0 0 227.25 335.249988">
+                        <path d="M88.503906 31.683594L88.503906 143.046875L78.429688 147.316406C64.207031 152.574219 52.59375 162.078125 44.675781 174.199219C36.207031 185.808594 31.996094 200.101562 31.996094 215.351562C31.996094 236 39.90625 254.421875 53.132812 267.648438C66.847656 280.816406 84.78125 289.273438 105.359375 289.273438C125.457031 289.273438 143.871094 280.804688 157.097656 267.648438C170.8125 254.421875 178.722656 236 178.722656 215.351562C178.722656 200.101562 173.964844 185.808594 166.042969 174.199219C158.136719 162.078125 146.015625 152.574219 132.292969 147.316406L122.21875 143.046875L122.21875 31.683594ZM67.367188 224.402344C76.871094 224.402344 84.792969 232.308594 84.792969 241.757812C84.792969 251.28125 76.882812 258.703125 67.367188 258.703125C57.839844 258.703125 49.933594 251.28125 49.933594 241.757812C49.933594 232.308594 57.839844 224.402344 67.367188 224.402344ZM99.074219 254.980469C103.765625 254.980469 108.03125 258.703125 108.03125 263.949219C108.03125 268.695312 103.765625 272.417969 99.074219 272.417969C94.316406 272.417969 90.039062 268.695312 90.039062 263.949219C90.039062 258.691406 94.308594 254.980469 99.074219 254.980469ZM153.945312 31.683594L153.945312 122.472656C169.21875 130.378906 182.441406 142.011719 191.96875 156.773438C203.578125 173.152344 210.453125 193.730469 210.453125 215.363281C210.453125 244.410156 198.273438 270.800781 179.300781 289.84375C160.269531 308.835938 134.425781 320.445312 105.378906 320.445312C76.335938 320.445312 49.941406 308.835938 30.96875 289.84375C11.929688 270.800781 0.296875 244.410156 0.296875 215.363281C0.296875 193.738281 7.160156 173.71875 18.28125 156.773438L18.28125 156.285156C28.296875 142.011719 41.523438 130.378906 56.792969 122.472656L56.792969 31.683594L36.214844 31.683594L36.214844 0.0351562L174.53125 0.0351562L174.53125 31.683594Z"/>
+                    </svg>
+                </div>
+                PagosLab
+            </a>
+            
+            <!-- Masaüstü Menü -->
+            <nav class="hidden md:flex items-center gap-8 font-medium text-secondary">
+                <a href="rev.html#ozellikler" class="hover:text-primary transition">Özellikler</a>
+                <a href="rev.html#cozumler" class="hover:text-primary transition">Çözümler</a>
+                <a href="blog.html" class="text-primary transition">Blog</a>
+                <a href="rev.html#uzman" class="hover:text-primary transition">Uzmana Danış</a>
+            </nav>
+            
+            <!-- Aksiyon Butonları & Dashboard Girişi -->
+            <div class="hidden md:flex items-center gap-5">
+                <a href="#" class="text-secondary font-medium hover:text-primary transition">Portal</a>
+                <div class="h-5 w-px bg-gray-300"></div> <!-- Dikey Ayraç -->
+                <a href="rev.html#kayit" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-semibold shadow-glow transition transform hover:-translate-y-0.5">Ücretsiz Dene</a>
+            </div>
+
+            <!-- Mobil Menü İkonu -->
+            <button id="mobileMenuBtn" class="md:hidden text-secondary p-2 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+
+        <!-- Mobil Menü Container -->
+        <div id="mobileMenu" class="hidden md:hidden absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 flex-col py-4 px-6 gap-4">
+            <a href="rev.html#ozellikler" class="text-secondary font-medium hover:text-primary transition block">Özellikler</a>
+            <a href="rev.html#cozumler" class="text-secondary font-medium hover:text-primary transition block">Çözümler</a>
+            <a href="blog.html" class="text-primary font-medium transition block">Blog</a>
+            <a href="rev.html#uzman" class="text-secondary font-medium hover:text-primary transition block">Uzmana Danış</a>
+            <hr class="border-gray-100">
+            <a href="#" class="text-secondary font-medium hover:text-primary transition">Portal</a>
+            <a href="rev.html#kayit" class="bg-primary hover:bg-primaryHover text-white px-5 py-2.5 rounded-lg font-semibold text-center transition">Ücretsiz Dene</a>
+        </div>
+    </header>
+
+    <!-- Main Content wrapper -->
+    <main class="flex-grow pt-32 pb-20">
+        
+        <!-- Breadcrumb & Kategori Etiketi -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl mb-8">
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+                <a href="rev.html" class="hover:text-primary transition">Ana Sayfa</a>
+                <span>/</span>
+                <a href="blog.html" class="hover:text-primary transition">Blog</a>
+                <span>/</span>
+                <span class="text-gray-400 truncate">LIMS Seçerken Dikkat Edilmesi...</span>
+            </div>
+            
+            <span class="inline-block bg-primary/10 text-primary font-bold text-xs tracking-widest uppercase px-3 py-1.5 rounded-full mb-6">
+                Dijital Dönüşüm
+            </span>
+            
+            <!-- H1 Başlık -->
+            <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-secondary leading-tight mb-6">
+                LIMS Seçerken Dikkat Edilmesi Gereken 5 Kritik Kriter
+            </h1>
+            
+            <!-- Yazar & Tarih -->
+            <div class="flex items-center gap-4 border-b border-gray-100 pb-8 mb-8">
+                <div class="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
+                    <img src="https://i.pravatar.cc/150?img=32" alt="Yazar" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <p class="font-semibold text-secondary text-base">Dr. Ayşe Yılmaz</p>
+                    <p class="text-sm text-gray-500 flex items-center gap-2">
+                        18 Nisan 2026 <span class="text-gray-300">•</span> 5 dk okuma
+                    </p>
+                </div>
+                
+                <!-- Paylaşım Butonları (Sağa dayalı) -->
+                <div class="ml-auto flex gap-2">
+                    <button class="w-10 h-10 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 flex items-center justify-center transition" title="Kopyala">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    </button>
+                    <button class="w-10 h-10 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center transition" title="LinkedIn'de Paylaş">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dev Ana Görsel -->
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl mb-12">
+            <div class="aspect-w-16 aspect-h-9 rounded-2xl overflow-hidden shadow-lg">
+                <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&q=80&w=1200" alt="LIMS Sistemleri" class="w-full h-[400px] md:h-[500px] object-cover">
+            </div>
+            <p class="text-center text-sm text-gray-400 mt-3 italic">Modern laboratuvarlar dijitalleşmeye hız kesmeden devam ediyor.</p>
+        </div>
+
+        <!-- Okuma İçeriği -->
+        <article class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl article-content">
+            
+            <p class="text-xl leading-relaxed text-secondary font-medium mb-8">
+                Gıda laboratuvarları için doğru yazılımı (LIMS - Laboratuvar Bilgi Yönetim Sistemi) seçmek stratejik bir karardır. Yanlış bir sistem operasyonları yavaşlatırken, doğru bir sistem rekabet avantajı sağlar ve hata payını sıfıra indirir. Peki, karar verirken hangi özelliklere odaklanmalısınız?
+            </p>
+
+            <h2>1. Bulut Tabanlı (Cloud-Based) Mimari ve Uzaktan Erişim</h2>
+            <p>
+                Geçmişte laboratuvar yazılımları sunucu odalarında saklanan büyük ve hantal donanımlara bağımlıydı. Günümüzde ise modern bir LIMS'in olmazsa olmazı bulut teknolojisidir. Bulut tabanlı sistemler; IT maliyetlerini düşürür, otomatik yedekleme sağlar ve en önemlisi <strong>cihaz bağımsız erişim</strong> sunar. 
+            </p>
+            <p>
+                Analistler tabletlerinden numune kabulü yaparken, yöneticiler evden veya seyahatteyken cep telefonları üzerinden rapor onaylayabilmelidir. PagosLab gibi modern altyapılar bu esnekliği güvenli bir şekilde sunar.
+            </p>
+
+            <h2>2. Çoklu-Seri Numune Kaydı Yeteneği</h2>
+            <p>
+                Gıda laboratuvarlarına numuneler genellikle toplu halde gelir. Bir sistemin numuneleri tek tek kaydetmenizi beklemesi, değerli mesai saatlerinin veri girişine harcanması anlamına gelir.
+            </p>
+            <ul>
+                <li><strong>Hız:</strong> Onlarca numuneyi saniyeler içinde sisteme tanımlayabilme.</li>
+                <li><strong>Hata Önleme:</strong> Kopyalama ve şablon özellikleri ile insan kaynaklı hataların önüne geçilmesi.</li>
+                <li><strong>İzlenebilirlik:</strong> Seri olarak kaydedilen numunelerin barkodlama sistemleriyle kolay takibi.</li>
+            </ul>
+
+            <blockquote>
+                "İyi bir LIMS, personelinizi veri giriş elemanı olmaktan çıkarıp, asıl uzmanlık alanları olan analiz süreçlerine odaklanmalarını sağlamalıdır."
+            </blockquote>
+
+            <h2>3. Esnek ve Dinamik Onay Mekanizmaları</h2>
+            <p>
+                Laboratuvar süreçlerinde kalite, sıkı onay mekanizmalarından geçer. Ancak bu mekanizmalar her laboratuvar için aynı standartta olmayabilir. Seçeceğiniz yazılım, kurumunuzun hiyerarşik yapısına uygun olarak özelleştirilebilir onay akışları (Örn: Analist -> Birim Sorumlusu -> Laboratuvar Müdürü) sunmalıdır.
+            </p>
+
+            <h3>E-İmza (Elektronik İmza) Uyumluluğu</h3>
+            <p>
+                Rapor onay süreçlerinin son aşaması genellikle ıslak imza veya elektronik imza gerektirir. Sisteminiz yasal mevzuatlara uygun bir e-imza altyapısını desteklemelidir. (PagosLab'ın çok yakında duyuracağı e-imza entegrasyonu bu ihtiyacı doğrudan karşılamayı hedeflemektedir.)
+            </p>
+
+            <h2>4. Özelleştirilebilir Rapor Formatları</h2>
+            <p>
+                Müşterilerinize sunduğunuz raporlar, kurumunuzun vitrinidir. LIMS yazılımınız, analiz sonuçlarını statik ve sıkıcı ekranlara hapsetmemelidir. Kurum logonuzu ekleyebileceğiniz, yasal mevzuat metinlerini dinamik olarak yönetebileceğiniz ve müşteriye özel şablonlar oluşturabileceğiniz modüller barındırmalıdır.
+            </p>
+
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 my-8">
+                <h4 class="font-bold text-secondary text-lg mb-3">Hızlı Kontrol Listesi</h4>
+                <ul class="mb-0 text-sm">
+                    <li>Raporlar PDF olarak dışarı aktarılabiliyor mu?</li>
+                    <li>Müşteriye özel (İngilizce/Türkçe vb.) dil desteği var mı?</li>
+                    <li>Revizyon takibi (Eski raporların kopyası) tutuluyor mu?</li>
+                </ul>
+            </div>
+
+            <h2>5. Gelişmiş Veri Analizi ve İstatistikler</h2>
+            <p>
+                Sadece veri toplayan değil, o veriyi sizin için <strong>anlamlandıran</strong> bir sisteme yatırım yapın. Hangi analizden daha çok gelir elde ediliyor? Hangi personelin numune işleme hızı daha yüksek? Hangi cihazda dar boğaz yaşanıyor? Modern bir LIMS, bu soruların cevaplarını size görsel grafikler ve tablolar halinde, gerçek zamanlı olarak sunabilmelidir.
+            </p>
+
+            <h2>Sonuç</h2>
+            <p>
+                Laboratuvar Bilgi Yönetim Sistemi (LIMS) yatırımı yaparken, sadece bugünün değil, 5 yıl sonrasının ihtiyaçlarını da göz önünde bulundurmak hayati önem taşır. PagosLab, yeni nesil web teknolojileri ile bu beş kritik kriteri de merkeze alarak tasarlanmıştır.
+            </p>
+
+            <!-- CTA Kutusu (Makale Sonu) -->
+            <div class="mt-12 p-8 bg-primary/5 rounded-2xl border border-primary/20 text-center">
+                <h3 class="text-2xl font-bold text-secondary mt-0 mb-4">Laboratuvarınızı Dijitale Taşımaya Hazır Mısınız?</h3>
+                <p class="text-neutralText mb-6 max-w-xl mx-auto">PagosLab'ın sunduğu yenilikçi özellikleri canlı bir demo ile keşfedin ve iş süreçlerinizi nasıl hızlandırabileceğimizi konuşalım.</p>
+                <a href="rev.html#kayit" class="inline-block bg-primary hover:bg-primaryHover text-white px-8 py-3 rounded-lg font-bold shadow-md transition transform hover:-translate-y-0.5">
+                    Hemen Ücretsiz Dene
+                </a>
+            </div>
+            
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 py-8 border-t border-gray-200">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            &copy; 2026 PagosLab. Tüm hakları saklıdır.
+        </div>
+    </footer>
+
+    <script>
+        const navbar = document.getElementById('navbar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+
+        // Mobil Menü Aç/Kapat Mantığı
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+            
+            // Menü açıldığında her zaman navbar arkaplanının beyaz olmasını sağla
+            if (mobileMenu.classList.contains('flex')) {
+                navbar.classList.add('shadow-md');
+            } else if (window.scrollY <= 20) {
+                navbar.classList.remove('shadow-md');
+            }
+        });
+
+        // Basit Navbar Scroll Efekti (Zaten beyaza yakın olduğu için shadow ile belirginleştirilir)
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                navbar.classList.add('shadow-md');
+                navbar.classList.remove('shadow-sm');
+            } else {
+                // Ancak mobil menü açıksa shadow kalmaya devam etsin
+                if (!mobileMenu.classList.contains('flex')) {
+                    navbar.classList.remove('shadow-md');
+                    navbar.classList.add('shadow-sm');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
